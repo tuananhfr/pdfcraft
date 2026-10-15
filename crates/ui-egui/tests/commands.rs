@@ -225,6 +225,14 @@ fn shortcuts_run_registered_commands() {
 }
 
 #[test]
+fn the_palette_still_lists_check_for_updates_on_desktop() {
+    let mut h = harness();
+    h.state_mut().set_option("palette", "check for updates").unwrap();
+    h.run_steps(3);
+    h.get_by_label("Check for updates…");
+}
+
+#[test]
 fn the_palette_lists_commands_with_shortcuts_and_runs_them() {
     let mut h = harness();
     h.state_mut().set_option("palette", "rotate pages clockwise").unwrap();

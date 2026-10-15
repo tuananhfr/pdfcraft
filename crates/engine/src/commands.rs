@@ -158,6 +158,8 @@ const EDIT: Option<&str> = Some("Edit");
 const VIEW: Option<&str> = Some("View");
 const PAGES: Option<&str> = Some("Pages");
 const HELP: Option<&str> = Some("Help");
+// The web build cannot install an update, and a releases page is no use to someone using a website.
+const HELP_NATIVE: Option<&str> = if cfg!(target_arch = "wasm32") { None } else { HELP };
 
 /// Every command, in menu order.
 pub const COMMANDS: &[CommandSpec] = &[
@@ -362,13 +364,24 @@ pub const COMMANDS: &[CommandSpec] = &[
     c("page.split", "Split document…", PAGES, None, Assembly, "scissors"),
     c("page.number", "Number pages…", PAGES, None, Assembly, "hash"),
     c("help.shortcuts", "Keyboard shortcuts", HELP, None, Nothing, "circle-help"),
-    c("help.discord", "Join the ArtCraft Discord", HELP, None, Nothing, "messages-square"),
-    c("help.app_page", "PdfCraft web page", HELP, None, Nothing, "globe"),
     c("help.github", "PdfCraft on GitHub", HELP, None, Nothing, "code-xml"),
-    c("help.website", "ArtCraft website", HELP, None, Nothing, "external-link"),
-    c("help.check_updates", "Check for updates…", HELP, None, Nothing, "cloud"),
+    c("help.check_updates", "Check for updates…", HELP_NATIVE, None, Nothing, "cloud"),
     c("help.about", "About PdfCraft", HELP, None, Nothing, "info"),
 ];
+
+/// Commands that make no sense in a browser. Every listing and the executor consult
+/// [`available`], so hiding one from the menu alone cannot leave it in the palette or automation.
+const NATIVE_ONLY: &[&str] = &["help.check_updates"];
+
+/// Whether `spec` exists on a platform; `web` is a parameter so both branches are testable natively.
+pub fn available_on(spec: &CommandSpec, web: bool) -> bool {
+    !(web && NATIVE_ONLY.contains(&spec.id))
+}
+
+/// Whether `spec` exists in this build.
+pub fn available(spec: &CommandSpec) -> bool {
+    available_on(spec, cfg!(target_arch = "wasm32"))
+}
 
 pub fn command(id: &str) -> Option<&'static CommandSpec> {
     COMMANDS.iter().find(|c| c.id == id)
@@ -423,6 +436,15 @@ pub fn current_label(spec: &CommandSpec, session: &Session, active: Option<DocId
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn check_for_updates_is_listed_on_native_only() {
+        let spec = super::command("help.check_updates").unwrap();
+        assert!(super::available_on(spec, false));
+        assert!(!super::available_on(spec, true));
+        let open = super::command("file.open").unwrap();
+        assert!(super::available_on(open, true) && super::available_on(open, false));
+    }
+
     use super::*;
 
     #[test]

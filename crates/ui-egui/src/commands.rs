@@ -104,7 +104,7 @@ impl PdfCraftApp {
     }
 
     fn execute_unguarded(&mut self, id: &str) -> bool {
-        let Some(spec) = commands::command(id) else { return false };
+        let Some(spec) = commands::command(id).filter(|s| commands::available(s)) else { return false };
         if !self.command_enabled(spec) {
             let why = match spec.needs {
                 commands::Needs::Undo => tl!("Nothing to undo").to_string(),

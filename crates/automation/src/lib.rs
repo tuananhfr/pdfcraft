@@ -1849,6 +1849,7 @@ impl Automation {
         let enabled_only = a.opt_bool("enabled_only")?.unwrap_or(false);
         let list: Vec<Value> = commands::COMMANDS
             .iter()
+            .filter(|c| commands::available(c))
             .map(|c| {
                 json!({
                     "id": c.id,

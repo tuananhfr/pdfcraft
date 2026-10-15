@@ -731,7 +731,9 @@ impl Host for crate::PdfCraftApp {
     }
 
     fn command(&mut self, id: &str) -> Reply {
-        let spec = pdfcraft_engine::commands::command(id).ok_or_else(|| format!("unknown command {id:?} (see ui.commands)"))?;
+        let spec = pdfcraft_engine::commands::command(id)
+            .filter(|s| pdfcraft_engine::commands::available(s))
+            .ok_or_else(|| format!("unknown command {id:?} (see ui.commands)"))?;
         if !self.command_enabled(spec) {
             return Err(format!("{id} is disabled right now"));
         }
@@ -742,6 +744,7 @@ impl Host for crate::PdfCraftApp {
     fn commands(&self) -> Value {
         let mut list: Vec<Value> = pdfcraft_engine::commands::COMMANDS
             .iter()
+            .filter(|c| pdfcraft_engine::commands::available(c))
             .map(|c| json!({ "id": c.id, "label": c.label, "menu": c.menu, "enabled": self.command_enabled(c), "shortcut": c.shortcut.map(|s| s.label(cfg!(target_os = "macos"))) }))
             .collect();
         list.push(json!({"id": "ui.dock", "label": "Arrange Panel", "enabled": true, "params": "action, or operation/panel; move: target/zone/before; float/moveFloating: rect; resizeSplit: path/size; setStackOpen: open; resizeStack: height"}));
