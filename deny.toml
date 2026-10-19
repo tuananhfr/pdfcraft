@@ -48,6 +48,20 @@ ignore = [
     # winprint's fmt-derive (craft-print's Windows spooler), so it runs at compile time on Windows
     # and is not in the binary.
     { id = "RUSTSEC-2024-0370", reason = "compile-time proc macro of winprint's fmt-derive (craft-print Windows printing, #1107)" },
+    # rustls 0.23.45 (fixed in 0.23.46). The only TLS client PdfCraft runs is Help ▸ Check for
+    # updates (apps/pdfcraft/src/updates.rs): ureq on the ring provider, a fresh Agent per call
+    # and one request. reqwest is a build-dependency of winprint whose download is off;
+    # rustls-cng is used for Windows certificate-store signing, not TLS. None is in pdfcraft-web.
+    { id = "RUSTSEC-2026-0346", reason = "no custom ClientSessionStore formats session values with Debug" },
+    { id = "RUSTSEC-2026-0347", reason = "ECH is never enabled (ureq default config)" },
+    { id = "RUSTSEC-2026-0348", reason = "rustls is built without its brotli feature" },
+    { id = "RUSTSEC-2026-0349", reason = "ring provider has no post-quantum group to downgrade from, and the session store dies with the one-request Agent" },
+    # zbus 5's helper crates, merged into zbus 6 (unmaintained, no vulnerability). Linux desktop
+    # D-Bus only: accesskit_unix (egui-winit's AT-SPI) and pdfcraft-platform's portal watcher,
+    # which stays on accesskit's zbus 5. Not in the wasm build. Revisit when accesskit moves to zbus 6.
+    { id = "RUSTSEC-2026-0370", reason = "zvariant: unmaintained, Linux-only D-Bus via zbus 5" },
+    { id = "RUSTSEC-2026-0371", reason = "zbus_names: unmaintained, Linux-only D-Bus via zbus 5" },
+    { id = "RUSTSEC-2026-0372", reason = "zvariant_derive: unmaintained, Linux-only D-Bus via zbus 5" },
 ]
 
 # egui's default UI fonts (Ubuntu-Light, Hack, emoji-icon-font): font licences on the AGENTS.md
