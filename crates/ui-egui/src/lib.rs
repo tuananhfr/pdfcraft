@@ -97,6 +97,10 @@ mod print_ui;
 mod signature_drag;
 pub mod units;
 mod web_print;
+pub mod web_save;
+#[cfg(target_arch = "wasm32")]
+mod web_save_browser;
+mod web_save_prompt;
 pub use print_ui::{Handling as PrintHandling, PrintDraft, PrinterSource, Which as PrintWhich, system_printers};
 mod redact_ui;
 pub use redact_ui::{HiddenDraft, PagesDraft as RedactPagesDraft, RedactPrefs, SearchDraft as RedactSearchDraft, SearchMode as RedactSearchMode};
@@ -608,6 +612,9 @@ pub struct PdfCraftApp {
     pub host_dirty: Option<HostDirtyFn>,
     /// Web draft autosave into the page's draft store (`None`: off, as on desktop).
     pub drafts: Option<drafts::Drafts>,
+    /// Save through the browser's picker or a download (web; `None` on desktop). An embedding
+    /// page's [`HostSaveFn`] comes first.
+    pub web_save: Option<web_save::WebSaves>,
     /// A pending "save changes?" question (closing a dirty tab or quitting).
     pub close_request: Option<CloseRequest>,
     /// Save to this path instead of asking (tests and automation).
@@ -942,6 +949,10 @@ impl PdfCraftApp {
             host_save: None,
             host_dirty: None,
             drafts: None,
+            #[cfg(target_arch = "wasm32")]
+            web_save: Some(web_save::WebSaves::new(Box::new(web_save_browser::Browser::default()))),
+            #[cfg(not(target_arch = "wasm32"))]
+            web_save: None,
             close_request: None,
             save_override: None,
             props_draft: None,
@@ -1841,6 +1852,7 @@ impl PdfCraftApp {
             || self.pending_link.is_some()
             || self.pending_remote_link.is_some()
             || self.updates.open
+            || self.web_save.as_ref().is_some_and(|s| s.prompt().is_some())
     }
 
     /// Enable the UI control channel on `ctx` (opt-in; see [`control`]). Returns a client that
@@ -2891,6 +2903,7 @@ impl eframe::App for PdfCraftApp {
         // Reload documents whose files a build rewrote (#431).
         #[cfg(not(target_arch = "wasm32"))]
         self.watch_files();
+        self.settle_web_saves();
         if self.host_dirty.is_some() {
             let dirty = self.first_dirty().is_some();
             if let Some(report) = self.host_dirty.as_mut() {

@@ -467,6 +467,20 @@ fn save_is_incremental_stamps_mod_date_and_rebases() {
 }
 
 #[test]
+fn rename_changes_only_the_name() {
+    let (mut s, id) = session_with(1);
+    s.apply(id, Edit::RotatePages { pages: vec![0], degrees: 90 }).unwrap();
+    let (path, generation) = (s.get(id).unwrap().path.clone(), s.get(id).unwrap().edit_generation());
+    s.rename(id, "Contract v2.pdf".into()).unwrap();
+    let doc = s.get(id).unwrap();
+    assert_eq!(doc.name, "Contract v2.pdf");
+    assert_eq!(doc.path, path);
+    assert!(doc.dirty, "a new name is not a save");
+    assert_eq!(doc.edit_generation(), generation);
+    assert!(matches!(s.rename(DocId(u64::MAX), "x.pdf".into()), Err(EditError::NoDocument)));
+}
+
+#[test]
 fn undo_still_works_after_save() {
     let (mut s, id) = session_with(2);
     s.apply(id, Edit::DeletePages { pages: vec![0] }).unwrap();

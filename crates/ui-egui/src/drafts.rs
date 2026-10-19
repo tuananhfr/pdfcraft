@@ -351,7 +351,8 @@ impl PdfCraftApp {
             .filter_map(|i| {
                 let id = self.views.get(i)?.id;
                 let doc = self.session.get(id)?;
-                // Saves on the web settle at once (download or host), so dirty is all of Unsaved.
+                // A browser save leaves the document dirty until the file is written (`web_save`),
+                // and a host's save settles at once, so dirty is all of Unsaved.
                 Some(DocState { id, generation: doc.edit_generation(), unsaved: doc.dirty, transient: self.has_uncommitted_input(i) })
             })
             .collect();

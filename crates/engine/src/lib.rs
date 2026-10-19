@@ -3770,6 +3770,13 @@ impl Session {
         Self::refresh(doc).inspect_err(|_| Self::show_released(doc))
     }
 
+    /// Give document `id` a new name and keep its path: a browser save names the file it wrote
+    /// but never says where it is.
+    pub fn rename(&mut self, id: DocId, name: String) -> Result<(), EditError> {
+        self.doc_mut(id)?.name = name;
+        Ok(())
+    }
+
     /// Enter the permissions (owner) password of a document opened with its user password,
     /// lifting its restrictions for this session (Acrobat asks for it before changing security).
     /// Not an edit: nothing is marked unsaved and there is no undo step. Undo and redo states
