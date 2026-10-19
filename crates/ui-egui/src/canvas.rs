@@ -1303,6 +1303,17 @@ impl DocView {
         }
     }
 
+    /// Text is being typed on the page: a form field, Edit text, Add text, Fill & Sign or a
+    /// comment, open even in a frame when its editor doesn't hold egui's keyboard focus.
+    pub(crate) fn typing_on_page(&self) -> bool {
+        self.forms.focus.is_some()
+            || self.line_editor.is_some()
+            || self.content.draft.is_some()
+            || self.fill_text.is_some()
+            || self.comments.composer.is_some()
+            || self.comments.editing.is_some()
+    }
+
     /// Standard zoom steps (as in Acrobat's zoom menu).
     pub fn zoom_step(&mut self, up: bool) {
         const STEPS: [f32; 17] = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 16.0, 32.0];
@@ -1944,8 +1955,16 @@ pub fn shortcuts(view: &mut DocView, ctx: &egui::Context) {
     if pressed(KeyboardShortcut::new(Modifiers::COMMAND | Modifiers::SHIFT, Key::Minus)) {
         view.rotate_view(false);
     }
+    // Plain + / − too, unless typing on the page has the keys in a frame its editor lacks egui's
+    // focus. On many layouts + needs Shift, which egui's matching ignores.
+    let typing = view.typing_on_page();
+    let plain = |k| !typing && pressed(KeyboardShortcut::new(Modifiers::NONE, k));
     // In the page grid ⌘+ / ⌘− / ⌘0 size its pages instead (looking is always allowed).
-    let (zoom_in, zoom_out, zoom_reset) = (pressed(cmd(Key::Plus)) || pressed(cmd(Key::Equals)), pressed(cmd(Key::Minus)), pressed(cmd(Key::Num0)));
+    let (zoom_in, zoom_out, zoom_reset) = (
+        pressed(cmd(Key::Plus)) || pressed(cmd(Key::Equals)) || plain(Key::Plus) || plain(Key::Equals),
+        pressed(cmd(Key::Minus)) || plain(Key::Minus),
+        pressed(cmd(Key::Num0)),
+    );
     if view.organize {
         if zoom_in {
             view.grid_zoom_request = Some(view.grid_zoom * GRID_ZOOM_STEP);

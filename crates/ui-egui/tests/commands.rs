@@ -225,6 +225,98 @@ fn shortcuts_run_registered_commands() {
 }
 
 #[test]
+fn f1_opens_the_keyboard_shortcuts_and_escape_closes_them() {
+    let mut h = harness();
+    h.key_press(Key::F1);
+    h.run_steps(2);
+    assert!(matches!(h.state().dialog, Some(Dialog::Shortcuts)));
+    assert!(h.query_by_label("Select a word").is_some());
+    // The search box has the keyboard, so typing filters by label or by key text.
+    h.event(egui::Event::Text("NEXT match".into()));
+    h.run_steps(2);
+    assert!(h.query_by_label("Next / previous match").is_some());
+    assert!(h.query_by_label("Select a word").is_none(), "filtered out");
+    h.key_press(Key::Escape);
+    h.run_steps(2);
+    assert!(h.state().dialog.is_none());
+    // Reopening starts with an empty search.
+    h.key_press(Key::F1);
+    h.run_steps(2);
+    assert!(h.query_by_label("Select a word").is_some());
+}
+
+#[test]
+fn ctrl_y_redoes_and_ctrl_shift_z_still_does() {
+    let rotation = |h: &Harness<'_, PdfCraftApp>| h.state().session.get(h.state().views[0].id).unwrap().info.pages[0].rotation;
+    let mut h = harness();
+    h.state_mut().execute("page.rotate");
+    h.run_steps(2);
+    for redo in [Modifiers::COMMAND, Modifiers::COMMAND | Modifiers::SHIFT] {
+        let key = if redo.shift { Key::Z } else { Key::Y };
+        h.key_press_modifiers(Modifiers::COMMAND, Key::Z);
+        h.run_steps(2);
+        assert_eq!(rotation(&h), 0, "undone");
+        h.key_press_modifiers(redo, key);
+        h.run_steps(2);
+        assert_eq!(rotation(&h), 90, "{redo:?}+{key:?} redoes");
+    }
+}
+
+#[test]
+fn f12_saves_as() {
+    let dir = std::env::temp_dir().join(format!("pdfcraft-f12-save-as-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("copy.pdf").to_string_lossy().into_owned();
+    let mut h = harness();
+    h.state_mut().save_override = Some(path.clone());
+    h.key_press(Key::F12);
+    h.run_steps(3);
+    let doc = h.state().session.get(h.state().views[0].id).unwrap();
+    assert_eq!(doc.path.as_deref(), Some(path.as_str()));
+    assert!(std::fs::metadata(&path).is_ok_and(|m| m.len() > 0));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn plain_plus_and_minus_zoom_unless_something_takes_typing() {
+    let zoom = |h: &Harness<'_, PdfCraftApp>| h.state().views[0].zoom;
+    let mut h = harness();
+    for (key, larger) in [(Key::Plus, true), (Key::Minus, false), (Key::Equals, true), (Key::Minus, false)] {
+        let before = zoom(&h);
+        h.key_press(key);
+        h.run_steps(2);
+        assert_eq!(zoom(&h) > before, larger, "{key:?}: {before} → {}", zoom(&h));
+        assert_ne!(zoom(&h), before, "{key:?} zooms");
+    }
+    // `+` typed with Shift (US layouts) zooms too.
+    let before = zoom(&h);
+    h.key_press_modifiers(Modifiers::SHIFT, Key::Plus);
+    h.run_steps(2);
+    assert!(zoom(&h) > before);
+    assert!(!h.state().session.get(h.state().views[0].id).unwrap().dirty, "zooming is not an edit");
+
+    // A focused text field keeps the keys.
+    h.query_all_by_value("1").next().expect("current page input").focus();
+    h.run_steps(1);
+    let before = zoom(&h);
+    h.key_press(Key::Minus);
+    h.run_steps(2);
+    assert_eq!(zoom(&h), before, "typing in the page number field");
+    h.key_press(Key::Escape);
+    h.run_steps(2);
+
+    // So does text being typed on the page while its editor lacks egui's focus.
+    h.state_mut().views[0].fill_text =
+        Some(pdfcraft_ui_egui::fill_sign::TypeBox { page: 0, at: [40.0, 200.0], text: "Typed".into(), size: 10.0, focus: false });
+    h.run_steps(1);
+    let before = zoom(&h);
+    h.key_press(Key::Minus);
+    h.run_steps(2);
+    assert!(h.state().views[0].fill_text.is_some(), "the type box is still open");
+    assert_eq!(zoom(&h), before, "typing in a Fill & Sign text box");
+}
+
+#[test]
 fn the_palette_still_lists_check_for_updates_on_desktop() {
     let mut h = harness();
     h.state_mut().set_option("palette", "check for updates").unwrap();
@@ -375,19 +467,24 @@ fn the_shortcuts_dialog_lists_the_real_bindings() {
     h.ctx.set_os(OperatingSystem::Nix);
     h.state_mut().execute("help.shortcuts");
     h.run_steps(3);
-    h.get_by_label("Ctrl+Shift+S");
+    // A command's alternate keys share its row.
+    h.get_by_label("Ctrl+Shift+S, F12");
     h.get_by_label("Save as");
+    h.get_by_label("Ctrl+Shift+Z, Ctrl+Y");
+    h.get_by_label("F1");
     // The keys the document view handles itself are written for the platform too, and Fit
     // visible (a registered command) is listed once.
     h.get_by_label("Ctrl+1");
     h.get_by_label("Ctrl+3");
     h.get_by_label("Ctrl+G / Ctrl+Shift+G");
     h.get_by_label("← / →, Ctrl+← / Ctrl+→");
+    h.get_by_label("Ctrl++ / Ctrl+−, + / −");
     h.get_by_label("Zoom in / out (also pinch or Ctrl-scroll)");
     assert_eq!(h.query_all_by_label_contains("⌘").count(), 0, "no ⌘ outside macOS");
     h.ctx.set_os(OperatingSystem::Mac);
     h.run_steps(2);
-    h.get_by_label("⇧⌘S");
+    h.get_by_label("⇧⌘S, F12");
+    h.get_by_label("⇧⌘Z, ⌘Y");
     h.get_by_label("⌘1");
     h.get_by_label("Zoom in / out (also pinch or ⌘-scroll)");
 }
@@ -399,14 +496,14 @@ fn localized_shortcuts_update_immediately_and_keep_command_ids_and_key_bindings(
     h.state_mut().set_option("language", "de").unwrap();
     h.state_mut().execute("help.shortcuts");
     h.run_steps(3);
-    h.get_by_label("Strg+Umschalt+S");
+    h.get_by_label("Strg+Umschalt+S, F12");
     h.state_mut().set_option("language", "en").unwrap();
     h.run_steps(2);
-    h.get_by_label("Ctrl+Shift+S");
+    h.get_by_label("Ctrl+Shift+S, F12");
     h.state_mut().set_option("language", "de").unwrap();
     h.ctx.set_os(OperatingSystem::Mac);
     h.run_steps(2);
-    h.get_by_label("⇧⌘S");
+    h.get_by_label("⇧⌘S, F12");
     h.key_press(Key::Escape);
     h.run_steps(2);
     h.ctx.set_os(OperatingSystem::Windows);

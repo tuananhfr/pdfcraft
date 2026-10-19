@@ -1030,17 +1030,34 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
                 ui.add_space(8.0);
                 use crate::commands::{
                     ACTUAL_SIZE, COPY, FIND_NEXT, FIND_PREV, FIT_WIDTH, PAGE_LEVEL, PAGE_NEXT, PAGE_PREV, ROTATE_CCW, ROTATE_CW, SELECT_ALL, ZOOM_IN,
-                    ZOOM_OUT,
+                    ZOOM_IN_KEY, ZOOM_OUT, ZOOM_OUT_KEY,
                 };
-                // Registered commands first (always in sync with the real bindings), then the
-                // keys the document view handles itself.
-                let mut rows: Vec<(String, String)> = pdfcraft_engine::commands::COMMANDS
+                // The query lives in egui memory; a gap in the frames it was drawn in means the
+                // dialog was just opened, so it starts empty with the keyboard in the search box.
+                let (query_id, frame_id) = (egui::Id::new("shortcuts_query"), egui::Id::new("shortcuts_frame"));
+                let frame = ui.ctx().cumulative_frame_nr();
+                let opened = ui.data(|d| d.get_temp::<u64>(frame_id)).is_none_or(|last| last + 1 < frame);
+                let mut query = if opened { String::new() } else { ui.data(|d| d.get_temp::<String>(query_id)).unwrap_or_default() };
+                let search = ui.add(egui::TextEdit::singleline(&mut query).hint_text(tl!("Search")).desired_width(f32::INFINITY));
+                if opened {
+                    search.request_focus();
+                }
+                ui.data_mut(|d| {
+                    d.insert_temp(frame_id, frame);
+                    d.insert_temp(query_id, query.clone());
+                });
+                ui.add_space(8.0);
+                let key = |s: pdfcraft_engine::commands::Shortcut| crate::commands::shortcut_label(ui.ctx(), s);
+                // Registered commands first (always in sync with the real bindings), each with
+                // its alternate keys, then the keys the document view handles itself. The third
+                // field is the English label, so an English search works in any UI language.
+                let mut rows: Vec<(String, String, &str)> = pdfcraft_engine::commands::COMMANDS
                     .iter()
                     .filter_map(|c| {
-                        c.shortcut.map(|k| (crate::commands::shortcut_label(ui.ctx(), k), tl!(c.label).trim_end_matches('…').to_string()))
+                        let keys: Vec<String> = pdfcraft_engine::commands::shortcuts(c).map(key).collect();
+                        (!keys.is_empty()).then(|| (keys.join(", "), tl!(c.label).trim_end_matches('…').to_string(), c.label))
                     })
                     .collect();
-                let key = |s: pdfcraft_engine::commands::Shortcut| crate::commands::shortcut_label(ui.ctx(), s);
                 let pair = |a, b| format!("{} / {}", key(a), key(b));
                 // Key names, translated where a catalog has them (not scanned as UI literals).
                 let named = |k: &str| tl!(k).to_string();
@@ -1056,7 +1073,7 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
                     (key(ACTUAL_SIZE), tl!("Actual size").to_string()),
                     (key(PAGE_LEVEL), tl!("Zoom to page level").to_string()),
                     (key(FIT_WIDTH), tl!("Fit to width").to_string()),
-                    (pair(ZOOM_IN, ZOOM_OUT), scroll),
+                    (format!("{}, {}", pair(ZOOM_IN, ZOOM_OUT), pair(ZOOM_IN_KEY, ZOOM_OUT_KEY)), scroll),
                     (pair(ROTATE_CW, ROTATE_CCW), tl!("Rotate view").to_string()),
                     (format!("{} / {}", crate::i18n::key_name("Home"), crate::i18n::key_name("End")), tl!("First / last page").to_string()),
                     (format!("← / →, {}", pair(PAGE_PREV, PAGE_NEXT)), tl!("Previous / next page").to_string()),
@@ -1065,11 +1082,13 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
                     (crate::i18n::key_name("Delete").to_string(), tl!("Delete selected pages (Organize)").to_string()),
                     (key(SELECT_ALL), tl!("Select all pages (Organize)").to_string()),
                 ] {
-                    rows.push((k, v));
+                    rows.push((k, v, ""));
                 }
-                egui::ScrollArea::vertical().max_height(460.0).show(ui, |ui| {
+                rows.retain(|(k, v, en)| shortcut_matches(&query, &[k, v, en]));
+                // A fixed list height keeps Close in place while the search narrows the rows.
+                egui::ScrollArea::vertical().max_height(460.0).auto_shrink([true, false]).show(ui, |ui| {
                     egui::Grid::new("keys").num_columns(2).spacing([24.0, 6.0]).show(ui, |ui| {
-                        for (k, v) in &rows {
+                        for (k, v, _) in &rows {
                             ui.label(egui::RichText::new(k).font(egui::FontId::monospace(12.5)));
                             ui.label(v);
                             ui.end_row();
@@ -1437,6 +1456,13 @@ fn shorten_middle(name: &str, max: usize) -> String {
     let head: String = name.chars().take(max.saturating_sub(tail + 1)).collect();
     let end: String = name.chars().skip(count.saturating_sub(tail)).collect();
     format!("{head}…{end}")
+}
+
+/// Whether every word of the Keyboard shortcuts search appears in one of `fields` (the keys, the
+/// label in the UI language, the English label), ignoring case.
+fn shortcut_matches(query: &str, fields: &[&str]) -> bool {
+    let haystack = fields.join("\n").to_lowercase();
+    query.to_lowercase().split_whitespace().all(|word| haystack.contains(word))
 }
 
 /// "Open this web page?" when a document's link, button or script asks to open an address

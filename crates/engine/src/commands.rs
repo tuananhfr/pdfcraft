@@ -60,11 +60,17 @@ pub struct Shortcut {
     pub shift: bool,
     /// ⌃ on macOS (in addition to ⌘); unused elsewhere.
     pub mac_ctrl: bool,
-    /// Key name: a letter, a digit, punctuation such as `,`, or `Delete`.
+    /// Key name: a letter, a digit, punctuation such as `,`, a function key such as `F1`, or
+    /// `Delete`.
     pub key: &'static str,
 }
 
 impl Shortcut {
+    /// `key` on its own, without modifiers (`F1`).
+    pub const fn key(key: &'static str) -> Self {
+        Self { command: false, shift: false, mac_ctrl: false, key }
+    }
+
     /// ⌘ (Ctrl elsewhere) and `key`.
     pub const fn cmd(key: &'static str) -> Self {
         Self { command: true, shift: false, mac_ctrl: false, key }
@@ -363,11 +369,26 @@ pub const COMMANDS: &[CommandSpec] = &[
     c("page.extract", "Extract pages…", PAGES, None, Assembly, "file-output"),
     c("page.split", "Split document…", PAGES, None, Assembly, "scissors"),
     c("page.number", "Number pages…", PAGES, None, Assembly, "hash"),
-    c("help.shortcuts", "Keyboard shortcuts", HELP, None, Nothing, "circle-help"),
+    c("help.shortcuts", "Keyboard shortcuts", HELP, Some(Shortcut::key("F1")), Nothing, "circle-help"),
     c("help.github", "PdfCraft on GitHub", HELP, None, Nothing, "code-xml"),
     c("help.check_updates", "Check for updates…", HELP_NATIVE, None, Nothing, "cloud"),
     c("help.about", "About PdfCraft", HELP, None, Nothing, "info"),
 ];
+
+/// Further keys for a command besides its `shortcut`, which is the one menus show: Office's
+/// Ctrl+Y for Redo and F12 for Save as, which ERPCons users expect next to Acrobat's keys.
+pub const ALTERNATE_SHORTCUTS: &[(&str, Shortcut)] = &[("edit.redo", Shortcut::cmd("Y")), ("file.save_as", Shortcut::key("F12"))];
+
+/// Every key that runs `spec`: its `shortcut` first, then its alternates.
+pub fn shortcuts(spec: &CommandSpec) -> impl Iterator<Item = Shortcut> + '_ {
+    let alternates = ALTERNATE_SHORTCUTS.iter().filter(move |(id, _)| *id == spec.id).map(|(_, s)| *s);
+    spec.shortcut.into_iter().chain(alternates)
+}
+
+/// Every key binding in the registry, as (command, key).
+pub fn bindings() -> impl Iterator<Item = (&'static CommandSpec, Shortcut)> {
+    COMMANDS.iter().flat_map(|c| shortcuts(c).map(move |s| (c, s)))
+}
 
 /// Commands that make no sense in a browser. Every listing and the executor consult
 /// [`available`], so hiding one from the menu alone cannot leave it in the palette or automation.
@@ -450,13 +471,27 @@ mod tests {
     #[test]
     fn ids_and_shortcuts_are_unique() {
         let mut ids = std::collections::HashSet::new();
-        let mut keys = std::collections::HashSet::new();
         for c in COMMANDS {
             assert!(ids.insert(c.id), "duplicate id {}", c.id);
-            if let Some(s) = c.shortcut {
-                assert!(keys.insert(s), "duplicate shortcut {} ({})", s.label(true), c.id);
-            }
         }
+        let mut keys = std::collections::HashSet::new();
+        for (c, s) in bindings() {
+            assert!(keys.insert(s), "duplicate shortcut {} ({})", s.label(true), c.id);
+        }
+    }
+
+    #[test]
+    fn alternate_shortcuts_run_registered_commands_that_show_another_key() {
+        for (id, s) in ALTERNATE_SHORTCUTS {
+            let spec = command(id).unwrap_or_else(|| panic!("alternate {} names unknown command {id}", s.label(false)));
+            assert!(spec.shortcut.is_some_and(|primary| primary != *s), "{id}: menus need a primary key besides the alternate");
+        }
+        let keys = |id| shortcuts(command(id).unwrap()).map(|s| s.label(false)).collect::<Vec<_>>();
+        assert_eq!(keys("edit.redo"), ["Ctrl+Shift+Z", "Ctrl+Y"]);
+        assert_eq!(keys("file.save_as"), ["Ctrl+Shift+S", "F12"]);
+        assert_eq!(keys("help.shortcuts"), ["F1"]);
+        assert_eq!(keys("file.open"), ["Ctrl+O"]);
+        assert!(bindings().any(|(c, s)| c.id == "edit.redo" && s == Shortcut::cmd("Y")));
     }
 
     #[test]
@@ -481,6 +516,9 @@ mod tests {
         assert_eq!(Shortcut::cmd("+").label(false), "Ctrl++");
         assert_eq!(Shortcut::cmd_shift("−").label(true), "⇧⌘−");
         assert_eq!(Shortcut::cmd_shift("−").label(false), "Ctrl+Shift+−");
+        assert_eq!(Shortcut::key("F1").label(false), "F1");
+        assert_eq!(Shortcut::key("F12").label(true), "F12");
+        assert_eq!(Shortcut::key("F1").modifier_count(), 0);
         assert_eq!(Shortcut::command_name(true), "⌘");
         assert_eq!(Shortcut::command_name(false), "Ctrl");
     }

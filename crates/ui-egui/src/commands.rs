@@ -5,7 +5,7 @@
 //! the control channel later) all call `PdfCraftApp::execute`.
 
 use pdfcraft_engine::Edit;
-use pdfcraft_engine::commands::{self, COMMANDS, CommandSpec, Shortcut};
+use pdfcraft_engine::commands::{self, CommandSpec, Shortcut};
 
 use crate::{
     Dialog, Mode, PdfCraftApp, PropsTab, RightPanel, SaveTarget,
@@ -20,6 +20,9 @@ pub(crate) const PAGE_LEVEL: Shortcut = Shortcut::cmd("0");
 pub(crate) const FIT_WIDTH: Shortcut = Shortcut::cmd("2");
 pub(crate) const ZOOM_IN: Shortcut = Shortcut::cmd("+");
 pub(crate) const ZOOM_OUT: Shortcut = Shortcut::cmd("−");
+/// Plain `+` (or `=`) and `−`, while nothing on screen or on the page is taking typing.
+pub(crate) const ZOOM_IN_KEY: Shortcut = Shortcut::key("+");
+pub(crate) const ZOOM_OUT_KEY: Shortcut = Shortcut::key("−");
 pub(crate) const ROTATE_CW: Shortcut = Shortcut::cmd_shift("+");
 pub(crate) const ROTATE_CCW: Shortcut = Shortcut::cmd_shift("−");
 pub(crate) const PREV_VIEW: Shortcut = Shortcut::cmd("[");
@@ -654,7 +657,6 @@ impl PdfCraftApp {
 
     /// Run the registered keyboard shortcuts (more specific combinations first).
     pub(crate) fn registry_shortcuts(&mut self, ctx: &egui::Context) {
-        use egui::{Key, KeyboardShortcut, Modifiers};
         // Buttons also own keyboard focus for Tab/Enter activation, but they must not
         // suppress document shortcuts. Text editors retain their own undo/redo handling.
         let typing = ctx.text_edit_focused();
@@ -663,39 +665,20 @@ impl PdfCraftApp {
         // while the field has yet to see the Escape and discard its draft.)
         let active = self.active_ids();
         let form_typing = active.and_then(|(i, _)| self.views.get(i)).is_some_and(|v| v.forms.focus.is_some());
-        let mut specs: Vec<&CommandSpec> = COMMANDS.iter().filter(|c| c.shortcut.is_some()).collect();
-        specs.sort_by_key(|c| std::cmp::Reverse(c.shortcut.map(|s| s.modifier_count()).unwrap_or(0)));
-        for spec in specs {
-            let Some(s) = spec.shortcut else { continue };
-            if typing && !spec.in_text {
-                continue;
-            }
-            let Some(key) = Key::from_name(s.key) else { continue };
-            let mut m = Modifiers::NONE;
-            if s.command {
-                m |= Modifiers::COMMAND;
-            }
-            if s.shift {
-                m |= Modifiers::SHIFT;
-            }
-            if s.mac_ctrl {
-                m |= Modifiers::CTRL;
-            }
-            if ctx.input_mut(|i| i.consume_shortcut(&KeyboardShortcut::new(m, key))) {
-                if form_typing {
-                    // A form field has the keyboard: let it take this frame's typing (and
-                    // Escape) first, so ⌘S saves what's on screen (#166). Runs next frame, for
-                    // this document only.
-                    self.deferred_commands.push((spec.id, active.map(|(_, id)| id)));
-                    ctx.request_repaint();
-                } else if spec.id == "file.close" && active.is_none() && crate::commands::mac_shortcuts(ctx) && !cfg!(target_arch = "wasm32") {
-                    // macOS ⌘W closes the last window when no document tabs remain (#869).
-                    // Route through the normal viewport-close path (and its quit guard),
-                    // not the disabled document-only `file.close` command.
-                    ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                } else {
-                    self.execute(spec.id);
-                }
+        for spec in pressed_commands(ctx, typing) {
+            if form_typing {
+                // A form field has the keyboard: let it take this frame's typing (and
+                // Escape) first, so ⌘S saves what's on screen (#166). Runs next frame, for
+                // this document only.
+                self.deferred_commands.push((spec.id, active.map(|(_, id)| id)));
+                ctx.request_repaint();
+            } else if spec.id == "file.close" && active.is_none() && crate::commands::mac_shortcuts(ctx) && !cfg!(target_arch = "wasm32") {
+                // macOS ⌘W closes the last window when no document tabs remain (#869).
+                // Route through the normal viewport-close path (and its quit guard),
+                // not the disabled document-only `file.close` command.
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            } else {
+                self.execute(spec.id);
             }
         }
     }
@@ -717,6 +700,33 @@ fn tab_after(current: Option<usize>, count: usize, forward: bool) -> Option<usiz
         }
         (Some(i), false) => i.checked_sub(1).unwrap_or(last),
     })
+}
+
+/// Consume this frame's presses of registered keys (alternates included) and return their
+/// commands. While a text field has focus (`typing`) only `in_text` commands take their keys.
+fn pressed_commands(ctx: &egui::Context, typing: bool) -> Vec<&'static CommandSpec> {
+    use egui::{Key, KeyboardShortcut, Modifiers};
+    let mut bindings: Vec<(&'static CommandSpec, Shortcut)> = commands::bindings().filter(|(spec, _)| !typing || spec.in_text).collect();
+    // egui ignores extra Shift when matching, so ⇧⌘S must be tried before ⌘S.
+    bindings.sort_by_key(|(_, s)| std::cmp::Reverse(s.modifier_count()));
+    let mut pressed = Vec::new();
+    for (spec, s) in bindings {
+        let Some(key) = Key::from_name(s.key) else { continue };
+        let mut m = Modifiers::NONE;
+        if s.command {
+            m |= Modifiers::COMMAND;
+        }
+        if s.shift {
+            m |= Modifiers::SHIFT;
+        }
+        if s.mac_ctrl {
+            m |= Modifiers::CTRL;
+        }
+        if ctx.input_mut(|i| i.consume_shortcut(&KeyboardShortcut::new(m, key))) {
+            pressed.push(spec);
+        }
+    }
+    pressed
 }
 
 /// Render a top-level menu's registered commands (with live labels, shortcuts and enablement).
@@ -772,6 +782,43 @@ pub(crate) fn registry_menu(app: &mut PdfCraftApp, ui: &mut egui::Ui, menu: &str
 mod tests {
     use super::*;
     use egui::os::OperatingSystem;
+    use egui::{Key, Modifiers};
+
+    /// The commands one key press runs, through the same matching as the app.
+    fn pressed(modifiers: Modifiers, key: Key, typing: bool) -> Vec<&'static str> {
+        let ctx = egui::Context::default();
+        let event = egui::Event::Key { key, physical_key: None, pressed: true, repeat: false, modifiers };
+        let mut ids = Vec::new();
+        let mut output = ctx.run_ui(egui::RawInput { events: vec![event], ..Default::default() }, |ui| {
+            ids = pressed_commands(ui.ctx(), typing).iter().map(|c| c.id).collect();
+        });
+        output.textures_delta.clear();
+        ids
+    }
+
+    #[test]
+    fn alternate_and_plain_keys_resolve_to_their_commands() {
+        assert_eq!(pressed(Modifiers::NONE, Key::F1, false), ["help.shortcuts"]);
+        assert_eq!(pressed(Modifiers::NONE, Key::F12, false), ["file.save_as"]);
+        assert_eq!(pressed(Modifiers::COMMAND | Modifiers::SHIFT, Key::S, false), ["file.save_as"]);
+        assert_eq!(pressed(Modifiers::COMMAND, Key::S, false), ["file.save"]);
+        assert_eq!(pressed(Modifiers::COMMAND, Key::Y, false), ["edit.redo"]);
+        assert_eq!(pressed(Modifiers::COMMAND | Modifiers::SHIFT, Key::Z, false), ["edit.redo"]);
+        assert_eq!(pressed(Modifiers::COMMAND, Key::Z, false), ["edit.undo"]);
+        // F12 without Ctrl is not Ctrl+F12, and a text field keeps Ctrl+Y (its own redo).
+        assert!(pressed(Modifiers::COMMAND, Key::F12, false).is_empty());
+        assert!(pressed(Modifiers::COMMAND, Key::Y, true).is_empty());
+        assert_eq!(pressed(Modifiers::NONE, Key::F1, true), ["help.shortcuts"]);
+        // Every binding the registry lists is one a key press reaches.
+        for (spec, s) in commands::bindings() {
+            let key = Key::from_name(s.key).unwrap_or_else(|| panic!("{}: no egui key {:?}", spec.id, s.key));
+            let mut m = Modifiers::NONE;
+            m.command = s.command;
+            m.shift = s.shift;
+            m.ctrl = s.mac_ctrl;
+            assert_eq!(pressed(m, key, false), [spec.id], "{}", s.label(false));
+        }
+    }
 
     #[test]
     fn localized_shortcut_labels_follow_language_and_platform() {
