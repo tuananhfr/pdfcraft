@@ -3077,8 +3077,13 @@ mod tests {
         assert_eq!(normalize_pref("VI"), Some("vi"));
         assert_eq!(lang_from_tag("vi_VN.UTF-8"), Some(vi));
         assert_eq!(lang_from_tag("vi-VN"), Some(vi));
-        assert_eq!(first_supported("vi-VN
-en-US"), Some(vi));
+        assert_eq!(
+            first_supported(
+                "vi-VN
+en-US"
+            ),
+            Some(vi)
+        );
         assert_eq!(tr(vi, "File"), "Tệp");
         assert_eq!(tr(vi, "Save as…"), "Lưu Như…");
         assert_eq!(tr(vi, "Bookmarks"), "Dấu trang");
