@@ -54,6 +54,11 @@ fn main() {
                     // eframe never raises a close request on a browser reload or tab close, so `guard_quit` never
                     // prompts; ask the browser to confirm instead while a document has unsaved work (#812).
                     warn_before_unload(app.unsaved_flag.clone());
+                    // Draft autosave into the ERPCons office shell's store (`window.erpDrafts`);
+                    // an embedding host keeps the files itself, so not there.
+                    if query_param("host").as_deref() != Some("parent") {
+                        app.drafts = Some(drafts::install(cc.egui_ctx.clone()));
+                    }
                     // `?host=parent`: a same-origin page embedding PdfCraft in an iframe (such
                     // as the Nextcloud app) passes files in and takes saves back (`host` below).
                     if query_param("host").as_deref() == Some("parent")
@@ -97,6 +102,111 @@ fn warn_before_unload(unsaved: std::sync::Arc<std::sync::atomic::AtomicBool>) {
     });
     if window.add_event_listener_with_callback("beforeunload", handler.as_ref().unchecked_ref()).is_ok() {
         handler.forget();
+    }
+}
+
+/// The JavaScript side of [`pdfcraft_ui_egui::drafts`]: `window.erpDrafts.{put, remove, ready}`
+/// of the ERPCons office shell, looked up at every call (absent: the feature is off), and the
+/// flush when the page is hidden or left.
+#[cfg(target_arch = "wasm32")]
+mod drafts {
+    use eframe::wasm_bindgen::{JsCast, JsValue, closure::Closure};
+    use pdfcraft_ui_egui::drafts::{DraftInbox, DraftRestore, DraftSink, Drafts, FlushCell};
+
+    #[derive(Clone)]
+    struct WebSink {
+        /// `restore(key, name, format, bytes)`, handed to `ready`.
+        restore: JsValue,
+    }
+
+    fn store() -> Option<JsValue> {
+        let window = web_sys::window()?;
+        js_sys::Reflect::get(&window, &JsValue::from_str("erpDrafts")).ok().filter(|s| s.is_object())
+    }
+
+    fn call(method: &str, args: &[JsValue]) -> Result<(), String> {
+        let store = store().ok_or("window.erpDrafts is gone")?;
+        let f: js_sys::Function = js_sys::Reflect::get(&store, &JsValue::from_str(method))
+            .ok()
+            .and_then(|f| f.dyn_into().ok())
+            .ok_or_else(|| format!("erpDrafts.{method} is not a function"))?;
+        let args: js_sys::Array = args.iter().collect();
+        f.apply(&store, &args).map(|_| ()).map_err(|e| e.as_string().unwrap_or_else(|| format!("{e:?}")))
+    }
+
+    impl DraftSink for WebSink {
+        fn available(&self) -> bool {
+            store().is_some()
+        }
+
+        fn ready(&self) -> Result<(), String> {
+            call("ready", std::slice::from_ref(&self.restore))
+        }
+
+        fn put(&self, key: &str, name: &str, format: &str, bytes: &[u8]) -> Result<(), String> {
+            // A JS-owned copy: a view into wasm memory would go stale when memory grows.
+            let bytes = js_sys::Uint8Array::from(bytes);
+            call("put", &[key.into(), name.into(), format.into(), bytes.into()])
+        }
+
+        fn remove(&self, key: &str) -> Result<(), String> {
+            call("remove", &[key.into()])
+        }
+
+        fn now_ms(&self) -> f64 {
+            js_sys::Date::now()
+        }
+    }
+
+    pub fn install(ctx: egui::Context) -> Drafts {
+        let inbox = DraftInbox::default();
+        let queue = inbox.clone();
+        // Only queued here: the document opens on the next frame, never inside the callback.
+        let restore =
+            Closure::<dyn FnMut(JsValue, JsValue, JsValue, JsValue)>::new(move |key: JsValue, name: JsValue, format: JsValue, bytes: JsValue| {
+                let bytes = if let Some(array) = bytes.dyn_ref::<js_sys::Uint8Array>() {
+                    array.to_vec()
+                } else if bytes.is_instance_of::<js_sys::ArrayBuffer>() {
+                    js_sys::Uint8Array::new(&bytes).to_vec()
+                } else {
+                    return;
+                };
+                let name = name.as_string().filter(|n| !n.trim().is_empty()).unwrap_or_else(|| "document.pdf".to_string());
+                let restore = DraftRestore { key: key.as_string().unwrap_or_default(), name, format: format.as_string().unwrap_or_default(), bytes };
+                if let Ok(mut q) = queue.lock() {
+                    q.push(restore);
+                }
+                ctx.request_repaint();
+            })
+            .into_js_value();
+        let sink = WebSink { restore };
+        let drafts = Drafts::new(Box::new(sink.clone()), inbox);
+        flush_when_hidden(drafts.flush_cell(), sink);
+        drafts
+    }
+
+    /// The tab may be discarded or closed without another frame: put what's pending now.
+    fn flush_when_hidden(cell: FlushCell, sink: WebSink) {
+        let Some(window) = web_sys::window() else { return };
+        let Some(document) = window.document() else { return };
+        let flush = move || {
+            if let Ok(mut pending) = cell.try_borrow_mut() {
+                pending.flush(&sink);
+            }
+        };
+        let on_hidden = flush.clone();
+        let on_visibility = Closure::<dyn FnMut(web_sys::Event)>::new(move |_: web_sys::Event| {
+            if web_sys::window().and_then(|w| w.document()).is_some_and(|d| d.visibility_state() == web_sys::VisibilityState::Hidden) {
+                on_hidden();
+            }
+        });
+        if document.add_event_listener_with_callback("visibilitychange", on_visibility.as_ref().unchecked_ref()).is_ok() {
+            on_visibility.forget();
+        }
+        let on_pagehide = Closure::<dyn FnMut(web_sys::Event)>::new(move |_: web_sys::Event| flush());
+        if window.add_event_listener_with_callback("pagehide", on_pagehide.as_ref().unchecked_ref()).is_ok() {
+            on_pagehide.forget();
+        }
     }
 }
 

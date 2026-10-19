@@ -545,8 +545,15 @@ impl PdfCraftApp {
     pub(crate) fn has_unsaved_work(&self, index: usize) -> bool {
         let Some(v) = self.views.get(index) else { return false };
         let Some(doc) = self.session.get(v.id) else { return false };
-        doc.dirty
-            || v.pending_edit.is_some()
+        doc.dirty || self.has_uncommitted_input(index)
+    }
+
+    /// Whether tab `index` has typing (a field, a text box, a line being edited) not committed
+    /// to the document yet.
+    pub(crate) fn has_uncommitted_input(&self, index: usize) -> bool {
+        let Some(v) = self.views.get(index) else { return false };
+        let Some(doc) = self.session.get(v.id) else { return false };
+        v.pending_edit.is_some()
             || v.content.blocked().is_some()
             || v.forms.focus.as_ref().is_some_and(|f| crate::forms_ui::draft_edit(f, &doc.form).is_some())
             || v.fill_text.as_ref().is_some_and(|t| !t.text.trim().is_empty())
