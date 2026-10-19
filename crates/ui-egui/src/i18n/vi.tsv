@@ -2594,3 +2594,10 @@ certificate	SHA-256 digest	Mã băm SHA-256
 @plural	{n} file|{n} files	{n} tệp
 @plural	{n} comment|{n} comments	{n} chú thích
 @plural	{n} result|{n} results	{n} kết quả
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	Tài liệu đã được chứng nhận và không cho phép thay đổi.
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	Tài liệu được chứng nhận bởi {name} lúc {date} và không cho phép {kind}. Lưu thay đổi này sẽ làm chữ ký chứng nhận không còn hợp lệ.
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	Trường {field} đã bị khóa bởi chữ ký của {name} lúc {date}. Lưu thay đổi này sẽ làm chữ ký đó không còn hợp lệ.
+	Saving would invalidate a signature	Lưu sẽ làm chữ ký mất hiệu lực
+	Save a copy…	Lưu Bản sao…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	Hãy chọn tệp khác: lưu các thay đổi này đè lên tệp gốc đã ký sẽ làm chữ ký của tệp mất hiệu lực.

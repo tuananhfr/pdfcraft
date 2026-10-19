@@ -2347,3 +2347,10 @@ animation effects	Off	オフ
 	This document is trying to open a local file:	この文書はローカルファイルを開こうとしています：
 	Move tag earlier	タグを前へ移動
 	Move tag later	タグを後へ移動
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	この文書は証明済みで、変更は許可されていません。
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	この文書は {name} によって {date} に証明されており、{kind}は許可されていません。この変更を保存すると証明署名が無効になります。
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	フィールド {field} は {name} の署名 ({date}) によってロックされています。この変更を保存するとその署名が無効になります。
+	Saving would invalidate a signature	保存すると署名が無効になります
+	Save a copy…	コピーを保存…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	別のファイルを選択してください: 署名された元のファイルにこれらの変更を上書き保存すると、その署名が無効になります。

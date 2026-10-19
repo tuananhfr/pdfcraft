@@ -875,6 +875,13 @@ impl Automation {
         if flatten_fill_sign {
             self.apply(a, Edit::FlattenFillSign)?;
         }
+        // A certification the edits exceed must not be broken in the original: a copy elsewhere
+        // leaves it intact.
+        let conflicts = self.session.certification_conflicts(id);
+        if same_file && !conflicts.is_empty() {
+            let why = conflicts.iter().map(ToString::to_string).collect::<Vec<_>>().join("; ");
+            return Err(failed(format!("saving these changes over {} would invalidate {why}: pass another path to save a copy", target.display())));
+        }
         let bytes = if full { self.session.save_full_bytes(id) } else { self.session.save_bytes(id) }.map_err(failed)?;
         // A save that adds or removes encryption, or must not keep the old revision (Sanitize,
         // redaction), is rewritten in full even when an incremental save was asked for.

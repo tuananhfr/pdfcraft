@@ -2368,3 +2368,10 @@ animation effects	Off	معطّلة
 	This document is trying to open a local file:	يحاول هذا المستند فتح ملف محلي:
 	Move tag earlier	نقل العلامة للأعلى
 	Move tag later	نقل العلامة للأسفل
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	هذا المستند مصدَّق ولا يسمح بأي تغييرات.
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	صدَّق {name} على هذا المستند في {date}، وهو لا يسمح بما يلي: {kind}. سيؤدي حفظ هذا التغيير إلى إبطال توقيع التصديق.
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	الحقل {field} مقفل بتوقيع {name} في {date}. سيؤدي حفظ هذا التغيير إلى إبطال ذلك التوقيع.
+	Saving would invalidate a signature	سيؤدي الحفظ إلى إبطال توقيع
+	Save a copy…	حفظ نسخة…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	اختر ملفًا آخر: حفظ هذه التغييرات فوق الأصل الموقَّع سيُبطل توقيعه.

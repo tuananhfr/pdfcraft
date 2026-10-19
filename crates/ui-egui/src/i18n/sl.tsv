@@ -2352,3 +2352,10 @@ animation effects	Off	Izklopljeni
 	This document is trying to open a local file:	Ta dokument poskuša odpreti lokalno datoteko:
 	Move tag earlier	Premakni oznako prej
 	Move tag later	Premakni oznako pozneje
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	Ta dokument je overjen in ne dovoljuje sprememb.
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	Dokument je {date} overil(a) {name} in ne dovoljuje: {kind}. Če shranite to spremembo, overitveni podpis ne bo več veljaven.
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	Polje {field} je zaklenjeno s podpisom, ki ga je {date} dodal(a) {name}. Če shranite to spremembo, ta podpis ne bo več veljaven.
+	Saving would invalidate a signature	Shranjevanje bi razveljavilo podpis
+	Save a copy…	Shrani kopijo…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	Izberite drugo datoteko: če te spremembe shranite čez podpisani izvirnik, njegov podpis ne bo več veljaven.

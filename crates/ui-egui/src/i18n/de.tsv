@@ -2348,3 +2348,10 @@ animation effects	Off	Aus
 	This document is trying to open a local file:	Dieses Dokument versucht, eine lokale Datei zu öffnen:
 	Move tag earlier	Tag früher verschieben
 	Move tag later	Tag später verschieben
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	Dieses Dokument ist zertifiziert und erlaubt keine Änderungen.
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	Dieses Dokument wurde von {name} am {date} zertifiziert und erlaubt Folgendes nicht: {kind}. Wenn Sie diese Änderung speichern, wird die Zertifizierungssignatur ungültig.
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	Das Feld {field} ist durch die Signatur von {name} vom {date} gesperrt. Wenn Sie diese Änderung speichern, wird diese Signatur ungültig.
+	Saving would invalidate a signature	Speichern würde eine Signatur ungültig machen
+	Save a copy…	Kopie speichern…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	Wählen Sie eine andere Datei: Wenn Sie diese Änderungen über das signierte Original speichern, wird dessen Signatur ungültig.

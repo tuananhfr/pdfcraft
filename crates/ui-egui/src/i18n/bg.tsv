@@ -2310,3 +2310,10 @@ animation effects	Off	Изключени
 	This document is trying to open a local file:	Този документ се опитва да отвори локален файл:
 	Move tag earlier	Преместване на етикета по-рано
 	Move tag later	Преместване на етикета по-късно
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	Този документ е сертифициран и не позволява промени.
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	Документът е сертифициран от {name} на {date} и не позволява: {kind}. Записването на тази промяна ще направи сертифициращия подпис невалиден.
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	Полето {field} е заключено с подписа на {name} от {date}. Записването на тази промяна ще направи този подпис невалиден.
+	Saving would invalidate a signature	Записването ще направи подпис невалиден
+	Save a copy…	Запиши копие…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	Изберете друг файл: записването на тези промени върху подписания оригинал ще направи подписа му невалиден.

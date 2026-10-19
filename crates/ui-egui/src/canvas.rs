@@ -3436,6 +3436,9 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     }
     if let Some(n) = form_notice {
         match n {
+            crate::forms_ui::FormNotice::Security if app.session.get(app.views[index].id).is_some_and(|d| d.no_changes_certification().is_some()) => {
+                app.notify(crate::cert_guard::no_changes_notice().to_string())
+            }
             crate::forms_ui::FormNotice::Security => app.notify_tr("The document's security settings don't allow filling in form fields"),
             crate::forms_ui::FormNotice::ReadOnly(name) => app.notify_fmt("{name} is read-only", &[("name", &name)]),
             crate::forms_ui::FormNotice::NoAction(name) => app.notify_fmt("{name} has no action", &[("name", &name)]),

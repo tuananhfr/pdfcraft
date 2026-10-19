@@ -268,6 +268,10 @@ fn entry_unusable(u: &sign::windows::Unusable) -> DigitalIdEntry {
 impl PdfCraftApp {
     /// Start signing: the rectangle (or field) is known; show Sign with a Digital ID.
     pub fn start_signing(&mut self, page: usize, rect: Option<[f64; 4]>, field: Option<String>, certify: Option<u8>) {
+        // A certification that allows no changes allows no further signature either.
+        if self.active_ids().and_then(|(_, id)| self.session.get(id)).is_some_and(|d| d.no_changes_certification().is_some()) {
+            return self.notify(crate::cert_guard::no_changes_notice().to_string());
+        }
         self.refresh_os_key_store_ids();
         let mut draft = SignDraft::new(page, rect, field, certify, &self.digital_ids);
         draft.graphic = match &self.sign_graphic {
@@ -1000,6 +1004,9 @@ pub(crate) fn banner(sigs: &[SignatureInfo]) -> Option<(&'static str, Color32, &
     let signed: Vec<&SignatureInfo> = sigs.iter().filter(|s| s.signed).collect();
     if signed.is_empty() {
         return None;
+    }
+    if pdfcraft_engine::certification::no_changes_certification(sigs).is_some() {
+        return Some(("lock", Color32::from_rgb(0x14, 0x73, 0xE6), "This document is certified and does not allow changes.", String::new()));
     }
     if let Some(c) = signed.iter().find(|s| s.certify.is_some())
         && c.status == SignatureStatus::Valid

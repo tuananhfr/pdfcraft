@@ -148,6 +148,10 @@ impl PdfCraftApp {
                 self.handle_js(id, out);
                 true
             }
+            Err(pdfcraft_engine::EditError::CertifiedNoChanges) => {
+                self.notify(crate::cert_guard::no_changes_notice().to_string());
+                false
+            }
             Err(e) => {
                 let message = if matches!(edit, Edit::MoveObjects { .. }) { crate::object_ui::move_error(&e) } else { e.to_string() };
                 self.notify_fmt("{label} failed: {e}", &[("label", &crate::i18n::edit_label(&label)), ("e", &message)]);
@@ -578,6 +582,12 @@ impl PdfCraftApp {
     /// [`Self::save_view`], then `after` once the document is written: now, or on a later frame
     /// when the user had to choose where. `after` never runs when the save fails or is cancelled.
     pub(crate) fn save_then(&mut self, index: usize, target: SaveTarget, after: impl FnOnce(&mut Self) + Send + 'static) -> bool {
+        self.save_guarded(index, target, Box::new(after), true)
+    }
+
+    /// [`Self::save_then`]; `guard` holds a save whose edits would invalidate a signature of the
+    /// document's file (see `cert_guard`), which its "Save a copy…" skips.
+    pub(crate) fn save_guarded(&mut self, index: usize, target: SaveTarget, after: crate::cert_guard::After, guard: bool) -> bool {
         // What's typed in a field is part of what's saved (#166).
         if let Some(id) = self.views.get(index).map(|v| v.id)
             && !self.commit_typing_in(id)
@@ -585,8 +595,16 @@ impl PdfCraftApp {
             return false;
         }
         let Some(id) = self.views.get(index).map(|v| v.id) else { return false };
+        let after = if guard {
+            match self.hold_breaking_save(id, after) {
+                Some(after) => after,
+                None => return false,
+            }
+        } else {
+            after
+        };
         if self.host_save.is_none() && self.web_save.is_some() {
-            return self.web_save_then(id, target, Box::new(after));
+            return self.web_save_then(id, target, after);
         }
         let Some(doc) = self.session.get(id) else { return false };
         let (name, path) = (doc.name.clone(), doc.path.clone());
@@ -674,6 +692,11 @@ impl PdfCraftApp {
             self.notify_tr("The document was closed before it could be saved.");
             return false;
         };
+        // A copy may not be saved over the signed original it was made to spare.
+        if self.overwrites_signed_original(id, dest) {
+            self.notify(tl!("Choose another file: saving these changes over the signed original would invalidate its signature.").to_string());
+            return false;
+        }
         let bytes = match self.session.save_bytes(id).and_then(|b| self.session.check_save(id, &b).map(|()| b)) {
             Ok(b) => b,
             Err(e) => {

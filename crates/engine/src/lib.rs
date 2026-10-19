@@ -19,6 +19,7 @@ pub mod camera;
 pub mod camera_clean;
 pub mod camera_edges;
 pub mod catalog;
+pub mod certification;
 pub mod commands;
 pub mod compare;
 mod copy_image;
@@ -37,6 +38,7 @@ mod text_preview;
 mod upright_image;
 pub mod xfa;
 
+pub use certification::{Breach as CertificationBreach, Conflict as CertificationConflict};
 pub use signature_image::{ImageSignaturePreview, SignatureImage};
 pub use signature_scan::{PhotoRect, ScanError, SignaturePhoto, Turn};
 pub use text_preview::TextEditPreview;
@@ -577,6 +579,17 @@ impl Document {
         self.signatures.iter().any(|s| s.signed)
     }
 
+    /// The certification signature that allows no changes (DocMDP level 1), while it holds:
+    /// viewing, printing, copying and Save As still work, editing does not.
+    pub fn no_changes_certification(&self) -> Option<&SignatureInfo> {
+        certification::no_changes_certification(&self.signatures)
+    }
+
+    /// Editing is open: a document with an editor that no level-1 certification forbids changing.
+    fn changeable(&self) -> bool {
+        self.editable() && self.no_changes_certification().is_none()
+    }
+
     /// Whether comments are hidden (Comments ▸ Hide all comments).
     pub fn comments_hidden(&self) -> bool {
         self.config.hide_comments
@@ -628,7 +641,7 @@ impl Document {
 
     /// Page changes (insert, delete, rotate, move, extract) are allowed.
     pub fn allows_assembly(&self) -> bool {
-        self.editable() && self.permissions().is_none_or(|p| p.assemble())
+        self.changeable() && self.permissions().is_none_or(|p| p.assemble())
     }
 
     /// Redaction marks waiting to be applied.
@@ -638,17 +651,17 @@ impl Document {
 
     /// Changes to content and document information are allowed.
     pub fn allows_modification(&self) -> bool {
-        self.editable() && self.permissions().is_none_or(|p| p.modify())
+        self.changeable() && self.permissions().is_none_or(|p| p.modify())
     }
 
     /// Filling in form fields is allowed (Table 22, bits 6 and 9).
     pub fn allows_form_filling(&self) -> bool {
-        self.editable() && self.permissions().is_none_or(|p| p.fill_forms())
+        self.changeable() && self.permissions().is_none_or(|p| p.fill_forms())
     }
 
     /// Adding and changing comments is allowed (Table 22, bit 6).
     pub fn allows_annotation(&self) -> bool {
-        self.editable() && self.permissions().is_none_or(|p| p.annotate())
+        self.changeable() && self.permissions().is_none_or(|p| p.annotate())
     }
 
     /// The document's security may be changed (Protect, Remove security): it is editable and,
@@ -2661,6 +2674,10 @@ pub enum EditError {
     SignedRewrite(String),
     #[error("this document is signed: rewriting it would invalidate its signatures (save it incrementally instead)")]
     Signed,
+    #[error("this document is certified and its certification allows no changes")]
+    CertifiedNoChanges,
+    #[error("the unsaved changes would invalidate {0}: undo them, or save them to a copy")]
+    BreaksSignatures(String),
     #[error("{0}")]
     Invalid(String),
 }
@@ -3304,6 +3321,7 @@ impl Session {
         cx.today = today;
         let reason = doc.read_only_reason.clone().unwrap_or_default();
         let signed = doc.is_signed();
+        let no_changes = doc.no_changes_certification().is_some();
         let editor = doc.editor.as_mut().ok_or(EditError::ReadOnly(reason))?;
         if let Some(p) = editor.cos.permissions() {
             check_permission(&edit, &p)?;
@@ -3328,6 +3346,11 @@ impl Session {
         // Nothing to bake: leave undo history and the dirty flag alone.
         if matches!(&edit, Edit::FlattenFillSign) && !pdfcraft_annot::has_visible_fill_sign(&editor.cos) {
             return Ok(());
+        }
+        if no_changes {
+            // Baking Fill & Sign items the certified file already holds would change it too: Save
+            // and Save As write the file as certified instead.
+            return if matches!(&edit, Edit::FlattenFillSign) { Ok(()) } else { Err(EditError::CertifiedNoChanges) };
         }
         let mut next = editor.cos.clone();
         if !js_off && uses_scripts(&edit) {
@@ -3716,6 +3739,31 @@ impl Session {
         doc.renderer = RenderPool::new(doc.display.clone(), render_threads(), doc.config.clone());
         doc.bytes = bytes;
         Ok(())
+    }
+
+    /// The signatures that saving document `id`'s unsaved edits over its file would invalidate: a
+    /// certification whose DocMDP permissions they exceed, or a signature locking a field they
+    /// change (FieldMDP). Empty when there is nothing unsaved or nothing to break. Saving them to
+    /// another file leaves the certified original intact.
+    pub fn certification_conflicts(&self, id: DocId) -> Vec<CertificationConflict> {
+        let Some(doc) = self.get(id) else { return Vec::new() };
+        let Some(editor) = doc.editor.as_ref() else { return Vec::new() };
+        guard(|| certification::conflicts(&editor.cos, editor.keys.reopen.as_deref(), &doc.trust, &doc.sig_cache)).unwrap_or_default()
+    }
+
+    /// Refuse to write a signature or timestamp over unsaved edits that would invalidate another
+    /// signature: the signed file includes them.
+    fn check_signing(&self, id: DocId, signing: bool) -> Result<(), EditError> {
+        let doc = self.get(id).ok_or(EditError::NoDocument)?;
+        if signing && doc.no_changes_certification().is_some() {
+            return Err(EditError::CertifiedNoChanges);
+        }
+        let conflicts = self.certification_conflicts(id);
+        if conflicts.is_empty() {
+            Ok(())
+        } else {
+            Err(EditError::BreaksSignatures(conflicts.iter().map(ToString::to_string).collect::<Vec<_>>().join("; ")))
+        }
     }
 
     /// The bytes to write for Save: an incremental update of the file as opened/last saved,
@@ -4404,6 +4452,7 @@ impl Session {
     /// the signed file; the caller saves it and then calls [`Session::mark_signed`]. An empty
     /// `opts.date` takes the session clock.
     pub fn sign(&self, doc: DocId, id: &pdfcraft_sign::DigitalId, mut opts: SignOptions) -> Result<Arc<Vec<u8>>, EditError> {
+        self.check_signing(doc, true)?;
         let d = self.get(doc).ok_or(EditError::NoDocument)?;
         // Encrypted documents are signed under their permissions (the signer checks them).
         let editor = d.editor.as_ref().ok_or_else(|| EditError::ReadOnly(d.read_only_reason.clone().unwrap_or_default()))?;
@@ -4422,6 +4471,7 @@ impl Session {
         mut opts: SignOptions,
         tsa: &dyn pdfcraft_sign::TimestampAuthority,
     ) -> Result<Arc<Vec<u8>>, EditError> {
+        self.check_signing(doc, true)?;
         let d = self.get(doc).ok_or(EditError::NoDocument)?;
         let editor = d.editor.as_ref().ok_or_else(|| EditError::ReadOnly(d.read_only_reason.clone().unwrap_or_default()))?;
         if opts.date.is_empty() {
@@ -4433,6 +4483,8 @@ impl Session {
     /// Append a standalone document timestamp (RFC 3161, `/ETSI.RFC3161`) covering the file's
     /// current state. An empty `date` takes the session clock; the transport is the caller's.
     pub fn timestamp_document(&self, doc: DocId, tsa: &dyn pdfcraft_sign::TimestampAuthority, date: String) -> Result<Arc<Vec<u8>>, EditError> {
+        // A document timestamp and validation data are permitted at every DocMDP level.
+        self.check_signing(doc, false)?;
         let d = self.get(doc).ok_or(EditError::NoDocument)?;
         let editor = d.editor.as_ref().ok_or_else(|| EditError::ReadOnly(d.read_only_reason.clone().unwrap_or_default()))?;
         let date = if date.is_empty() { self.signing_date() } else { date };
@@ -4442,6 +4494,7 @@ impl Session {
     /// Embed revocation evidence into the catalog's `/DSS` with `/VRI` entries per signature
     /// (PAdES B-LT): an incremental update that never rewrites signed bytes.
     pub fn embed_ltv(&self, doc: DocId, evidence: &pdfcraft_sign::dss::Evidence) -> Result<Arc<Vec<u8>>, EditError> {
+        self.check_signing(doc, false)?;
         let d = self.get(doc).ok_or(EditError::NoDocument)?;
         let editor = d.editor.as_ref().ok_or_else(|| EditError::ReadOnly(d.read_only_reason.clone().unwrap_or_default()))?;
         Ok(Arc::new(pdfcraft_sign::dss::embed(&editor.cos, evidence)?))

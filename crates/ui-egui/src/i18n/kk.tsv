@@ -2345,3 +2345,10 @@ animation effects	Off	Өшірулі
 	This document is trying to open a local file:	Бұл құжат жергілікті файлды ашуға әрекеттеніп жатыр:
 	Move tag earlier	Тегті ертерек жылжыту
 	Move tag later	Тегті кейінірек жылжыту
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	Бұл құжат куәландырылған және өзгертуге рұқсат бермейді.
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	Бұл құжатты {name} {date} куәландырған, ол мынаған рұқсат бермейді: {kind}. Бұл өзгерісті сақтау куәландыру қолтаңбасын жарамсыз етеді.
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	{field} өрісі {name} қойған қолтаңбамен ({date}) құлыпталған. Бұл өзгерісті сақтау сол қолтаңбаны жарамсыз етеді.
+	Saving would invalidate a signature	Сақтау қолтаңбаны жарамсыз етеді
+	Save a copy…	Көшірмесін сақтау…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	Басқа файлды таңдаңыз: бұл өзгерістерді қол қойылған түпнұсқаның үстіне сақтау оның қолтаңбасын жарамсыз етеді.

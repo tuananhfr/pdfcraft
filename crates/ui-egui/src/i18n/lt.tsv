@@ -2591,3 +2591,10 @@ key	Space	Tarpas
 	This document is trying to open a local file:	Šis dokumentas bando atverti vietinį failą:
 	Move tag earlier	Perkelti žymą anksčiau
 	Move tag later	Perkelti žymą vėliau
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	Šis dokumentas patvirtintas, jo keisti negalima.
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	Šį dokumentą {date} patvirtino {name}; jis neleidžia: {kind}. Įrašius šį pakeitimą, patvirtinimo parašas taps negaliojantis.
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	Lauką {field} užrakino {name} parašas ({date}). Įrašius šį pakeitimą, tas parašas taps negaliojantis.
+	Saving would invalidate a signature	Įrašius parašas taps negaliojantis
+	Save a copy…	Įrašyti kopiją…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	Pasirinkite kitą failą: įrašius šiuos pakeitimus ant pasirašyto originalo, jo parašas taps negaliojantis.

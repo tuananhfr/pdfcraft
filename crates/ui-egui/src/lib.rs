@@ -26,6 +26,7 @@ mod a11y_ui;
 mod actions_ui;
 mod appearance;
 pub mod canvas;
+mod cert_guard;
 mod chrome;
 mod combine_grid;
 mod image_pick;
@@ -144,6 +145,7 @@ mod open_worker_tests;
 use pdfcraft_engine::{DocId, Session};
 
 pub use canvas::{DocView, RasterMemory};
+pub use cert_guard::HeldSave;
 pub use editing::{CloseRequest, SaveTarget};
 pub use files::{ExtractDraft, FilePurpose, FileRequest, RotateDraft, SplitDraft, SplitMode, SplitPlan};
 pub use recovery::{AUTOSAVE_SECS, RecoveryMeta, RecoveryStore};
@@ -617,6 +619,8 @@ pub struct PdfCraftApp {
     pub web_save: Option<web_save::WebSaves>,
     /// A pending "save changes?" question (closing a dirty tab or quitting).
     pub close_request: Option<CloseRequest>,
+    /// A save held because it would invalidate a signature (see `cert_guard`).
+    pub held_save: Option<HeldSave>,
     /// Save to this path instead of asking (tests and automation).
     pub save_override: Option<String>,
     /// Document Properties ▸ Description fields being edited: (document, Title/Author/Subject/Keywords).
@@ -954,6 +958,7 @@ impl PdfCraftApp {
             #[cfg(not(target_arch = "wasm32"))]
             web_save: None,
             close_request: None,
+            held_save: None,
             save_override: None,
             props_draft: None,
             view_draft: None,
@@ -1847,6 +1852,7 @@ impl PdfCraftApp {
     pub(crate) fn modal_open(&self) -> bool {
         self.dialog.is_some()
             || self.close_request.is_some()
+            || self.held_save.is_some()
             || self.password_prompt.is_some()
             || self.unlock_prompt.is_some()
             || self.pending_link.is_some()
@@ -1916,7 +1922,12 @@ impl PdfCraftApp {
     /// Notify with an error's own text. Engine and OS messages are not translated: matching their
     /// English wording would break silently whenever it changes.
     pub fn notify_error(&mut self, error: impl std::fmt::Display) {
-        self.notify(error.to_string());
+        let said = error.to_string();
+        // A certification's refusal answers an editing tool, so it is said in the UI language.
+        if said == pdfcraft_engine::EditError::CertifiedNoChanges.to_string() {
+            return self.notify(cert_guard::no_changes_notice().to_string());
+        }
+        self.notify(said);
     }
 
     /// Notify with a `{name}`-style template in the UI language (placeholders filled once).
@@ -2915,6 +2926,7 @@ impl eframe::App for PdfCraftApp {
         // Shortcuts deferred last frame: the text field has taken that frame's typing since.
         let deferred = std::mem::take(&mut self.deferred_commands);
         self.shortcuts(ctx);
+        self.refuse_tools_on_certified();
         // Scrolling and group-drag previews are transient: never resume after changing tabs,
         // opening a modal/palette, or returning to a window that lost focus.
         let blocked = self.modal_open() || self.palette_open || !ctx.input(|i| i.focused);

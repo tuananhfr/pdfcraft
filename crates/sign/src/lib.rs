@@ -2,6 +2,8 @@
 //!
 //! - [`der`], [`x509`], [`cms`], [`pkcs12`], [`keys`]: the cryptographic formats, on RustCrypto
 //!   primitives (RSA private-key operations use aws-lc-rs on native targets, ADR-0009).
+//! - [`mdp`]: what a certification permits after signing (DocMDP) and the fields a signature
+//!   locks (FieldMDP).
 //! - [`pdf`]: signature fields in a document — listing and validating them, and signing
 //!   (PAdES B-B, `ETSI.CAdES.detached`) with an incremental save.
 
@@ -15,6 +17,7 @@ pub mod graphic;
 #[cfg(target_os = "macos")]
 pub mod keychain;
 pub mod keys;
+pub mod mdp;
 pub mod pdf;
 pub mod pkcs12;
 pub mod revocation;
@@ -27,6 +30,7 @@ pub mod x509;
 pub use der::Time;
 pub use graphic::Graphic;
 pub use keys::{DigestAlg, PrivateKey, PublicKey};
+pub use mdp::FieldLock;
 pub use pdf::{
     Appearance, AppearanceLabels, Detail, DigestCache, Fill, Modification, SignOptions, SignatureInfo, Status, TrustStore, WORDINGS, Words,
     in_english, kind, list as signatures, sign, sign_with_timestamp, timestamp_document, validate,

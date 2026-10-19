@@ -20,6 +20,7 @@ use crate::SignError;
 use crate::cms::SignedData;
 use crate::der::Time;
 use crate::keys::DigestAlg;
+use crate::mdp::FieldLock;
 use crate::pkcs12::DigitalId;
 use crate::x509::{Certificate, build_chain, build_chain_noted};
 
@@ -432,6 +433,8 @@ pub struct SignatureInfo {
     pub doc_timestamp: bool,
     /// DocMDP permissions when this is a certification signature (1–3).
     pub certify: Option<u8>,
+    /// The form fields this signature locks (FieldMDP), when signed with a lock.
+    pub field_lock: Option<FieldLock>,
     /// 1-based revision the signature covers.
     pub revision: usize,
     /// Length of the signed revision (bytes) — "View signed version".
@@ -598,6 +601,7 @@ pub fn list_cached(doc: &Document, bytes: &[u8], trust: &TrustStore, cache: &Dig
             sub_filter: None,
             doc_timestamp: false,
             certify: None,
+            field_lock: None,
             revision: 0,
             signed_len: 0,
             digest: None,
@@ -609,6 +613,7 @@ pub fn list_cached(doc: &Document, bytes: &[u8], trust: &TrustStore, cache: &Dig
             details: Vec::new(),
         };
         if let Some(v) = v {
+            info.field_lock = crate::mdp::field_lock(doc, &v, &f.dict);
             validate_into(doc, bytes, trust, &v, &mut info, cache);
         }
         out.push(info);
@@ -641,6 +646,7 @@ pub fn list_cached(doc: &Document, bytes: &[u8], trust: &TrustStore, cache: &Dig
             sub_filter: Some("ETSI.RFC3161".to_string()),
             doc_timestamp: true,
             certify: None,
+            field_lock: None,
             revision: 0,
             signed_len: 0,
             digest: None,
@@ -1181,7 +1187,15 @@ fn classify_changes(doc: &Document, old: Option<Document>, p: Option<u8>) -> Mod
     let Some(old) = old else {
         return Modification::Disallowed(vec![kind::UNREADABLE]);
     };
-    let old_content: HashSet<ObjRef> = pdfcraft_annot::page_refs(&old)
+    let (allowed, disallowed): (Vec<&'static str>, Vec<&'static str>) =
+        changes_between(doc, &old).into_iter().partition(|what| crate::mdp::permits(p, what));
+    if disallowed.is_empty() { Modification::Allowed(allowed) } else { Modification::Disallowed(disallowed) }
+}
+
+/// What `doc` changes from `old`, an earlier state of the same file (a signed revision, or the
+/// file as last saved under unsaved edits), each kind once in the words of [`kind`].
+pub fn changes_between(doc: &Document, old: &Document) -> Vec<&'static str> {
+    let old_content: HashSet<ObjRef> = pdfcraft_annot::page_refs(old)
         .unwrap_or_default()
         .into_iter()
         .flat_map(|pg| {
@@ -1202,10 +1216,10 @@ fn classify_changes(doc: &Document, old: Option<Document>, p: Option<u8>) -> Mod
     // object is judged by the role it held when signed, never by the labels or keys its new,
     // attacker-written version carries (relabelling a signed page /Type /Sig, or dropping its
     // /Type and adding /ModDate, must not reclassify it away from page content).
-    let signed_pages: HashSet<ObjRef> = pdfcraft_annot::page_refs(&old).unwrap_or_default().into_iter().collect();
+    let signed_pages: HashSet<ObjRef> = pdfcraft_annot::page_refs(old).unwrap_or_default().into_iter().collect();
     let old_info = old.trailer().get(b"Info").and_then(Object::as_ref);
-    let (mut allowed, mut disallowed): (Vec<&'static str>, Vec<&'static str>) = (Vec::new(), Vec::new());
-    let dss = dss_parts(doc, &old);
+    let mut kinds: Vec<&'static str> = Vec::new();
+    let dss = dss_parts(doc, old);
     // Stored at the same place in both (and not edited since): the same bytes, unchanged.
     let same_place = |num: u32| -> bool {
         use pdfcraft_cos::XrefEntry;
@@ -1228,8 +1242,8 @@ fn classify_changes(doc: &Document, old: Option<Document>, p: Option<u8>) -> Mod
     for (_, num) in doc.xref_oddities().iter().filter(|o| !old.xref_oddities().contains(o)) {
         let r = ObjRef { num: *num, generation: doc.generation(*num) };
         let what = if old_content.contains(&r) || signed_pages.contains(&r) { kind::PAGE_CONTENT } else { kind::OTHER };
-        if !disallowed.contains(&what) {
-            disallowed.push(what);
+        if !kinds.contains(&what) {
+            kinds.push(what);
         }
     }
     for num in doc.object_numbers() {
@@ -1243,8 +1257,8 @@ fn classify_changes(doc: &Document, old: Option<Document>, p: Option<u8>) -> Mod
             // The same content at a new place. That is true for the renderer as well only when
             // the entry locates the object itself: where this reader had to search for the
             // object, another reader may arrive at a different one.
-            if !doc.is_edited(num) && !doc.xref_entry_is_exact(num) && !disallowed.contains(&kind::OTHER) {
-                disallowed.push(kind::OTHER);
+            if !doc.is_edited(num) && !doc.xref_entry_is_exact(num) && !kinds.contains(&kind::OTHER) {
+                kinds.push(kind::OTHER);
             }
             continue;
         }
@@ -1256,12 +1270,12 @@ fn classify_changes(doc: &Document, old: Option<Document>, p: Option<u8>) -> Mod
                 if signed_pages.contains(&r) {
                     // A signed page is always judged by what the page shows, whatever it is now
                     // relabelled: a rewritten /Contents or /Resources is a page content change.
-                    page_change_kind(doc, &old, d, was)
+                    page_change_kind(doc, old, d, was)
                 } else if was.is_some() && Some(r) == old_info {
                     // Only the signed revision's own /Info dictionary is a metadata change.
                     kind::METADATA
                 } else {
-                    change_kind(doc, &old, d, was)
+                    change_kind(doc, old, d, was)
                 }
             }
             Object::Stream(s) => {
@@ -1285,20 +1299,11 @@ fn classify_changes(doc: &Document, old: Option<Document>, p: Option<u8>) -> Mod
             _ if before.is_none() => continue,
             _ => kind::OTHER,
         };
-        let ok = match (what, p) {
-            (kind::SIGNATURE | kind::SECURITY_STORE, _) => true,
-            (kind::FORM_FILL, Some(2 | 3) | None) => true,
-            (kind::COMMENTS, Some(3) | None) => true,
-            // Every save updates /Info (ModDate), signing included.
-            (kind::METADATA, _) => true,
-            _ => false,
-        };
-        let list = if ok { &mut allowed } else { &mut disallowed };
-        if !list.contains(&what) {
-            list.push(what);
+        if !kinds.contains(&what) {
+            kinds.push(what);
         }
     }
-    if disallowed.is_empty() { Modification::Allowed(allowed) } else { Modification::Disallowed(disallowed) }
+    kinds
 }
 
 /// Where an object sits in the Document Security Store (ISO 32000-2 §12.8.4.3).

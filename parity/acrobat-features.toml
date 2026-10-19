@@ -6067,9 +6067,9 @@ tier = "P1"
 milestone = "M9"
 status = "shipped"
 commands = ["sign.certify"]
-tools = ["sign_document"]
-evidence = ["crates/sign/tests/pdf.rs::later_changes_are_classified_under_the_signature_permissions"]
-notes = "DocMDP P=1/2/3 enforced when validating"
+tools = ["sign_document", "doc_save"]
+evidence = ["crates/sign/tests/pdf.rs::later_changes_are_classified_under_the_signature_permissions", "crates/engine/tests/certification.rs::level_two_allows_form_fill_and_not_comments", "crates/engine/tests/certification.rs::level_three_allows_comments_and_not_page_changes", "crates/engine/tests/certification.rs::level_one_refuses_every_edit_but_keeps_saving_as_it_is", "crates/ui-egui/tests/certification.rs::a_comment_on_a_form_fill_certification_is_held_and_saved_as_a_copy", "crates/ui-egui/tests/certification.rs::no_changes_certification_shows_its_bar_and_refuses_tools", "crates/automation/tests/automation.rs::doc_save_keeps_a_certified_original_intact"]
+notes = "DocMDP P=1/2/3 enforced when validating, and before saving: unsaved edits a certification does not permit are held at Save/Save As (a dialog naming the certifier offers Save a copy…, never overwriting the certified original; doc_save refuses them over the document's own file). P=1 refuses editing tools and edits when they are used and shows a bar; viewing, printing, copying and Save As stay. Not yet: P=2 does not disable commenting tools up front (refused at save), and a signature added after a P=1 certification is still reported as permitted by the validator."
 
 [[feature]]
 id = "sign.field-mdp"
@@ -6077,11 +6077,11 @@ title = "Field locks (FieldMDP)"
 area = "H"
 tier = "P1"
 milestone = "M9"
-status = "planned"
+status = "partial"
 commands = []
-tools = []
-evidence = []
-notes = ""
+tools = ["doc_save"]
+evidence = ["crates/sign/src/mdp.rs::the_signatures_field_mdp_wins_over_the_fields_lock", "crates/engine/tests/certification.rs::a_field_lock_names_the_locked_field_that_changed", "crates/ui-egui/tests/certification.rs::a_locked_field_is_named_in_the_guard"]
+notes = "A signed field's lock (the FieldMDP transform in its signature's /Reference, else the field's /Lock: All, Include, Exclude) is read, and saving a change to a locked field over the signed file is held, naming the field. Not yet: the validator does not report locked-field changes made after signing, locked fields are not made read-only after signing, signing cannot set a lock, and PDF 2.0 /P in a field lock is ignored."
 
 [[feature]]
 id = "sign.document-timestamp"

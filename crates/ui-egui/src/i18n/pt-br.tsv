@@ -2361,3 +2361,10 @@ animation effects	Off	Desativados
 	This document is trying to open a local file:	Este documento está tentando abrir um arquivo local:
 	Move tag earlier	Mover tag para antes
 	Move tag later	Mover tag para depois
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	Este documento é certificado e não permite alterações.
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	Este documento foi certificado por {name} em {date} e não permite {kind}. Salvar esta alteração invalidaria a assinatura de certificação.
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	O campo {field} está bloqueado pela assinatura de {name} em {date}. Salvar esta alteração invalidaria essa assinatura.
+	Saving would invalidate a signature	Salvar invalidaria uma assinatura
+	Save a copy…	Salvar uma cópia…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	Escolha outro arquivo: salvar estas alterações sobre o original assinado invalidaria a assinatura dele.

@@ -2421,3 +2421,10 @@ animation effects	Off	Vypnuto
 	This document is trying to open a local file:	Tento dokument se pokouší otevřít místní soubor:
 	Move tag earlier	Přesunout značku dříve
 	Move tag later	Přesunout značku později
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	Tento dokument je certifikovaný a nepovoluje žádné změny.
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	Tento dokument certifikoval(a) {name} dne {date} a nepovoluje {kind}. Uložením této změny by se certifikační podpis stal neplatným.
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	Pole {field} je uzamčeno podpisem, který připojil(a) {name} dne {date}. Uložením této změny by se tento podpis stal neplatným.
+	Saving would invalidate a signature	Uložení by zneplatnilo podpis
+	Save a copy…	Uložit kopii…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	Zvolte jiný soubor: uložením těchto změn přes podepsaný originál by se jeho podpis stal neplatným.

@@ -2369,3 +2369,10 @@ animation effects	Off	Вимкнено
 	This document is trying to open a local file:	Цей документ намагається відкрити локальний файл:
 	Move tag earlier	Перемістити тег раніше
 	Move tag later	Перемістити тег пізніше
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	Цей документ засвідчено, і він не дозволяє змін.
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	Документ засвідчив(-ла) {name} {date}; він не дозволяє: {kind}. Збереження цієї зміни зробить засвідчувальний підпис недійсним.
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	Поле {field} заблоковано підписом {name} від {date}. Збереження цієї зміни зробить цей підпис недійсним.
+	Saving would invalidate a signature	Збереження зробить підпис недійсним
+	Save a copy…	Зберегти копію…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	Виберіть інший файл: збереження цих змін поверх підписаного оригіналу зробить його підпис недійсним.

@@ -2311,3 +2311,10 @@ animation effects	Off	关
 	This document is trying to open a local file:	此文档正尝试打开本地文件：
 	Move tag earlier	将标签前移
 	Move tag later	将标签后移
+# Saving over a certified or field-locking signature (cert_guard)
+	This document is certified and does not allow changes.	此文档已认证，不允许更改。
+	This document was certified by {name} on {date} and does not allow {kind}. Saving this change would invalidate the certification signature.	此文档由 {name} 于 {date} 认证，不允许{kind}。保存此更改将使认证签名失效。
+	The field {field} is locked by the signature of {name} on {date}. Saving this change would invalidate that signature.	字段 {field} 已被 {name} 于 {date} 所做的签名锁定。保存此更改将使该签名失效。
+	Saving would invalidate a signature	保存将使签名失效
+	Save a copy…	保存副本…
+	Choose another file: saving these changes over the signed original would invalidate its signature.	请选择其他文件：将这些更改保存到已签名的原始文件上会使其签名失效。

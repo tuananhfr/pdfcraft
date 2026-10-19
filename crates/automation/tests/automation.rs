@@ -5717,3 +5717,28 @@ fn absolute_gotor_consent_does_not_bypass_validation_or_passwords() {
     assert_eq!(opened["document"]["encrypted"], true);
     assert_eq!(opened["destination_applied"], true);
 }
+
+/// A change a certification does not permit is never saved over the certified file; a copy at
+/// another path is, and the original keeps its bytes.
+#[test]
+fn doc_save_keeps_a_certified_original_intact() {
+    let dir = workdir("certified-save");
+    let p12 = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/../sign/tests/data/ec-p256.p12")).unwrap();
+    let id = pdfcraft_engine::sign::pkcs12::open(&p12, "test").unwrap();
+    let mut s = pdfcraft_engine::Session::new().with_clock(|| 1_700_000_000);
+    let d = s.open("a.pdf", None, std::sync::Arc::new(fixture(1)), None).unwrap();
+    let opts = pdfcraft_engine::SignOptions { page: 0, rect: Some([20.0, 20.0, 160.0, 60.0]), certify: Some(2), ..Default::default() };
+    let certified = s.sign(d, &id, opts).unwrap();
+    std::fs::write(dir.join("certified.pdf"), certified.as_slice()).unwrap();
+
+    let mut a = auto(&dir);
+    let doc = ok(&mut a, "doc_open", json!({ "path": "certified.pdf" }))["doc"].as_u64().unwrap();
+    ok(&mut a, "page_rotate", json!({ "doc": doc, "pages": [1], "degrees": 90 }));
+    let refused = err(&mut a, "doc_save", json!({ "doc": doc })).to_string();
+    assert!(refused.contains("certification signature") && refused.contains("page content") && refused.contains("another path"), "{refused}");
+    assert_eq!(std::fs::read(dir.join("certified.pdf")).unwrap(), certified.as_slice());
+    let copy = ok(&mut a, "doc_save", json!({ "doc": doc, "path": "copy.pdf", "full": false }));
+    assert_eq!(copy["incremental"], true);
+    assert!(std::fs::read(dir.join("copy.pdf")).unwrap().starts_with(&certified));
+    assert_eq!(std::fs::read(dir.join("certified.pdf")).unwrap(), certified.as_slice());
+}
