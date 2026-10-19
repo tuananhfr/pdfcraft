@@ -231,6 +231,17 @@ usage = "Lithuanian UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
 sha256 = "976f627ff5f56ee21a9874e4cbaafd04373542b86d3fc1cad11c1d4aaa71fc99"
 
 [[asset]]
+path = "crates/ui-egui/src/i18n/vi.tsv"
+title = "Vietnamese interface translation catalog"
+author = "ERPCons contributors"
+source = "Contributor-original: clean-room translations of PdfCraft's English UI labels and user-facing messages for ERPCons Văn phòng; terminology per erpcons-office/docs/glossary-vi.md"
+licence = "MIT OR Apache-2.0"
+licence_file = "LICENSE-MIT"
+kind = "translation"
+usage = "Vietnamese UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
+sha256 = "ce7d03289687f1cbcd3b7a637542bc9d35b434d536376ba93586c148d9e5c977"
+
+[[asset]]
 path = "assets/icons/accessibility.svg"
 title = "Lucide icon \"accessibility\""
 author = "Lucide Contributors (portions Cole Bemis, Feather)"

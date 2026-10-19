@@ -147,7 +147,7 @@ fn plural_sl(n: u64) -> usize {
 }
 
 /// The registry. English first: it is the fallback and the source language.
-pub static LANGUAGES: [LangInfo; 22] = [
+pub static LANGUAGES: [LangInfo; 23] = [
     LangInfo { code: "en", name: "English", source: "", plural: plural_one_other, rtl: false, catalog: OnceLock::new() },
     LangInfo { code: "ja", name: "日本語", source: include_str!("ja.tsv"), plural: plural_none, rtl: false, catalog: OnceLock::new() },
     // Simplified Chinese; `zh`, `zh-CN`, `zh-SG` and `zh-Hans-*` locales resolve here (see `candidates`).
@@ -207,6 +207,8 @@ pub static LANGUAGES: [LangInfo; 22] = [
     LangInfo { code: "tr", name: "Türkçe", source: include_str!("tr.tsv"), plural: plural_none, rtl: false, catalog: OnceLock::new() },
     // Lithuanian; every `lt-*` locale (`lt-LT`, `lt_LT.UTF-8`) resolves here. Three plural forms (one, few, other).
     LangInfo { code: "lt", name: "Lietuvių", source: include_str!("lt.tsv"), plural: plural_lithuanian, rtl: false, catalog: OnceLock::new() },
+    // Vietnamese (ERPCons); every `vi-*` locale (`vi-VN`) resolves here. One plural form.
+    LangInfo { code: "vi", name: "Tiếng Việt", source: include_str!("vi.tsv"), plural: plural_none, rtl: false, catalog: OnceLock::new() },
 ];
 
 impl LangInfo {
@@ -3066,5 +3068,79 @@ mod tests {
         let interface: Vec<(&str, &str)> = Lang::all().map(|l| (l.code(), l.name())).collect();
         let dates: Vec<(&str, &str)> = pdfcraft_engine::dates::DATE_LANGUAGES.iter().map(|l| (l.code, l.name)).collect();
         assert_eq!(dates, interface);
+    }
+
+    #[test]
+    fn vietnamese_is_registered() {
+        let vi = Lang::from_code("vi").expect("vi registered");
+        assert_eq!(vi.name(), "Tiếng Việt");
+        assert_eq!(normalize_pref("VI"), Some("vi"));
+        assert_eq!(lang_from_tag("vi_VN.UTF-8"), Some(vi));
+        assert_eq!(lang_from_tag("vi-VN"), Some(vi));
+        assert_eq!(first_supported("vi-VN
+en-US"), Some(vi));
+        assert_eq!(tr(vi, "File"), "Tệp");
+        assert_eq!(tr(vi, "Save as…"), "Lưu Như…");
+        assert_eq!(tr(vi, "Bookmarks"), "Dấu trang");
+        assert_eq!(tr(vi, "Báo cáo của tôi.pdf"), "Báo cáo của tôi.pdf");
+        // Vietnamese nouns don't inflect for number: one form for every count.
+        assert_eq!((0..=3).map(|n| (vi.0.plural)(n)).collect::<Vec<_>>(), [0, 0, 0, 0]);
+        assert_eq!(trn(vi, 1, "{n} page", "{n} pages"), "1 trang");
+        assert_eq!(trn(vi, 2, "{n} page", "{n} pages"), "2 trang");
+        assert_eq!(trn(vi, 5, "{n} field", "{n} fields"), "5 trường");
+        let mut app = crate::PdfCraftApp::default();
+        app.set_option("language", "vi").unwrap();
+        assert_eq!(app.language, "vi");
+        let mut restored = crate::PdfCraftApp::default();
+        restored.restore(&app.persist());
+        assert_eq!(restored.language, "vi");
+    }
+
+    #[test]
+    fn vietnamese_covers_commands_and_catalogue() {
+        let vi = Lang::from_code("vi").expect("vi registered");
+        let mut missing = std::collections::BTreeSet::new();
+        for command in pdfcraft_engine::commands::COMMANDS {
+            missing.extend(Some(command.label).filter(|label| !has(vi, label)));
+            missing.extend(command.menu.filter(|menu| !has(vi, menu)));
+        }
+        for group in pdfcraft_engine::catalog::TOOL_GROUPS {
+            missing.extend(Some(group.label).filter(|label| !has(vi, label)));
+            for section in group.sections {
+                missing.extend(Some(section.title).filter(|title| !has(vi, title)));
+                missing.extend(section.items.iter().map(|item| item.label).filter(|label| !has(vi, label)));
+            }
+        }
+        assert!(missing.is_empty(), "untranslated Vietnamese commands and tools: {missing:#?}");
+    }
+
+    #[test]
+    fn vietnamese_covers_ui_literals() {
+        let vi = Lang::from_code("vi").expect("vi registered");
+        let missing: Vec<_> = scan_ui_literals(true).into_iter().filter(|label| !has(vi, label)).collect();
+        assert!(missing.is_empty(), "untranslated Vietnamese UI literals: {missing:#?}");
+    }
+
+    /// Every key any other bundled catalog carries, so dynamic dialog labels can't fall back either.
+    #[test]
+    fn vietnamese_covers_bundled_catalog_keys() {
+        let vi = Lang::from_code("vi").expect("vi registered");
+        let mut missing = std::collections::BTreeSet::new();
+        for reference in LANGUAGES.iter().filter(|language| language.code != "vi") {
+            let (entries, errors) = catalog::parse_entries(reference.source, reference.plural_forms());
+            assert!(errors.is_empty(), "{}: invalid reference catalog: {errors:?}", reference.code);
+            for entry in entries {
+                let translated = match entry.context.as_str() {
+                    "" => vi.catalog().plain(&entry.source),
+                    "@id" => vi.catalog().id(&entry.source),
+                    "@plural" => entry.source.split_once('|').and_then(|(one, other)| vi.catalog().plural(one, other, 0)),
+                    context => vi.catalog().contextual(context, &entry.source),
+                };
+                if translated.is_none() {
+                    missing.insert((entry.context, entry.source));
+                }
+            }
+        }
+        assert!(missing.is_empty(), "Vietnamese misses bundled catalog keys: {missing:#?}");
     }
 }

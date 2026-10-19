@@ -1,0 +1,2596 @@
+# Vietnamese (vi) catalog. Format: see the header of ja.tsv
+# (context <TAB> source <TAB> translation; @id, @plural and other contexts; escapes \n \t \\).
+# Plural forms: Vietnamese has one (`plural_none`), so @plural rows carry a single translation.
+#
+# Clean-room: every entry was written from the plain meaning of the English label for ERPCons
+# Văn phòng. No proprietary localisation resource, string table or product UI (Acrobat's
+# included) was consulted or copied; tool and command names use the vocabulary Vietnamese users
+# know from office software; terms follow erpcons-office/docs/glossary-vi.md.
+# Product and technology names (PdfCraft, PDF, JavaScript ...) are not translated;
+# the trailing "…" of dialog commands is kept.
+
+	Menu	Menu
+	File	Tệp
+	Edit	Chỉnh sửa
+	Pages	Trang
+	View	Xem
+	Help	Trợ giúp
+	Preferences	Tùy chọn
+	Preferences…	Tùy chọn…
+	Interface language	Ngôn ngữ giao diện
+	Interface size	Kích thước giao diện
+	Auto ({percent}%)	Tự động ({percent}%)
+	Auto follows the system's text size. Pages always render at the display's full resolution.	Tự động sẽ theo cỡ chữ của hệ thống. Trang luôn được hiển thị ở độ phân giải đầy đủ của màn hình.
+	Identity	Danh tính
+	Name on new comments	Tên hiển thị trên chú thích mới
+	Open…	Mở…
+	Open Recent	Mở Gần đây
+	Pin folder to Home…	Ghim Thư mục vào Trang đầu…
+	Folders	Thư mục
+	Pin a folder…	Ghim Thư mục…
+	Pin a folder to Home	Ghim thư mục vào Trang đầu
+	Pin a folder to list its newest PDFs here, such as where your scanner or a synced cloud drive saves them.	Ghim một thư mục để liệt kê các PDF mới nhất trong đó tại đây, ví dụ thư mục mà máy quét hoặc ổ đám mây đồng bộ lưu tệp vào.
+	Unpin	Bỏ ghim
+	Unpin {folder}	Bỏ ghim {folder}
+	Looking for PDFs…	Đang tìm PDF…
+	This folder isn't available right now. It may have moved, or its drive or cloud sync is offline.	Hiện không truy cập được thư mục này. Có thể thư mục đã bị di chuyển, hoặc ổ đĩa hay dịch vụ đồng bộ đám mây chứa nó đang ngoại tuyến.
+	No PDFs in this folder yet	Thư mục này chưa có PDF nào
+	Show less	Thu gọn
+	Show {n} more	Hiện thêm {n}
+	The newest {n} of {total} PDFs	{n} PDF mới nhất trong tổng số {total}
+	Pinned folders need the desktop app	Cần ứng dụng máy tính để ghim thư mục
+	Choose a folder on this computer to pin	Chọn một thư mục trên máy tính này để ghim
+	{folder} is already pinned to Home	{folder} đã được ghim vào Trang đầu
+	You can pin up to {n} folders. Unpin one first.	Bạn chỉ ghim được tối đa {n} thư mục. Hãy bỏ ghim một thư mục trước.
+	Pinned {folder} to Home	Đã ghim {folder} vào Trang đầu
+	No recent files	Không có tệp gần đây
+	New blank PDF	PDF Trống Mới
+	Create PDF from file…	Tạo PDF từ Tệp…
+	Create PDF from images…	Tạo PDF từ Ảnh…
+	Create PDF from clipboard	Tạo PDF từ Bảng tạm
+	Combine files…	Kết hợp Tệp…
+	Save	Lưu
+	Save as…	Lưu Như…
+	Close file	Đóng Tệp
+	Close all	Đóng Tất cả
+	Revert	Hoàn nguyên
+	Print…	In…
+	Document properties…	Thuộc tính Tài liệu…
+	Undo	Hoàn tác
+	Redo	Làm lại
+	Find…	Tìm…
+	Advanced search…	Tìm kiếm Nâng cao…
+	Copy pages	Sao chép Trang
+	Cut pages	Cắt Trang
+	Paste pages	Dán Trang
+	Fit visible	Vừa Phần hiển thị
+	Marquee zoom	Thu phóng Vùng chọn
+	Take a snapshot	Chụp Nhanh
+	Column select	Chọn theo Cột
+	Full screen mode	Chế độ Toàn màn hình
+	Read mode	Chế độ Đọc
+	Next tab	Thẻ Tiếp theo
+	Previous tab	Thẻ Trước
+	Switch light / dark theme	Chuyển Chủ đề Sáng / Tối
+	Comments panel	Ngăn Chú thích
+	Form fields panel	Ngăn Trường Biểu mẫu
+	Clear form	Xóa Biểu mẫu
+	Find tools and commands…	Tìm Công cụ và Lệnh…
+	Zoom	Thu phóng
+	Actual size	Kích thước Thực
+	Zoom to page level	Vừa Trang
+	Fit to width	Vừa Chiều rộng
+	Display theme	Chủ đề Hiển thị
+	Side panels	Ngăn Bên
+	Enable Acrobat JavaScript	Bật Acrobat JavaScript
+	OK	OK
+	Close	Đóng
+	Next / previous match	Kết quả khớp tiếp theo / trước
+	Copy selected text	Sao chép văn bản đã chọn
+	Double-click	Bấm đúp
+	Select a word	Chọn một từ
+	Clear selection / close find	Bỏ chọn / đóng tìm kiếm
+	Zoom in / out (also pinch or {key}-scroll)	Phóng to / thu nhỏ (hoặc chụm ngón tay, hay giữ {key} rồi cuộn)
+	Rotate view	Xoay dạng xem
+	First / last page	Trang đầu / cuối
+	Previous / next page	Trang trước / sau
+	Delete selected pages (Organize)	Xóa các trang đã chọn (Sắp xếp)
+	Select all pages (Organize)	Chọn tất cả trang (Sắp xếp)
+	Home	Trang đầu
+	Open	Mở
+	Open a PDF ({key})	Mở PDF ({key})
+	Dark gray theme	Chủ đề Xám đậm
+	Light theme	Chủ đề Sáng
+	Appearance mode	Chế độ Giao diện
+	Light	Sáng
+	Dark	Tối
+	Active	Đang dùng
+	Dark theme	Chủ đề Tối
+	Appearance settings…	Thiết đặt Giao diện…
+	All tools	Tất cả Công cụ
+	Read	Đọc
+	Convert	Chuyển đổi
+	E-Sign	Ký Điện tử
+	Print ({key})	In ({key})
+	Save ({key})	Lưu ({key})
+	Document properties ({key})	Thuộc tính Tài liệu ({key})
+	Find tools and commands	Tìm Công cụ và Lệnh
+	Fit to height	Vừa Chiều cao
+	Zoom in	Phóng to
+	Zoom out	Thu nhỏ
+	Rotate view clockwise	Xoay Dạng xem theo Chiều kim Đồng hồ
+	Rotate view counterclockwise	Xoay Dạng xem Ngược Chiều kim Đồng hồ
+	Page navigation	Điều hướng Trang
+	Previous view	Dạng xem Trước
+	Next view	Dạng xem Tiếp theo
+	Page display	Hiển thị trang
+	Continuous scrolling	Cuộn Liên tục
+	Two-page view	Dạng xem Hai Trang
+	Single page	Một Trang
+	Show cover page in two-page view	Hiện trang bìa trong dạng xem hai trang
+	Use system setting	Theo thiết đặt hệ thống
+	Light gray	Xám nhạt
+	Dark gray	Xám đậm
+	Comments	Chú thích
+	Bookmarks	Dấu trang
+	Fields	Trường
+	Layers	Lớp
+	Attachments	Tệp đính kèm
+	Signatures	Chữ ký
+	Accessibility Checker	Bộ kiểm tra Trợ năng
+	Search	Tìm kiếm
+	Compare	So sánh
+	Page thumbnails	Hình thu nhỏ Trang
+	Form fields	Trường Biểu mẫu
+	Zoom out ({key})	Thu nhỏ ({key})
+	Zoom in ({key})	Phóng to ({key})
+	Rotate view clockwise ({key})	Xoay Dạng xem theo Chiều kim Đồng hồ ({key})
+	Toggle fit page / fit width	Chuyển giữa Vừa Trang / Vừa Chiều rộng
+	Next page	Trang Tiếp theo
+	Previous page	Trang Trước
+	Current page — type a page number or label (such as iv) and press Enter	Trang hiện tại — nhập số trang hoặc nhãn trang (ví dụ iv) rồi nhấn Enter
+	Welcome to PdfCraft	Chào mừng bạn đến với PdfCraft
+	An open-source PDF workbench — local, private, and scriptable.	Bàn làm việc PDF mã nguồn mở — chạy cục bộ, riêng tư và tự động hóa được bằng script.
+	Recommended tools	Công cụ Đề xuất
+	Use now	Dùng ngay
+	Open file	Mở Tệp
+	Recent	Gần đây
+	Files you open in PdfCraft appear here. Drop a PDF anywhere to open it.	Các tệp bạn mở trong PdfCraft sẽ hiện ở đây. Thả một tệp PDF vào bất kỳ đâu để mở.
+	Privacy	Quyền riêng tư
+	PdfCraft works offline. No telemetry, no account, and no cloud processing unless you add a provider.	PdfCraft hoạt động ngoại tuyến. Không thu thập dữ liệu sử dụng, không cần tài khoản và không xử lý trên đám mây, trừ khi bạn thêm một nhà cung cấp.
+	Scripts run in a sandbox without file or network access. With JavaScript off, Acrobat's standard format, validate and calculate functions still work.	Script chạy trong môi trường cách ly, không truy cập được tệp hay mạng. Khi tắt JavaScript, các hàm định dạng, xác thực và tính toán chuẩn của Acrobat vẫn hoạt động.
+	Back to all tools	Quay lại Tất cả Công cụ
+	Close panel	Đóng Ngăn
+	View less	Thu gọn
+	View more	Xem thêm
+	Available	Khả dụng
+	Ready	Sẵn sàng
+	Search tools and commands…	Tìm kiếm công cụ và lệnh…
+	No matching tools	Không có công cụ phù hợp
+	Tool	Công cụ
+	Command	Lệnh
+	Add a sticky note	Thêm Ghi chú Dán
+	Add a text box	Thêm Hộp Văn bản
+	Highlight text	Tô sáng Văn bản
+	Underline text	Gạch dưới Văn bản
+	Strikethrough text	Gạch ngang Văn bản
+	Squiggly underline text	Gạch dưới Lượn sóng
+	Draw freehand	Vẽ Tự do
+	Draw a line	Vẽ Đường thẳng
+	Draw an arrow	Vẽ Mũi tên
+	Draw a rectangle	Vẽ Hình chữ nhật
+	Draw an oval	Vẽ Hình bầu dục
+	Draw a polygon	Vẽ Đa giác
+	Draw connected lines	Vẽ Đường gấp khúc
+	Draw a cloud	Vẽ Đám mây
+	Add a callout	Thêm Chú dẫn
+	Insert text	Chèn Văn bản
+	Replace text	Thay thế Văn bản
+	Attach a file	Đính kèm Tệp
+	Erase drawings	Xóa Nét vẽ
+	Flatten comments	Làm phẳng Chú thích
+	Import comments…	Nhập Chú thích…
+	Add a stamp	Thêm Con dấu
+	Export all comments to data file…	Xuất Tất cả Chú thích ra Tệp Dữ liệu…
+	Hide all comments	Ẩn Tất cả Chú thích
+	Summarize comments	Tóm tắt Chú thích
+	Import form data…	Nhập Dữ liệu Biểu mẫu…
+	Export form data…	Xuất Dữ liệu Biểu mẫu…
+	PDF/A…	PDF/A…
+	Action Wizard…	Trình hướng dẫn Hành động…
+	Prepare for distribution…	Chuẩn bị để Phân phối…
+	Optimize scanned documents…	Tối ưu Tài liệu Quét…
+	Compare files…	So sánh Tệp…
+	Detect form fields	Phát hiện Trường Biểu mẫu
+	Merge data files into spreadsheet…	Gộp Tệp Dữ liệu vào Bảng tính…
+	Flatten form fields	Làm phẳng Trường Biểu mẫu
+	Prepare a form	Chuẩn bị Biểu mẫu
+	Tab order: by rows	Thứ tự Tab: theo hàng
+	Tab order: by columns	Thứ tự Tab: theo cột
+	Tab order: by document structure	Thứ tự Tab: theo cấu trúc tài liệu
+	Add text	Thêm Văn bản
+	Edit text & images	Sửa Văn bản & Ảnh
+	Add or edit links	Thêm hoặc Sửa Nối kết
+	Create links from URLs	Tạo Nối kết từ URL
+	Remove all links	Loại bỏ Tất cả Nối kết
+	No links to remove	Không có nối kết nào để loại bỏ
+	Removed 1 link	Đã loại bỏ 1 nối kết
+	Removed {n} links	Đã loại bỏ {n} nối kết
+	Add Bates numbering…	Thêm Đánh số Bates…
+	Add image…	Thêm Ảnh…
+	Redact text and images	Che Văn bản và Ảnh
+	Redact pages…	Che Trang…
+	Find text and redact…	Tìm Văn bản và Che…
+	Redaction properties…	Thuộc tính Che thông tin…
+	Apply redactions…	Áp dụng Che thông tin…
+	Clear redaction marks	Xóa Dấu Che thông tin
+	Remove hidden information…	Loại bỏ Thông tin Ẩn…
+	Sanitize document…	Làm sạch Tài liệu…
+	Field properties…	Thuộc tính Trường…
+	Add a text field	Thêm Trường Văn bản
+	Add a checkbox	Thêm Hộp kiểm
+	Add a radio button	Thêm Nút Tùy chọn
+	Add a drop-down list	Thêm Danh sách Thả xuống
+	Add a list box	Thêm Hộp Danh sách
+	Add a button	Thêm Nút
+	Add an image field	Thêm Trường Ảnh
+	Add a date field	Thêm Trường Ngày
+	Add a digital signature field	Thêm Trường Chữ ký Số
+	Digitally sign	Ký số
+	Certify (visible signature)	Chứng nhận (chữ ký hiển thị)
+	Certify (invisible signature)	Chứng nhận (chữ ký ẩn)
+	Validate all signatures	Xác thực Tất cả Chữ ký
+	Signatures panel	Ngăn Chữ ký
+	Fill & Sign: add text	Điền & Ký: thêm văn bản
+	Fill & Sign: checkmark	Điền & Ký: dấu kiểm
+	Fill & Sign: cross	Điền & Ký: dấu chéo
+	Fill & Sign: dot	Điền & Ký: dấu chấm
+	Fill & Sign: line	Điền & Ký: đường kẻ
+	Fill & Sign: date	Điền & Ký: ngày
+	Fill & Sign: sign	Điền & Ký: ký
+	Fill & Sign: initials	Điền & Ký: chữ ký tắt
+	Export to image…	Xuất ra Ảnh…
+	Reduce file size…	Giảm Kích thước Tệp…
+	Optimize PDF…	Tối ưu PDF…
+	Export to text…	Xuất ra Văn bản…
+	Export to Word…	Xuất ra Word…
+	Export to PowerPoint…	Xuất ra PowerPoint…
+	Export to HTML…	Xuất ra HTML…
+	Export to RTF…	Xuất ra RTF…
+	JavaScript console…	Bảng điều khiển JavaScript…
+	Document JavaScripts…	JavaScript của Tài liệu…
+	Recognize text…	Nhận dạng Văn bản…
+	Recognize text in multiple files…	Nhận dạng Văn bản trong Nhiều Tệp…
+	Check for accessibility…	Kiểm tra Trợ năng…
+	Open accessibility report	Mở Báo cáo Trợ năng
+	Change reading options…	Thay đổi Tùy chọn Đọc…
+	Add alternate text…	Thêm Văn bản Thay thế…
+	Export all images…	Xuất Tất cả Ảnh…
+	Add header & footer…	Thêm Đầu trang & Chân trang…
+	Update header & footer…	Cập nhật Đầu trang & Chân trang…
+	Remove header & footer	Loại bỏ Đầu trang & Chân trang
+	Add watermark…	Thêm Hình mờ…
+	Update watermark…	Cập nhật Hình mờ…
+	Remove watermark	Loại bỏ Hình mờ
+	Add background…	Thêm Nền…
+	Update background…	Cập nhật Nền…
+	Remove background	Loại bỏ Nền
+	Protect using password…	Bảo vệ bằng Mật khẩu…
+	Remove security	Loại bỏ Bảo mật
+	Security properties…	Thuộc tính Bảo mật…
+	Organize pages	Sắp xếp Trang
+	New bookmark	Dấu trang Mới
+	New bookmarks from structure	Dấu trang Mới từ Cấu trúc
+	Rotate pages clockwise	Xoay Trang theo Chiều kim Đồng hồ
+	Rotate pages counterclockwise	Xoay Trang Ngược Chiều kim Đồng hồ
+	Delete pages	Xóa Trang
+	Insert blank page	Chèn Trang Trống
+	Rotate pages…	Xoay Trang…
+	Duplicate pages	Nhân đôi Trang
+	Crop pages	Cắt xén Trang
+	Set page boxes…	Đặt Hộp Trang…
+	Insert pages from file…	Chèn Trang từ Tệp…
+	Replace pages…	Thay thế Trang…
+	Extract pages…	Trích xuất Trang…
+	Split document…	Tách Tài liệu…
+	Number pages…	Đánh số Trang…
+	Keyboard shortcuts	Phím tắt
+	PdfCraft on GitHub	PdfCraft trên GitHub
+	Check for updates…	Kiểm tra Bản cập nhật…
+	About PdfCraft	Giới thiệu PdfCraft
+	Export a PDF	Xuất PDF
+	Export to	Xuất ra
+	Microsoft Word (.docx)	Microsoft Word (.docx)
+	Spreadsheet (.xlsx)	Bảng tính (.xlsx)
+	Presentation (.pptx)	Bản trình bày (.pptx)
+	Image (PNG)	Ảnh (PNG)
+	Export all images	Xuất Tất cả Ảnh
+	HTML web page	Trang web HTML
+	Rich Text Format (.rtf)	Định dạng RTF (.rtf)
+	Text (plain)	Văn bản (thuần)
+	PostScript / EPS	PostScript / EPS
+	Fill & Sign	Điền & Ký
+	Fill	Tô màu
+	Checkmark	Dấu kiểm
+	Cross	Dấu chéo
+	Dot	Dấu chấm
+	Line	Đường
+	Date	Ngày
+	Signature	Chữ ký
+	Initials	Chữ ký tắt
+	Edit a PDF	Chỉnh sửa PDF
+	Modify page	Sửa đổi Trang
+	Rotate pages	Xoay Trang
+	Insert pages	Chèn Trang
+	Extract pages	Trích xuất Trang
+	Add content	Thêm Nội dung
+	Text	Văn bản
+	Image	Ảnh
+	Header and footer	Đầu trang và Chân trang
+	Watermark	Hình mờ
+	Link	Nối kết
+	Bates numbering	Đánh số Bates
+	Background	Nền
+	Attach file	Đính kèm Tệp
+	Create a PDF	Tạo PDF
+	Create from	Tạo từ
+	Single file	Một Tệp
+	Multiple files	Nhiều Tệp
+	Separate PDFs	Các PDF Riêng lẻ
+	Images	Ảnh
+	Clipboard	Bảng tạm
+	Blank page	Trang Trống
+	Combine files	Kết hợp Tệp
+	Combine	Kết hợp
+	Add files to combine	Thêm tệp để kết hợp
+	Page options	Tùy chọn Trang
+	Page grid	Lưới Trang
+	Rotate	Xoay
+	Delete	Xóa
+	Extract	Trích xuất
+	Insert	Chèn
+	Replace	Thay thế
+	Split	Tách
+	More	Thêm
+	Set page boxes	Đặt Hộp Trang
+	Page labels	Nhãn Trang
+	Page transitions	Chuyển tiếp Trang
+	Add comments	Thêm Chú thích
+	Markup	Đánh dấu
+	Sticky note	Ghi chú Dán
+	Underline	Gạch dưới
+	Strikethrough	Gạch ngang chữ
+	Squiggly underline	Gạch dưới Lượn sóng
+	Text box	Hộp Văn bản
+	Drawing	Hình vẽ
+	Rectangle	Hình chữ nhật
+	Oval	Hình bầu dục
+	Arrow	Mũi tên
+	Cloud	Đám mây
+	Stamp	Con dấu
+	Review	Xem lại
+	Comment list	Danh sách Chú thích
+	Scan & OCR	Quét & OCR
+	Recognize text	Nhận dạng Văn bản
+	In this file	Trong tệp này
+	In multiple files	Trong nhiều tệp
+	Enhance scanned file	Cải thiện Tệp Quét
+	Correct recognized text	Sửa Văn bản đã Nhận dạng
+	Protect a PDF	Bảo vệ PDF
+	Protect	Bảo vệ
+	Protect with password	Bảo vệ bằng Mật khẩu
+	Remove hidden information	Loại bỏ Thông tin Ẩn
+	Advanced options	Tùy chọn Nâng cao
+	Encrypt with certificate	Mã hóa bằng Chứng thư số
+	Security properties	Thuộc tính Bảo mật
+	Redact a PDF	Che thông tin PDF
+	Redact	Che thông tin
+	Redact pages	Che Trang
+	Find text and redact	Tìm Văn bản và Che
+	Set properties	Đặt Thuộc tính
+	Sanitize document	Làm sạch Tài liệu
+	Compress a PDF	Nén PDF
+	Optimize	Tối ưu
+	Reduce file size	Giảm Kích thước Tệp
+	Advanced optimization	Tối ưu Nâng cao
+	Audit space usage	Phân tích Dung lượng
+	Field list	Danh sách Trường
+	Field properties	Thuộc tính trường
+	Tab order by rows	Thứ tự Tab theo Hàng
+	Tab order by columns	Thứ tự Tab theo Cột
+	Import data	Nhập Dữ liệu
+	Export data	Xuất Dữ liệu
+	Add form components	Thêm Thành phần Biểu mẫu
+	Text field	Trường Văn bản
+	Checkbox	Hộp kiểm
+	Radio button	Nút Tùy chọn
+	Drop-down list	Danh sách Thả xuống
+	List box	Hộp Danh sách
+	Button	Nút
+	Image field	Trường Ảnh
+	Date field	Trường Ngày
+	Digital signature	Chữ ký Số
+	Stamps	Con dấu
+	Stamp palette	Bảng Con dấu
+	Use a certificate	Dùng Chứng thư số
+	Certificates	Chứng thư số
+	Timestamp	Dấu thời gian
+	Use print production	Dùng Chế bản In
+	Print production	Chế bản In
+	Output preview	Xem trước Đầu ra
+	Preflight	Kiểm tra Trước In
+	Convert colors	Chuyển đổi Màu
+	Add printer marks	Thêm Dấu In
+	Fix hairlines	Sửa Nét Mảnh
+	Measure objects	Đo Đối tượng
+	Measure	Đo
+	Measuring tool	Công cụ Đo
+	Geospatial location	Vị trí Địa lý
+	Compare files	So sánh Tệp
+	Select files to compare	Chọn tệp để so sánh
+	Use guided actions	Dùng Hành động Có hướng dẫn
+	Actions list	Danh sách Hành động
+	Action Wizard	Trình hướng dẫn Hành động
+	Make accessible	Tăng Trợ năng
+	Prepare for distribution	Chuẩn bị để Phân phối
+	Optimize scanned documents	Tối ưu Tài liệu Quét
+	Archive documents	Lưu trữ Tài liệu
+	Prepare for accessibility	Chuẩn bị Trợ năng
+	Accessibility	Trợ năng
+	Automatically tag PDF	Tự động Gắn thẻ PDF
+	Change reading options	Thay đổi Tùy chọn Đọc
+	Check for accessibility	Kiểm tra Trợ năng
+	Add alternate text	Thêm Văn bản Thay thế
+	Fix reading order	Sửa Thứ tự Đọc
+	Apply PDF standards	Áp dụng Chuẩn PDF
+	Standards	Chuẩn
+	Save as PDF/A	Lưu dạng PDF/A
+	Save as PDF/X	Lưu dạng PDF/X
+	Save as PDF/UA	Lưu dạng PDF/UA
+	Add search index	Thêm Chỉ mục Tìm kiếm
+	Index	Chỉ mục
+	Manage embedded index	Quản lý Chỉ mục Nhúng
+	Use JavaScript	Dùng JavaScript
+	JavaScript	JavaScript
+	Console	Bảng điều khiển
+	Document JavaScripts	JavaScript của Tài liệu
+	Document actions	Hành động Tài liệu
+	AI assistant	Trợ lý AI
+	Bring your own model (off by default)	Dùng mô hình của riêng bạn (mặc định tắt)
+	Summarize	Tóm tắt
+	Ask about this document	Hỏi về tài liệu này
+	Translate	Dịch
+	pages	trang
+	Planned	Dự kiến
+	Planned for milestone	Dự kiến cho mốc
+	open to see what it will include	mở để xem nội dung sẽ có
+	Optional: needs an AI provider you configure	Tùy chọn: cần nhà cung cấp AI do bạn cấu hình
+	Coming in milestone	Sẽ có trong mốc
+	Items marked Ready work today.	Các mục được đánh dấu Sẵn sàng đã dùng được ngay.
+	Preview	Xem trước
+	Edit fields	Sửa Trường
+	Try the form as people filling it in will see it	Dùng thử biểu mẫu như người điền sẽ thấy
+	Redact all	Che Tất cả
+	Clear all	Xóa Tất cả
+	Rotate page	Xoay Trang
+	Delete page	Xóa Trang
+	Move page	Di chuyển Trang
+	Move pages	Di chuyển Trang
+	Duplicate page	Nhân đôi Trang
+	Replace page	Thay thế Trang
+	Replace pages	Thay thế Trang
+	Crop page	Cắt xén Trang
+	Cancel	Hủy
+	Don't save	Không Lưu
+	Apply	Áp dụng
+	Run	Chạy
+	Clear	Xóa
+	Sanitize	Làm sạch
+	Mark all	Đánh dấu Tất cả
+	Save changes to “{name}” before closing?	Lưu thay đổi cho “{name}” trước khi đóng?
+	Your changes will be lost if you don't save them.	Nếu không lưu, các thay đổi của bạn sẽ bị mất.
+	Password required	Cần mật khẩu
+	“{name}” is protected. Enter a password to open it.	“{name}” được bảo vệ. Nhập mật khẩu để mở.
+	Password	Mật khẩu
+	Incorrect password. Try again.	Mật khẩu không đúng. Hãy thử lại.
+	Recognize Text	Nhận dạng Văn bản
+	Password protection will be applied when you save	Bảo vệ bằng mật khẩu sẽ được áp dụng khi bạn lưu
+	Saved the print-ready PDF to {path}	Đã lưu PDF sẵn sàng để in vào {path}
+	Could not save: {e}	Không lưu được: {e}
+	Earlier in tab order	Lên trước trong thứ tự Tab
+	Later in tab order	Lùi xuống trong Thứ tự Tab
+	From:	Từ:
+	To:	Đến:
+	High Resolution	Độ phân giải Cao
+	Print	In
+	Verify to see what the document needs.	Kiểm tra để biết tài liệu còn cần những gì.
+	Set Page Boxes	Đặt Hộp Trang
+	Signature panel	Ngăn chữ ký
+	{month} {day}, {y}	{day} {month} năm {y}
+	The document's security settings don't allow filling in form fields	Thiết đặt bảo mật của tài liệu không cho phép điền trường biểu mẫu
+	{name} is read-only	{name} chỉ đọc
+	{name} has no action	{name} không có hành động
+	Previous month	Tháng trước
+	Next month	Tháng sau
+	January	Tháng Một
+	February	Tháng Hai
+	March	Tháng Ba
+	April	Tháng Tư
+	May	Tháng Năm
+	June	Tháng Sáu
+	July	Tháng Bảy
+	August	Tháng Tám
+	September	Tháng Chín
+	October	Tháng Mười
+	November	Tháng Mười Một
+	December	Tháng Mười Hai
+	Done	Xong
+	This certificate is in your list of trusted certificates.	Chứng thư số này có trong danh sách chứng thư số tin cậy của bạn.
+	This certificate is trusted through a certificate above it in the chain.	Chứng thư số này được tin cậy nhờ một chứng thư số cấp trên trong chuỗi.
+	This certificate is not trusted. Signatures made with it show an unknown identity.	Chứng thư số này không được tin cậy. Chữ ký tạo bằng chứng thư này sẽ hiện danh tính không xác định.
+	Add to Trusted Certificates	Thêm vào Chứng thư số Tin cậy
+	Export…	Xuất…
+	PDF Optimizer	Trình Tối ưu PDF
+	Discard Objects	Loại bỏ Đối tượng
+	Discard User Data	Loại bỏ Dữ liệu Người dùng
+	Clean Up	Dọn dẹp
+	Color Images	Ảnh Màu
+	Grayscale Images	Ảnh Thang xám
+	Bicubic downsampling to	Giảm mẫu bicubic xuống
+	for images above	đối với ảnh trên
+	Compression	Nén
+	ZIP	ZIP
+	Retain existing	Giữ nguyên hiện có
+	Minimum	Giá trị Nhỏ nhất
+	Low	Thấp
+	High	Cao
+	Maximum	Giá trị Lớn nhất
+	Each image is measured where pages draw it; an image is replaced only if the result is smaller.	Mỗi ảnh được đo theo kích thước hiển thị trên trang; ảnh chỉ được thay khi kết quả nhỏ hơn.
+	Discard all links, actions and JavaScript	Loại bỏ mọi nối kết, hành động và JavaScript
+	Discard alternate images	Loại bỏ ảnh thay thế
+	Discard embedded page thumbnails	Loại bỏ hình thu nhỏ trang được nhúng
+	Discard document tags	Loại bỏ thẻ tài liệu
+	Discard embedded print settings	Loại bỏ thiết đặt in được nhúng
+	Discard bookmarks	Loại bỏ dấu trang
+	Discard hidden layer content	Loại bỏ nội dung lớp ẩn
+	Discard all comments, forms and multimedia	Loại bỏ mọi chú thích, biểu mẫu và đa phương tiện
+	Discard document information and metadata	Loại bỏ thông tin và siêu dữ liệu tài liệu
+	Discard all object data (file attachments)	Loại bỏ mọi dữ liệu đối tượng (tệp đính kèm)
+	Discard private data of other applications	Loại bỏ dữ liệu riêng của ứng dụng khác
+	Discard hidden text	Loại bỏ văn bản ẩn
+	Use Flate to encode streams that are not encoded	Dùng Flate để mã hóa các luồng chưa được mã hóa
+	Remove invalid links and bookmarks	Gỡ bỏ nối kết và dấu trang không hợp lệ
+	Remove unreferenced named destinations	Gỡ bỏ đích có tên không được tham chiếu
+	Compress document structure (object streams)	Nén cấu trúc tài liệu (luồng đối tượng)
+	Remove unused objects and merge identical ones	Gỡ bỏ đối tượng không dùng và gộp các đối tượng trùng nhau
+	Audit space usage…	Kiểm tra dung lượng sử dụng…
+	Space Audit	Kiểm tra Dung lượng
+	Bytes	Byte
+	Content Streams	Luồng Nội dung
+	X Object Forms	Biểu mẫu XObject
+	Structure Info	Thông tin Cấu trúc
+	Thumbnails	Hình thu nhỏ
+	Named Destinations	Đích có Tên
+	Color Spaces	Không gian Màu
+	Shadings	Tô bóng
+	Patterns (graphics objects)	Mẫu tô (đối tượng đồ họa)
+	Extended Graphics States	Trạng thái Đồ họa Mở rộng
+	Embedded Files	Tệp Nhúng
+	Document Overhead	Dữ liệu Phụ của Tài liệu
+	Total	Tổng cộng
+	Text Field Properties	Thuộc tính Trường Văn bản
+	Check Box Properties	Thuộc tính Hộp kiểm
+	Radio Button Properties	Thuộc tính Nút Tùy chọn
+	Dropdown Properties	Thuộc tính Danh sách Thả xuống
+	List Box Properties	Thuộc tính Hộp Danh sách
+	Button Properties	Thuộc tính Nút
+	Digital Signature Properties	Thuộc tính Chữ ký số
+	Position	Vị trí
+	Options	Tùy chọn
+	Validate	Xác thực
+	Calculate	Tính toán
+	Actions	Hành động
+	This field is locked. Unlock it to change its properties.	Trường này đã bị khóa. Hãy mở khóa để thay đổi thuộc tính.
+	Tooltip:	Chú giải công cụ:
+	Common Properties	Thuộc tính Chung
+	Read Only	Chỉ đọc
+	Required	Bắt buộc
+	Font Size:	Cỡ Phông:
+	Auto	Tự động
+	Text Color:	Màu Văn bản:
+	Borders and Colors	Viền và Màu
+	Border Color:	Màu Viền:
+	Fill Color:	Màu Tô:
+	No color	Không màu
+	Beveled	Vát cạnh
+	Left:	Trái:
+	Bottom:	Dưới:
+	Width:	Chiều rộng:
+	Height:	Chiều cao:
+	Points from the page's bottom-left corner.	Điểm, tính từ góc dưới bên trái của trang.
+	Alignment:	Căn chỉnh:
+	Default Value:	Giá trị Mặc định:
+	Multi-line	Nhiều dòng
+	Scroll long text	Cuộn văn bản dài
+	Allow Rich Text Formatting	Cho phép Định dạng Văn bản Phong phú
+	Limit of	Giới hạn
+	characters	ký tự
+	Field is used for file selection	Trường dùng để chọn tệp
+	Check spelling	Kiểm tra chính tả
+	Comb of	Chia ô theo
+	Export Value: {on}	Giá trị Xuất: {on}
+	Check box is checked by default	Hộp kiểm được chọn theo mặc định
+	Button is checked by default	Nút được chọn theo mặc định
+	Buttons with the same name and value are selected in unison	Các nút cùng tên và cùng giá trị được chọn đồng thời
+	Item:	Mục:
+	Item List	Danh sách Mục
+	Up	Lên
+	Delete {o}	Xóa {o}
+	Add the choices people pick from.	Thêm các lựa chọn để người dùng chọn.
+	Default:	Mặc định:
+	(none)	(không có)
+	Sort items	Sắp xếp các mục
+	Allow user to enter custom text	Cho phép người dùng nhập văn bản tùy chỉnh
+	Multiple selection	Chọn nhiều
+	Commit selected value immediately	Xác nhận giá trị đã chọn ngay lập tức
+	Number	Số
+	Percentage	Phần trăm
+	Time	Giờ
+	Special	Đặc biệt
+	Select format category:	Chọn loại định dạng:
+	The value is shown as typed.	Giá trị được hiển thị đúng như khi nhập.
+	Decimal places:	Số chữ số thập phân:
+	Separator style:	Kiểu dấu phân cách:
+	Currency symbol:	Ký hiệu tiền tệ:
+	Before the number	Trước số
+	Negative number style:	Kiểu số âm:
+	Format:	Định dạng:
+	Custom:	Tùy chỉnh:
+	Zip Code	Mã bưu chính
+	Zip Code + 4	Mã bưu chính + 4
+	Phone Number	Số điện thoại
+	Social Security Number	Số An sinh Xã hội
+	Arbitrary Mask	Mặt nạ Tùy ý
+	Mask:	Mặt nạ:
+	9 digit, A letter, O letter or digit, X any character	9 chữ số, A chữ cái, O chữ cái hoặc chữ số, X ký tự bất kỳ
+	Example: {sample}	Ví dụ: {sample}
+	Field value is not validated	Không xác thực giá trị trường
+	Field value is in range:	Giá trị trường nằm trong khoảng:
+	Add an Action	Thêm Hành động
+	Select Trigger:	Chọn Sự kiện Kích hoạt:
+	Mouse Up	Nhả Chuột
+	Mouse Down	Nhấn Chuột
+	Mouse Enter	Chuột Đi vào
+	Mouse Exit	Chuột Rời khỏi
+	On Focus	Nhận Tiêu điểm
+	On Blur	Mất Tiêu điểm
+	Select Action:	Chọn Hành động:
+	Open a web link	Mở nối kết web
+	Reset a form	Đặt lại biểu mẫu
+	Execute a menu item	Thực hiện mục menu
+	Show a field	Hiện trường
+	Hide a field	Ẩn trường
+	Submit a form	Gửi biểu mẫu
+	Fields to reset (comma-separated; empty: all)	Trường cần đặt lại (phân cách bằng dấu phẩy; để trống: tất cả)
+	Print, NextPage, PrevPage, FirstPage or LastPage	Print, NextPage, PrevPage, FirstPage hoặc LastPage
+	Field names (comma-separated)	Tên trường (phân cách bằng dấu phẩy)
+	URL to submit to	URL nhận dữ liệu gửi
+	Script:	Tập lệnh:
+	Value:	Giá trị:
+	No actions	Không có hành động
+	Value is not calculated	Không tính giá trị
+	Value is the	Giá trị là
+	sum (+)	tổng (+)
+	product (x)	tích (x)
+	average	trung bình
+	minimum	giá trị nhỏ nhất
+	maximum	giá trị lớn nhất
+	of the following fields:	của các trường sau:
+	Simplified field notation:	Ký hiệu trường đơn giản:
+	Field names with + - * / and parentheses; put \\ before spaces in names.	Tên trường với + - * / và dấu ngoặc đơn; đặt \\ trước dấu cách trong tên.
+	Finding document fonts…	Đang tìm phông của tài liệu…
+	Installed fonts…	Phông đã cài đặt…
+	Keep source fonts	Giữ phông gốc
+	Load font…	Tải phông…
+	No openly licensed document fonts found. Load a font file.	Không tìm thấy phông tài liệu nào có giấy phép mở. Hãy tải một tệp phông.
+	Format text	Định dạng văn bản
+	Bold	Đậm
+	Italic	Nghiêng
+	Align left	Căn trái
+	Centre	Căn giữa
+	Align right	Căn phải
+	Justify	Căn đều
+	Thai and Arabic use regular fallback fonts when available.	Tiếng Thái và tiếng Ả Rập dùng phông thay thế kiểu thường khi có sẵn.
+	Edit image	Chỉnh sửa ảnh
+	Rotate counterclockwise	Xoay ngược chiều kim đồng hồ
+	Rotate clockwise	Xoay theo chiều kim đồng hồ
+	Flip horizontal	Lật ngang
+	Flip vertical	Lật dọc
+	Replace image	Thay ảnh
+	Crop (% trimmed from each side)	Cắt xén (% cắt bớt mỗi cạnh)
+	Click on the page to add text; each click starts a new box, and ✓ finishes. Drag items to move them, drag a corner to resize, double-click text to edit it.	Bấm vào trang để thêm văn bản; mỗi lần bấm tạo một hộp mới, bấm ✓ để hoàn tất. Kéo các mục để di chuyển, kéo một góc để đổi kích thước, bấm đúp vào văn bản để chỉnh sửa.
+	Choose an image	Chọn ảnh
+	Export to Image	Xuất ra Ảnh
+	Export to Text	Xuất ra Văn bản
+	Export All Images	Xuất Tất cả Ảnh
+	Resolution	Độ phân giải
+	Format	Định dạng
+	Quality	Chất lượng
+	One {f} file per page, named after the document.	Mỗi trang một tệp {f}, đặt tên theo tài liệu.
+	Exclude images smaller than	Bỏ qua ảnh nhỏ hơn
+	No limit	Không giới hạn
+	Each image once, named after the document and page. JPEG images are saved unchanged; others as PNG.	Mỗi ảnh xuất một lần, đặt tên theo tài liệu và trang. Ảnh JPEG được lưu nguyên trạng; ảnh khác lưu dạng PNG.
+	Plain text in reading order; pages are separated by form feeds.	Văn bản thuần theo thứ tự đọc; các trang được ngăn cách bằng ký tự ngắt trang.
+	Create {what}	Tạo {what}
+	initials	chữ ký tắt
+	signature	chữ ký
+	Create Custom Stamp	Tạo Con dấu Tùy chỉnh
+	From {file}	Từ {file}
+	Category:	Thể loại:
+	e.g. My stamps	vd: Con dấu của tôi
+	Name:	Tên:
+	Custom	Tùy chỉnh
+	Delete stamp	Xóa con dấu
+	Create custom stamp…	Tạo con dấu tùy chỉnh…
+	From a PDF page or an image	Từ một trang PDF hoặc ảnh
+	Line spacing	Giãn cách dòng
+	Character spacing	Giãn cách ký tự
+	Horizontal scale	Tỷ lệ ngang
+	Rotate Clockwise	Xoay Theo chiều Kim đồng hồ
+	Rotate Counterclockwise	Xoay Ngược chiều Kim đồng hồ
+	Flip Horizontal	Lật Ngang
+	Flip Vertical	Lật Dọc
+	Replace Image…	Thay Ảnh…
+	Save Image As…	Lưu Ảnh Như…
+	Copy Image	Sao chép Ảnh
+	The image has been copied ({w} × {h} pixels)	Đã sao chép ảnh ({w} × {h} điểm ảnh)
+	Couldn't copy the image: {e}	Không thể sao chép ảnh: {e}
+	Copy Image in Original Format	Sao chép Ảnh ở Định dạng Gốc
+	The image has been copied as a {ext} file	Đã sao chép ảnh dưới dạng tệp {ext}
+	The page has changed; select the image again	Trang đã thay đổi; hãy chọn lại ảnh
+	Check for updates	Kiểm tra cập nhật
+	No check has run yet.	Chưa kiểm tra lần nào.
+	Checking for a newer version…	Đang kiểm tra phiên bản mới hơn…
+	PdfCraft {v} is available.	Đã có PdfCraft {v}.
+	You have version {c}. Download the new version from its release page.	Bạn đang dùng phiên bản {c}. Hãy tải phiên bản mới từ trang phát hành.
+	PdfCraft {c} is up to date.	PdfCraft {c} đã là phiên bản mới nhất.
+	Couldn't check for updates: {e}	Không thể kiểm tra cập nhật: {e}
+	You have version {c}. All releases are listed at {page}.	Bạn đang dùng phiên bản {c}. Mọi bản phát hành đều có tại {page}.
+	Asks GitHub for the latest release. Nothing is downloaded or installed automatically.	Hỏi GitHub về bản phát hành mới nhất. Không có gì được tự động tải xuống hay cài đặt.
+	Download	Tải xuống
+	Later	Để sau
+	none	không có
+	Declared conformance: {shown}	Chuẩn tuân thủ đã khai báo: {shown}
+	Output intent: {list}	Mục đích đầu ra: {list}
+	Conformance level:	Mức tuân thủ:
+	No problems found: the document conforms to {level}.	Không có sự cố: tài liệu tuân thủ {level}.
+	 (page {p})	 (trang {p})
+	  · not fixable here	  · không sửa được ở đây
+	Verify	Kiểm tra
+	Box	Hộp
+	Units	Đơn vị
+	Set to zero	Đặt về 0
+	Current page ({n})	Trang hiện tại ({n})
+	Subset	Tập con
+	Update	Cập nhật
+	Add	Thêm
+	{verb} Header and Footer	{verb} Đầu trang và Chân trang
+	{verb} Watermark	{verb} Hình mờ
+	{verb} Background	{verb} Nền
+	Margins (in)	Lề (in)
+	Left Header Text	Văn bản Đầu trang Trái
+	Center Header Text	Văn bản Đầu trang Giữa
+	Right Header Text	Văn bản Đầu trang Phải
+	Left Footer Text	Văn bản Chân trang Trái
+	Center Footer Text	Văn bản Chân trang Giữa
+	Right Footer Text	Văn bản Chân trang Phải
+	Insert Page Number	Chèn Số Trang
+	Insert Date	Chèn Ngày
+	Start page number	Số trang bắt đầu
+	Source	Nguồn
+	Fit to page	Vừa trang
+	Rotation	Xoay
+	Appear behind page	Hiển thị phía sau trang
+	Appear on top of page	Hiển thị phía trên trang
+	Offset from centre	Độ lệch so với tâm
+	From colour	Từ màu
+	Page Range Options	Tùy chọn Phạm vi Trang
+	Preview: page {p} of {n}	Xem trước: trang {p} trên {n}
+	Applies to 1 page	Áp dụng cho 1 trang
+	Applies to {n} pages	Áp dụng cho {n} trang
+	Replaces the existing one on those pages.	Thay thế bản hiện có trên các trang đó.
+	PDF or image	PDF hoặc ảnh
+	No file chosen	Chưa chọn tệp
+	Page number	Số trang
+	Scale relative to target page	Tỷ lệ theo trang đích
+	Link Properties	Thuộc tính Nối kết
+	Create Link	Tạo Nối kết
+	Link Appearance	Hình thức Nối kết
+	Link Type:	Kiểu Nối kết:
+	Visible Rectangle	Hình chữ nhật Hiển thị
+	Invisible Rectangle	Hình chữ nhật Ẩn
+	Highlight Style:	Kiểu Tô sáng:
+	Invert	Đảo màu
+	Outline	Dàn bài
+	Inset	Lõm
+	Line Thickness:	Độ dày Đường:
+	Thin	Mảnh
+	Thick	Dày
+	Line Style:	Kiểu Đường:
+	Solid	Liền
+	Dashed	Nét đứt
+	Color:	Màu:
+	Link Action	Hành động Nối kết
+	Open a web page	Mở trang web
+	Go to a page view	Đi tới một dạng xem trang
+	Type the web address.	Nhập địa chỉ web.
+	This document has no signatures.	Tài liệu này không có chữ ký.
+	The Keychain's digital IDs couldn't be listed: {e}	Không thể liệt kê ID số trong Keychain: {e}
+	Signed and saved to {path}	Đã ký và lưu vào {path}
+	Couldn't open revision {n}: {e}	Không thể mở bản sửa đổi {n}: {e}
+	Couldn't open the signed version: {e}	Không thể mở phiên bản đã ký: {e}
+	Sign with a Digital ID	Ký bằng ID Số
+	Choose the digital ID that you want to use for signing:	Chọn ID số bạn muốn dùng để ký:
+	Keychain  ·  	Keychain  ·  
+	Windows store  ·  	Kho Windows  ·  
+	Issued by: 	Cấp bởi: 
+	, Expires: 	, Hết hạn: 
+	No digital IDs yet.	Chưa có ID số nào.
+	Configure New Digital ID	Cấu hình ID Số Mới
+	Remove "{name}" from this list? The file itself is not deleted.	Gỡ “{name}” khỏi danh sách này? Bản thân tệp không bị xóa.
+	Continue	Tiếp tục
+	Configure a Digital ID for Signing	Cấu hình ID Số để Ký
+	Use a Digital ID from a file	Dùng ID số từ tệp
+	Create a new Digital ID (self-signed, saved to a password-protected file)	Tạo ID số mới (tự ký, lưu vào tệp được bảo vệ bằng mật khẩu)
+	Name	Tên
+	Organizational Unit	Đơn vị Tổ chức
+	Organization Name	Tên Tổ chức
+	Email Address	Địa chỉ Email
+	Country/Region	Quốc gia/Khu vực
+	Key Algorithm	Thuật toán Khóa
+	Confirm Password	Xác nhận Mật khẩu
+	Valid for 5 years, for digital signatures. Self-signed IDs are usually not trusted by others.	Hiệu lực 5 năm, dùng cho chữ ký số. ID tự ký thường không được người khác tin cậy.
+	File (.p12, .pfx)	Tệp (.p12, .pfx)
+	Digital ID	ID Số
+	Browse…	Duyệt…
+	{verb} as "{name}"	{verb} với tư cách “{name}”
+	Certify	Chứng nhận
+	The signature will be invisible.	Chữ ký sẽ không hiển thị.
+	The existing action will be preserved.	Hành động hiện có sẽ được giữ nguyên.
+	Distinguished name	Tên phân biệt
+	Labels	Nhãn
+	Graphic	Đồ họa
+	Signer's name	Tên người ký
+	Fill & Sign signature	Chữ ký Điền & Ký
+	Choose image…	Chọn ảnh…
+	Permitted actions after certifying	Thao tác được phép sau khi chứng nhận
+	No changes allowed	Không cho phép thay đổi
+	Annotations, form fill-in, and digital signatures	Chú thích, điền biểu mẫu và chữ ký số
+	Form fill-in and digital signatures	Điền biểu mẫu và chữ ký số
+	The key is in the macOS Keychain, which may ask to allow PdfCraft to use it.	Khóa nằm trong Keychain của macOS; Keychain có thể hỏi bạn có cho phép PdfCraft dùng khóa không.
+	The key is in the Windows certificate store, which may ask to allow PdfCraft to use it.	Khóa nằm trong kho chứng thư số của Windows; kho này có thể hỏi bạn có cho phép PdfCraft dùng khóa không.
+	Digital ID password	Mật khẩu ID số
+	Back	Quay lại
+	Validate all	Xác thực tất cả
+	Sign this field…	Ký trường này…
+	Signature is valid:	Chữ ký hợp lệ:
+	Signature validity is UNKNOWN:	Tính hợp lệ của chữ ký KHÔNG XÁC ĐỊNH:
+	Signature is INVALID:	Chữ ký KHÔNG HỢP LỆ:
+	Signature Details	Chi tiết Chữ ký
+	Reason	Lý do
+	Signing time	Thời điểm ký
+	Algorithm	Thuật toán
+	Signer	Người ký
+	Issued by	Cấp bởi
+	Valid	Hiệu lực
+	Field	Trường
+	Field: {field} on page {p}	Trường: {field} trên trang {p}
+	Add to trusted certificates	Thêm vào chứng thư số tin cậy
+	View signed version	Xem phiên bản đã ký
+	Show certificate…	Hiện chứng thư số…
+	Export certificate…	Xuất chứng thư số…
+	Certificate Viewer	Trình xem Chứng thư số
+	This dialog shows the details of a certificate and its chain.	Hộp thoại này hiển thị chi tiết của một chứng thư số và chuỗi của nó.
+	Trust	Tin cậy
+	Issued to	Cấp cho
+	Valid from	Hiệu lực từ
+	Valid to	Hiệu lực đến
+	Intended usage	Mục đích sử dụng
+	Any	Bất kỳ
+	Version	Phiên bản
+	Serial number	Số sê-ri
+	Issuer	Bên cấp
+	Validity starts	Bắt đầu hiệu lực
+	Validity ends	Hết hiệu lực
+	Public key	Khóa công khai
+	Key usage	Mục đích dùng khóa
+	Not present	Không có
+	Self-signed	Tự ký
+	Edit Action	Sửa Hành động
+	New Action	Hành động Mới
+	Action name:	Tên hành động:
+	Description:	Mô tả:
+	Steps	Các bước
+	Add the steps this action runs, in order.	Thêm các bước mà hành động này sẽ chạy, theo thứ tự.
+	Add Step	Thêm Bước
+	An action with this name already exists.	Đã có hành động mang tên này.
+	New Action…	Hành động Mới…
+	Edit…	Sửa…
+	Add watermark	Thêm hình mờ
+	Add header	Thêm đầu trang
+	Add footer	Thêm chân trang
+	Set document title	Đặt tiêu đề tài liệu
+	Run a JavaScript	Chạy JavaScript
+	Prepare for Distribution	Chuẩn bị để Phân phối
+	Remove hidden information and flatten comments and form fields, so recipients see only the pages.	Gỡ bỏ thông tin ẩn, làm phẳng chú thích và trường biểu mẫu để người nhận chỉ thấy các trang.
+	Optimize Scanned Documents	Tối ưu Tài liệu Quét
+	Make scans searchable, then make them smaller.	Giúp bản quét tìm kiếm được, rồi giảm kích thước.
+	Add Page Numbers	Thêm Số Trang
+	Number every page in the footer.	Đánh số mọi trang ở chân trang.
+	Mark as Confidential	Đánh dấu Mật
+	A diagonal CONFIDENTIAL watermark on every page.	Hình mờ CONFIDENTIAL chéo trên mọi trang.
+	Sanitize Documents	Làm sạch Tài liệu
+	Remove hidden information, metadata, scripts and embedded content, and rewrite the files.	Gỡ bỏ thông tin ẩn, siêu dữ liệu, tập lệnh và nội dung nhúng, rồi ghi lại các tệp.
+	Type text	Nhập văn bản
+	Text to insert	Văn bản cần chèn
+	Replacement text	Văn bản thay thế
+	Edit text…	Sửa văn bản…
+	Add a sticky note here	Thêm ghi chú dán tại đây
+	{kind} Properties	Thuộc tính {kind}
+	Appearance	Diện mạo
+	General	Chung
+	Review History	Lịch sử Xem lại
+	This comment's appearance can't be changed yet.	Chưa thể thay đổi diện mạo của chú thích này.
+	Icon	Biểu tượng
+	Thickness	Độ dày
+	Modified	Đã sửa đổi
+	No status has been set.	Chưa đặt trạng thái.
+	Compare Files	So sánh Tệp
+	Old file:	Tệp cũ:
+	Open the older version first	Mở phiên bản cũ hơn trước
+	New file:	Tệp mới:
+	Text is compared word by word; the differences are shown on the new file.	Văn bản được so sánh theo từng từ; các khác biệt hiển thị trên tệp mới.
+	Compare this file with an older version: Compare files… in All tools.	So sánh tệp này với phiên bản cũ hơn: So sánh Tệp… trong Tất cả Công cụ.
+	No differences in the text.	Không có khác biệt trong văn bản.
+	{n} {kind}	{n} {kind}
+	Inserted	Đã chèn
+	Deleted	Đã xóa
+	Replaced	Đã thay thế
+	Visual	Trực quan
+	Mark as comments	Đánh dấu dạng chú thích
+	Report…	Báo cáo…
+	{kind} · page {p}	{kind} · trang {p}
+	Set Alternate Text	Đặt Văn bản Thay thế
+	This document has no tagged figures.	Tài liệu này không có hình nào được gắn thẻ.
+	 on page {p}	 trên trang {p}
+	Figure {i} of {n}{page}	Hình {i} trên {n}{page}
+	No preview	Không có bản xem trước
+	Alternate text	Văn bản thay thế
+	Describe the figure	Mô tả hình
+	Decorative figure	Hình trang trí
+	Previous figure	Hình trước
+	Next figure	Hình tiếp theo
+	Save & Close	Lưu & Đóng
+	Accessibility Checker Options	Tùy chọn Trình kiểm tra Trợ năng
+	Report Options	Tùy chọn Báo cáo
+	Create accessibility report	Tạo báo cáo trợ năng
+	Page Range	Phạm vi Trang
+	All pages in document	Tất cả các trang trong tài liệu
+	Checking Options ({on} of 32 in all categories)	Tùy chọn Kiểm tra ({on} trên 32 trong mọi thể loại)
+	Show this dialog when the Checker starts	Hiện hộp thoại này khi Trình kiểm tra khởi động
+	Select All	Chọn Tất cả
+	Clear All	Xóa Tất cả
+	Start Checking	Bắt đầu Kiểm tra
+	This document hasn't been checked yet.	Tài liệu này chưa được kiểm tra.
+	No issues found	Không tìm thấy vấn đề
+	1 issue	1 vấn đề
+	{n} issues	{n} vấn đề
+	{label} (1 issue)	{label} (1 vấn đề)
+	{label} ({n} issues)	{label} ({n} vấn đề)
+	Check again	Kiểm tra lại
+	Report	Báo cáo
+	Show the accessibility report	Hiện báo cáo trợ năng
+	Collapse	Thu gọn
+	Expand	Mở rộng
+	{rule} - {status}	{rule} - {status}
+	Passed	Đạt
+	Failed	Không đạt
+	Needs manual check	Cần kiểm tra thủ công
+	Skipped	Đã bỏ qua
+	Fix	Sửa
+	Skip Rule	Bỏ qua Quy tắc
+	Explain	Giải thích
+	Check Again	Kiểm tra Lại
+	Show Report	Hiện Báo cáo
+	Options…	Tùy chọn…
+	Go to the page	Đi tới trang
+	Page Content	Nội dung Trang
+	Forms	Biểu mẫu
+	Alternate Text	Văn bản Thay thế
+	Tables	Bảng
+	Lists	Danh sách
+	Headings	Đầu đề
+	Accessibility permission flag	Cờ quyền trợ năng
+	Accessibility permission flag is set	Đã đặt cờ quyền trợ năng
+	Security settings must allow assistive technology to read the content ("Enable text access for screen reader devices"). Change the document's security to allow it.	Thiết đặt bảo mật phải cho phép công nghệ hỗ trợ đọc nội dung (“Cho phép truy cập văn bản cho thiết bị đọc màn hình”). Hãy thay đổi bảo mật của tài liệu để cho phép điều này.
+	Image-only PDF	PDF chỉ chứa ảnh
+	Document is not image-only PDF	Tài liệu không phải PDF chỉ chứa ảnh
+	Pages that are only pictures of text can't be read aloud or searched. Recognize text (OCR) to add a text layer.	Trang chỉ là ảnh chụp văn bản thì không thể đọc to hay tìm kiếm. Hãy nhận dạng văn bản (OCR) để thêm lớp văn bản.
+	Document is tagged PDF	Tài liệu là PDF được gắn thẻ
+	Tags give the document a logical structure that assistive technology follows. Tag the document (Automatically tag PDF).	Thẻ cung cấp cho tài liệu cấu trúc logic mà công nghệ hỗ trợ dựa theo. Hãy gắn thẻ tài liệu (Tự động gắn thẻ PDF).
+	Logical Reading Order	Thứ tự Đọc Logic
+	Document structure provides a logical reading order	Cấu trúc tài liệu cung cấp thứ tự đọc logic
+	Check that the tags read in the order a sighted reader would. Use the Reading Order tool or the Tags panel to correct it.	Kiểm tra xem các thẻ có được đọc theo thứ tự mà người đọc bằng mắt sẽ đọc không. Dùng công cụ Thứ tự Đọc hoặc ngăn Thẻ để sửa.
+	Primary language	Ngôn ngữ chính
+	Text language is specified	Đã chỉ định ngôn ngữ văn bản
+	Screen readers choose their voice from the document's language. Set it in Document Properties > Advanced > Language.	Trình đọc màn hình chọn giọng đọc theo ngôn ngữ của tài liệu. Hãy đặt ngôn ngữ trong Thuộc tính Tài liệu > Nâng cao > Ngôn ngữ.
+	Document title is showing in title bar	Tiêu đề tài liệu hiển thị trên thanh tiêu đề
+	The window should show a meaningful title rather than the file name. Set a title and Initial View > Show: Document Title.	Cửa sổ nên hiển thị tiêu đề có ý nghĩa thay vì tên tệp. Hãy đặt tiêu đề và chọn Dạng xem Ban đầu > Hiện: Tiêu đề Tài liệu.
+	Bookmarks are present in large documents	Tài liệu lớn có dấu trang
+	Documents of more than 20 pages need bookmarks for navigation. Add bookmarks for the main sections.	Tài liệu dài hơn 20 trang cần có dấu trang để điều hướng. Hãy thêm dấu trang cho các phần chính.
+	Color contrast	Độ tương phản màu
+	Document has appropriate color contrast	Tài liệu có độ tương phản màu phù hợp
+	Text must contrast enough with its background for people with low vision. Check the colours by eye or with a contrast tool.	Văn bản phải đủ tương phản với nền để người thị lực kém đọc được. Hãy kiểm tra màu bằng mắt hoặc bằng công cụ đo tương phản.
+	Tagged content	Nội dung được gắn thẻ
+	All page content is tagged	Mọi nội dung trang đều được gắn thẻ
+	Everything on a page must be tagged or marked as an artifact (decoration, headers, footers). Tag the untagged content.	Mọi thứ trên trang phải được gắn thẻ hoặc đánh dấu là artifact (trang trí, đầu trang, chân trang). Hãy gắn thẻ cho nội dung chưa gắn thẻ.
+	Tagged annotations	Chú thích được gắn thẻ
+	All annotations are tagged	Mọi chú thích đều được gắn thẻ
+	Comments, links and fields must be in the tag tree to be announced. Tag the annotations.	Chú thích, nối kết và trường phải nằm trong cây thẻ thì mới được đọc lên. Hãy gắn thẻ cho các chú thích.
+	Tab order	Thứ tự Tab
+	Tab order is consistent with structure order	Thứ tự Tab khớp với thứ tự cấu trúc
+	Pages with links, comments or fields should tab in structure order. The fix sets each page's tab order to Use Document Structure.	Các trang có nối kết, chú thích hoặc trường cần di chuyển bằng Tab theo thứ tự cấu trúc. Bản sửa sẽ đặt thứ tự Tab của mỗi trang thành Dùng Cấu trúc Tài liệu.
+	Character encoding	Mã hóa ký tự
+	Reliable character encoding is provided	Có mã hóa ký tự đáng tin cậy
+	Fonts must map their characters to Unicode so text can be read and copied. Fix the fonts or recreate the PDF.	Phông phải ánh xạ ký tự sang Unicode để văn bản đọc và sao chép được. Hãy sửa phông hoặc tạo lại PDF.
+	Tagged multimedia	Đa phương tiện được gắn thẻ
+	All multimedia objects are tagged	Mọi đối tượng đa phương tiện đều được gắn thẻ
+	Video, sound and rich media must be tagged to be announced. Tag the multimedia annotations.	Video, âm thanh và nội dung đa phương tiện phong phú phải được gắn thẻ thì mới được đọc lên. Hãy gắn thẻ cho các chú giải đa phương tiện.
+	Screen flicker	Nhấp nháy màn hình
+	Page will not cause screen flicker	Trang sẽ không gây nhấp nháy màn hình
+	Animation that flashes can cause seizures. Check scripts and media for flicker.	Hoạt ảnh chớp sáng có thể gây co giật. Hãy kiểm tra script và nội dung đa phương tiện xem có nhấp nháy không.
+	Scripts	Chỉ số
+	No inaccessible scripts	Không có script thiếu trợ năng
+	Timed responses	Phản hồi có giới hạn thời gian
+	Page does not require timed responses	Trang không yêu cầu phản hồi trong thời gian giới hạn
+	People may need more time to respond. Check that nothing has a time limit.	Một số người có thể cần thêm thời gian để phản hồi. Hãy kiểm tra để chắc rằng không có gì bị giới hạn thời gian.
+	Navigation links	Nối kết điều hướng
+	Navigation links are not repetitive	Nối kết điều hướng không lặp lại
+	Repeated navigation links should be skippable. Check links that appear on every page.	Nối kết điều hướng lặp lại cần bỏ qua được. Hãy kiểm tra các nối kết xuất hiện trên mọi trang.
+	Tagged form fields	Trường biểu mẫu được gắn thẻ
+	All form fields are tagged	Mọi trường biểu mẫu đều được gắn thẻ
+	Form fields must be in the tag tree (Form tags) to be announced. Tag the form fields.	Trường biểu mẫu phải nằm trong cây thẻ (thẻ Form) thì mới được đọc lên. Hãy gắn thẻ cho các trường biểu mẫu.
+	Field descriptions	Mô tả trường
+	All form fields have description	Mọi trường biểu mẫu đều có mô tả
+	Each field needs a tooltip that says what to enter. Add one in Field Properties > General > Tooltip.	Mỗi trường cần một chú giải công cụ cho biết phải nhập gì. Hãy thêm trong Thuộc tính Trường > Chung > Chú giải công cụ.
+	Figures alternate text	Văn bản thay thế cho hình
+	Figures require alternate text	Hình cần có văn bản thay thế
+	Pictures need alternate text that describes them, or must be marked decorative. Add alternate text to each figure.	Ảnh cần có văn bản thay thế mô tả nội dung, hoặc phải được đánh dấu là trang trí. Hãy thêm văn bản thay thế cho từng hình.
+	Nested alternate text	Văn bản thay thế lồng nhau
+	Alternate text that will never be read	Văn bản thay thế sẽ không bao giờ được đọc
+	Alternate text inside an element that already has alternate text is never read. Remove the inner alternate text.	Văn bản thay thế nằm trong một phần tử đã có văn bản thay thế sẽ không bao giờ được đọc. Hãy xóa văn bản thay thế bên trong.
+	Associated with content	Gắn với nội dung
+	Alternate text must be associated with some content	Văn bản thay thế phải gắn với một nội dung nào đó
+	Alternate text on an element without page content is never reached. Remove it or attach the element to content.	Văn bản thay thế trên phần tử không có nội dung trang sẽ không bao giờ được tiếp cận. Hãy xóa nó hoặc gắn phần tử vào nội dung.
+	Hides annotation	Che chú thích
+	Alternate text should not hide annotation	Văn bản thay thế không nên che chú thích
+	Alternate text on an element that contains a link or field hides that annotation from assistive technology. Move the alternate text.	Văn bản thay thế trên phần tử chứa nối kết hoặc trường sẽ che chú giải đó khỏi công nghệ hỗ trợ. Hãy chuyển văn bản thay thế sang chỗ khác.
+	Other elements alternate text	Văn bản thay thế cho phần tử khác
+	Other elements that require alternate text	Các phần tử khác cần văn bản thay thế
+	Formulas and similar non-text elements need alternate text. Add alternate text to them.	Công thức và các phần tử phi văn bản tương tự cần có văn bản thay thế. Hãy thêm văn bản thay thế cho chúng.
+	Rows	Hàng
+	TR must be a child of Table, THead, TBody, or TFoot	TR phải là phần tử con của Table, THead, TBody hoặc TFoot
+	Table cells belong in a row. Fix the table's tags.	Ô bảng phải nằm trong một hàng. Hãy sửa thẻ của bảng.
+	Headers	Tiêu đề
+	Tables should have headers	Bảng nên có tiêu đề
+	Header cells (TH) tell listeners what each column or row holds. Mark the header cells.	Ô tiêu đề (TH) cho người nghe biết mỗi cột hoặc hàng chứa gì. Hãy đánh dấu các ô tiêu đề.
+	Regularity	Tính đồng đều
+	Tables must contain the same number of columns in each row and rows in each column	Mỗi hàng của bảng phải có cùng số cột và mỗi cột phải có cùng số hàng
+	Irregular tables confuse cell navigation. Give every row the same number of cells (counting spans).	Bảng không đồng đều gây rối khi di chuyển giữa các ô. Hãy cho mọi hàng cùng số ô (tính cả ô gộp).
+	Summary	Tóm tắt
+	Tables must have a summary	Bảng phải có tóm tắt
+	A summary describes the table's purpose and layout. Add a Summary attribute to each table.	Tóm tắt mô tả mục đích và bố cục của bảng. Hãy thêm thuộc tính Summary cho từng bảng.
+	List items	Mục danh sách
+	LI must be a child of L	LI phải là phần tử con của L
+	List items belong in a list. Fix the list's tags.	Mục danh sách phải nằm trong một danh sách. Hãy sửa thẻ của danh sách.
+	Lbl and LBody	Lbl và LBody
+	Lbl and LBody must be children of LI	Lbl và LBody phải là phần tử con của LI
+	List labels and bodies belong in a list item. Fix the list's tags.	Nhãn và thân danh sách phải nằm trong một mục danh sách. Hãy sửa thẻ của danh sách.
+	Appropriate nesting	Lồng cấp hợp lệ
+	Heading levels shouldn't skip (an H1 followed by an H3). Retag the headings.	Cấp đầu đề không nên bị nhảy cóc (H1 rồi đến H3). Hãy gắn thẻ lại các đầu đề.
+	TH and TD	TH và TD
+	TH and TD must be children of TR	TH và TD phải là phần tử con của TR
+	Mark Page Range	Đánh dấu Phạm vi Trang
+	Pages from	Trang từ
+	Single word or phrase	Một từ hoặc cụm từ
+	Text to find	Văn bản cần tìm
+	Patterns	Mẫu nhận dạng
+	Phone Numbers	Số Điện thoại
+	Email Addresses	Địa chỉ Email
+	Credit Cards	Thẻ Tín dụng
+	Social Security Numbers	Số An sinh Xã hội
+	Dates	Ngày tháng
+	Text in images isn't found; recognise text (OCR) first.	Không tìm được văn bản trong ảnh; hãy nhận dạng văn bản (OCR) trước.
+	No matches.	Không có kết quả khớp.
+	Some bookmarks are not shown here: the panel lists a limited number, nested a limited depth.	Một số dấu trang không hiển thị ở đây: ngăn chỉ liệt kê số lượng giới hạn, lồng đến độ sâu giới hạn.
+	{n} match(es) marked for redaction.	Đã đánh dấu {n} kết quả khớp để che thông tin.
+	Multiple words or phrases	Nhiều từ hoặc cụm từ
+	One word or phrase per line	Mỗi dòng một từ hoặc cụm từ
+	Import list…	Nhập Danh sách…
+	{n} word(s) or phrase(s)	{n} từ hoặc cụm từ
+	{name} is too large for a word list (at most 1 MB).	{name} quá lớn để làm danh sách từ (tối đa 1 MB).
+	Redaction Tool Properties	Thuộc tính Công cụ Che thông tin
+	Redacted area fill colour:	Màu tô vùng bị che:
+	Use overlay text	Dùng văn bản phủ
+	Custom text:	Văn bản tùy chỉnh:
+	Redaction code:	Mã che thông tin:
+	Font:	Phông:
+	Font size:	Cỡ phông:
+	Auto-size text to fit redaction region	Tự chỉnh cỡ chữ cho vừa vùng che
+	Font colour:	Màu phông:
+	Repeat overlay text	Lặp lại văn bản phủ
+	Text alignment:	Căn chỉnh văn bản:
+	Center	Căn giữa
+	Apply redactions	Áp dụng Che thông tin
+	You are about to apply 1 redaction mark. Text, images and drawings under the marks, and comments and form fields that overlap them, are removed permanently.	Bạn sắp áp dụng 1 vùng che. Văn bản, ảnh và hình vẽ nằm dưới vùng che, cùng chú thích và trường biểu mẫu chồng lên chúng, sẽ bị xóa vĩnh viễn.
+	You are about to apply {n} redaction marks. Text, images and drawings under the marks, and comments and form fields that overlap them, are removed permanently.	Bạn sắp áp dụng {n} vùng che. Văn bản, ảnh và hình vẽ nằm dưới các vùng che, cùng chú thích và trường biểu mẫu chồng lên chúng, sẽ bị xóa vĩnh viễn.
+	Save the document afterwards: saving rewrites the whole file so no trace of the removed content stays in it.	Sau đó hãy lưu tài liệu: thao tác lưu ghi lại toàn bộ tệp để không còn dấu vết nào của nội dung đã xóa.
+	Select the items to remove from this document.	Chọn các mục cần xóa khỏi tài liệu này.
+	Metadata	Siêu dữ liệu
+	File attachments	Tệp đính kèm
+	Comments and markups	Chú thích và đánh dấu
+	Hidden text	Văn bản ẩn
+	Hidden layers	Lớp ẩn
+	Links, actions and JavaScripts	Nối kết, hành động và JavaScript
+	Private data of other applications	Dữ liệu riêng của ứng dụng khác
+	None found	Không tìm thấy
+	Form fields are flattened: their values stay visible. Saving rewrites the whole file.	Trường biểu mẫu được làm phẳng: giá trị của chúng vẫn hiển thị. Thao tác lưu sẽ ghi lại toàn bộ tệp.
+	Remove	Loại bỏ
+	Sanitizing removes hidden information from the document: metadata, file attachments, comments, form fields (flattened), hidden text and layers, bookmarks, links, actions and scripts, and private application data.	Làm sạch sẽ xóa thông tin ẩn khỏi tài liệu: siêu dữ liệu, tệp đính kèm, chú thích, trường biểu mẫu (được làm phẳng), văn bản và lớp ẩn, dấu trang, nối kết, hành động và script, cùng dữ liệu riêng của ứng dụng.
+	Save the document afterwards; saving rewrites the whole file so nothing removed stays in it.	Sau đó hãy lưu tài liệu; thao tác lưu ghi lại toàn bộ tệp để không còn sót lại gì đã xóa.
+	Printer:	Máy in:
+	Save as PDF	Lưu dưới dạng PDF
+	{name} (default)	{name} (mặc định)
+	Copies:	Số bản:
+	Collate	Đối chiếu
+	Print in grayscale	In thang xám
+	Two-sided:	In hai mặt:
+	Off	Tắt
+	Flip on long edge	Lật theo cạnh dài
+	Flip on short edge	Lật theo cạnh ngắn
+	Paper:	Giấy:
+	Pages to Print	Trang cần In
+	More options:	Tùy chọn khác:
+	All pages in range	Mọi trang trong phạm vi
+	Odd pages only	Chỉ trang lẻ
+	Even pages only	Chỉ trang chẵn
+	Reverse pages	Đảo ngược thứ tự trang
+	Page Sizing & Handling	Kích cỡ & Xử lý Trang
+	Size	Kích thước
+	Poster	Áp phích
+	Multiple	Nhiều trang
+	Booklet	Tập sách nhỏ
+	Fit	Vừa khít
+	Shrink oversized pages	Thu nhỏ trang quá khổ
+	Custom scale:	Tỷ lệ tùy chỉnh:
+	Tile scale:	Tỷ lệ ô ghép:
+	Overlap:	Phần chồng lấn:
+	Cut marks	Dấu cắt
+	Pages per sheet:	Số trang mỗi tờ:
+	Page order:	Thứ tự trang:
+	Horizontal	Ngang
+	Horizontal reversed	Ngang đảo ngược
+	Vertical	Dọc
+	Vertical reversed	Dọc đảo ngược
+	Print page border	In viền trang
+	Auto-rotate pages	Tự động xoay trang
+	Booklet subset:	Phần tập sách:
+	Both sides	Cả hai mặt
+	Front side only	Chỉ mặt trước
+	Back side only	Chỉ mặt sau
+	Binding:	Đóng gáy:
+	Left	Trái
+	Right	Phải
+	Orientation:	Hướng:
+	Auto portrait/landscape	Tự động dọc/ngang
+	Portrait	Hướng dọc
+	Landscape	Hướng ngang
+	Comments & Forms	Chú thích & Biểu mẫu
+	Document	Tài liệu
+	Document and markups	Tài liệu và đánh dấu
+	Document and stamps	Tài liệu và con dấu
+	Form fields only	Chỉ trường biểu mẫu
+	Previous sheet	Tờ trước
+	Next sheet	Tờ sau
+	No sheets	Không có tờ nào
+	Sheet {s} of {n}	Tờ {s}/{n}
+	Removed 1 hidden item. Save to remove them from the file.	Đã xóa 1 mục ẩn. Hãy lưu để xóa hẳn khỏi tệp.
+	Removed {n} hidden items. Save to remove them from the file.	Đã xóa {n} mục ẩn. Hãy lưu để xóa hẳn khỏi tệp.
+	Document sanitized. Save to finish: saving rewrites the whole file.	Đã làm sạch tài liệu. Hãy lưu để hoàn tất: thao tác lưu sẽ ghi lại toàn bộ tệp.
+	Applied 1 redaction mark. Save to remove the content from the file.	Đã áp dụng 1 vùng che. Hãy lưu để xóa nội dung khỏi tệp.
+	Applied {n} redaction marks. Save to remove the content from the file.	Đã áp dụng {n} vùng che. Hãy lưu để xóa nội dung khỏi tệp.
+	JavaScript Console	Bảng điều khiển JavaScript
+	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript đang tắt (Tùy chọn ▸ JavaScript).
+	Output appears here.	Kết quả hiển thị ở đây.
+	Script Name:	Tên Script:
+	This document has no document-level scripts.	Tài liệu này không có script cấp tài liệu.
+	No form fields were detected	Không phát hiện trường biểu mẫu nào
+	Detected 1 form field	Đã phát hiện 1 trường biểu mẫu
+	Detected {n} form fields	Đã phát hiện {n} trường biểu mẫu
+	{field}: {e}	{field}: {e}
+	Current page	Trang hiện tại
+	Selected pages	Các trang đã chọn
+	Document language	Ngôn ngữ tài liệu
+	Output	Đầu ra
+	Searchable Image (Exact)	Ảnh Tìm kiếm được (Chính xác)
+	Adds invisible text over each word; the page image is not changed	Thêm văn bản ẩn lên trên mỗi từ; ảnh trang không bị thay đổi
+	Downsample to	Giảm mẫu xuống
+	Also recognize pages that already have text	Nhận dạng cả các trang đã có văn bản
+	Pictures on those pages are recognized too; words already in the page's text are not added again	Ảnh trên các trang đó cũng được nhận dạng; từ đã có trong văn bản của trang sẽ không bị thêm lại
+	Text recognition isn't installed: its model files are missing. Reinstall PdfCraft, or set PDFCRAFT_MODELS to the folder that holds them.	Chưa cài đặt tính năng nhận dạng văn bản: thiếu tệp mô hình. Hãy cài lại PdfCraft hoặc đặt PDFCRAFT_MODELS thành thư mục chứa các tệp đó.
+	Settings	Thiết đặt
+	Optional	Không bắt buộc
+	Planned · {m}	Dự kiến · {m}
+	Planned for milestone {m} — open to see what it will include	Dự kiến cho mốc {m} — mở để xem sẽ có những gì
+	Coming in milestone {m}. Items marked Ready work today.	Sẽ có trong mốc {m}. Các mục đánh dấu Sẵn sàng đã dùng được ngay.
+	1 mark	1 vùng đánh dấu
+	{n} marks	{n} vùng đánh dấu
+	Dynamic	Động
+	Sign Here	Ký tại Đây
+	Standard Business	Kinh doanh Chuẩn
+	Choose a stamp, then click on the page to place it.	Chọn một con dấu rồi bấm vào trang để đặt.
+	Note	Ghi chú
+	Polyline	Đường gấp khúc
+	Attachment	Tệp đính kèm
+	Callout	Chú dẫn
+	Typewriter	Máy đánh chữ
+	Checked	Đã chọn
+	Unchecked	Chưa chọn
+	Marked	Đã đánh dấu
+	Locked	Đã khóa
+	Search comments	Tìm kiếm chú thích
+	Add a comment	Thêm chú thích
+	No comments yet.	Chưa có chú thích nào.
+	Pick a tool in the quick bar, or type above.	Chọn một công cụ trên thanh nhanh, hoặc nhập ở trên.
+	No comments match.	Không có chú thích nào khớp.
+	Unknown author	Tác giả không xác định
+	No colour	Không màu
+	Remove checkmark	Bỏ dấu kiểm
+	Mark with checkmark	Đánh dấu kiểm
+	Reply	Trả lời
+	Add a reply	Thêm trả lời
+	Post	Đăng
+	Page {label}	Trang {label}
+	{kind} — click to show it on the page	{kind} — bấm để hiện trên trang
+	Set status	Đặt Trạng thái
+	Copy text	Sao chép Văn bản
+	Properties…	Thuộc tính…
+	Make Current Properties Default	Đặt Thuộc tính Hiện tại làm Mặc định
+	More options	Tùy chọn khác
+	Sort by	Sắp xếp theo
+	Author	Tác giả
+	Type	Loại
+	Colour	Màu
+	Show all comments	Hiện tất cả chú thích
+	Create PDF comment summary…	Tạo Bản tóm tắt Chú thích PDF…
+	Export all to data file…	Xuất Tất cả ra Tệp Dữ liệu…
+	Filter comments	Lọc chú thích
+	Status	Trạng thái
+	Accepted	Đã chấp nhận
+	Rejected	Đã từ chối
+	Cancelled	Đã hủy
+	Completed	Đã hoàn tất
+	Show all	Hiện tất cả
+	Yellow	Vàng
+	Orange	Cam
+	Red	Đỏ
+	Pink	Hồng
+	Purple	Tím
+	Blue	Xanh lam
+	Light blue	Xanh lam nhạt
+	Green	Xanh lục
+	Gray	Xám
+	Black	Đen
+	Bookmark options	Tùy chọn dấu trang
+	Expand all bookmarks	Bung rộng tất cả dấu trang
+	Expand top-level bookmarks	Bung rộng dấu trang cấp cao nhất
+	Collapse all bookmarks	Thu gọn tất cả dấu trang
+	New bookmark ({key})	Dấu trang mới ({key})
+	This document has no bookmarks.	Tài liệu này không có dấu trang.
+	This document has no layers.	Tài liệu này không có lớp.
+	This document has no attachments.	Tài liệu này không có tệp đính kèm.
+	Hide layer	Ẩn lớp
+	Show layer	Hiện lớp
+	Set layer visibility	Đặt hiển thị lớp
+	on page {label}	trên trang {label}
+	Save attachment…	Lưu Tệp đính kèm…
+	Open in a new tab	Mở trong thẻ mới
+	This document has no pages.	Tài liệu này không có trang nào.
+	Find text	Tìm văn bản
+	No matches	Không có kết quả khớp
+	Searching… {s}/{p}	Đang tìm… {s}/{p}
+	{c} of {n}{more}	{c}/{n}{more}
+	Previous ({key})	Trước ({key})
+	Next ({key})	Tiếp ({key})
+	Find options	Tùy chọn tìm
+	Whole words only	Chỉ tìm toàn bộ từ
+	Case-sensitive	Phân biệt chữ hoa/thường
+	Close (Esc)	Đóng (Esc)
+	Align	Căn chỉnh
+	Top	Trên
+	Bottom	Dưới
+	Center horizontally	Căn giữa theo chiều ngang
+	Center vertically	Căn giữa theo chiều dọc
+	Distribute	Phân phối
+	Horizontally	Theo chiều ngang
+	Vertically	Theo chiều dọc
+	Set Fields to Same Size	Đặt Trường Cùng Kích thước
+	Height	Chiều cao
+	Width	Chiều rộng
+	Both	Cả hai
+	Duplicate…	Nhân đôi…
+	All pages	Tất cả các trang
+	Odd pages	Trang lẻ
+	Even pages	Trang chẵn
+	Landscape pages	Trang hướng ngang
+	Portrait pages	Trang hướng dọc
+	Move earlier	Chuyển lên trước
+	Move later	Chuyển ra sau
+	Back to the document	Quay lại tài liệu
+	Protect Using Password	Bảo vệ bằng Mật khẩu
+	Requires user to enter a password for:	Yêu cầu người dùng nhập mật khẩu để:
+	Viewing	Xem
+	Editing	Chỉnh sửa
+	Type Password	Nhập Mật khẩu
+	Re-type Password	Nhập lại Mật khẩu
+	Strength: {s}	Độ mạnh: {s}
+	Strong	Đậm
+	Medium	Trung bình
+	Weak	Yếu
+	Advanced Options {chevron}	Tùy chọn Nâng cao {chevron}
+	Compatibility	Tương thích
+	Acrobat X and later (256-bit AES)	Acrobat X trở lên (AES 256 bit)
+	Acrobat 7.0 and later (128-bit AES)	Acrobat 7.0 trở lên (AES 128 bit)
+	Acrobat 5.0 and later (128-bit RC4)	Acrobat 5.0 trở lên (RC4 128 bit)
+	Acrobat 3.0 and later (40-bit RC4)	Acrobat 3.0 trở lên (RC4 40 bit)
+	Encrypt	Mã hóa
+	All document contents	Toàn bộ nội dung tài liệu
+	All document contents except metadata	Toàn bộ nội dung tài liệu trừ siêu dữ liệu
+	Printing allowed	Cho phép in
+	Low Resolution (150 dpi)	Độ phân giải Thấp (150 dpi)
+	Changes allowed	Cho phép thay đổi
+	Inserting, deleting, and rotating pages	Chèn, xóa và xoay trang
+	Filling in form fields and signing existing signature fields	Điền trường biểu mẫu và ký vào trường chữ ký có sẵn
+	Commenting, filling in form fields, and signing existing signature fields	Thêm chú thích, điền trường biểu mẫu và ký vào trường chữ ký có sẵn
+	Any except extracting pages	Mọi thao tác trừ trích xuất trang
+	Enable copying of text, images, and other content	Cho phép sao chép văn bản, ảnh và nội dung khác
+	Enable text access for screen reader devices for the visually impaired	Cho phép trình đọc màn hình truy cập văn bản để hỗ trợ người khiếm thị
+	Type a password.	Hãy nhập mật khẩu.
+	The passwords don't match.	Mật khẩu không khớp.
+	This compatibility level supports only plain ASCII passwords.	Mức tương thích này chỉ hỗ trợ mật khẩu ASCII thuần.
+	Anyone opening the document will need this password. It's applied when you save.	Bất kỳ ai mở tài liệu đều cần mật khẩu này. Mật khẩu được áp dụng khi bạn lưu.
+	The document opens without a password; this password is needed to change the restrictions. It's applied when you save.	Tài liệu mở được mà không cần mật khẩu; cần mật khẩu này để thay đổi các hạn chế. Mật khẩu được áp dụng khi bạn lưu.
+	Recover unsaved documents?	Khôi phục tài liệu chưa lưu?
+	PdfCraft didn't shut down normally. These documents had changes that were autosaved:	PdfCraft đã không tắt bình thường. Những tài liệu sau có thay đổi đã được tự động lưu:
+	just now	vừa xong
+	{n} min ago	{n} phút trước
+	{n} h ago	{n} giờ trước
+	 · password-protected	 · được bảo vệ bằng mật khẩu
+	Recover	Khôi phục
+	Discard	Bỏ
+	Version {v}	Phiên bản {v}
+	A clean-room, open-source PDF application written in Rust. MIT OR Apache-2.0.	Ứng dụng PDF mã nguồn mở, viết theo phương pháp clean-room bằng Rust. MIT OR Apache-2.0.
+	Summarize Options	Tùy chọn Tóm tắt
+	Choose a layout:	Chọn bố trí:
+	Comments only	Chỉ chú thích
+	Sort comments by:	Sắp xếp chú thích theo:
+	Create PDF Comment Summary	Tạo Bản tóm tắt Chú thích PDF
+	Revert to the previously saved version of “{name}”? Changes since then can't be undone afterwards.	Hoàn nguyên về phiên bản đã lưu trước đó của “{name}”? Sau đó sẽ không thể hoàn tác các thay đổi kể từ lần lưu ấy.
+	Number pages	Đánh số trang
+	Style	Kiểu
+	None (prefix only)	Không (chỉ tiền tố)
+	Prefix	Tiền tố
+	Start	Bắt đầu
+	Labels: {preview}. Later pages keep their labels.	Nhãn: {preview}. Các trang sau giữ nguyên nhãn của chúng.
+	Even and Odd Pages	Trang Chẵn và Lẻ
+	Even Pages Only	Chỉ Trang Chẵn
+	Odd Pages Only	Chỉ Trang Lẻ
+	Landscape and Portrait Pages	Trang Hướng ngang và Hướng dọc
+	Landscape Pages	Trang Hướng ngang
+	Portrait Pages	Trang Hướng dọc
+	Duplicate Field	Nhân đôi Trường
+	Duplicate "{name}" onto:	Nhân đôi "{name}" sang:
+	1 page selected.	Đã chọn 1 trang.
+	{n} pages selected.	Đã chọn {n} trang.
+	Delete pages after extracting	Xóa trang sau khi trích xuất
+	Extract pages as separate files	Trích xuất trang thành các tệp riêng
+	Rotate Pages	Xoay Trang
+	Direction:	Hướng:
+	Clockwise 90 degrees	90 độ theo chiều kim đồng hồ
+	Counterclockwise 90 degrees	90 độ ngược chiều kim đồng hồ
+	180 degrees	180 độ
+	Pages:	Trang:
+	All	Tất cả
+	Selection	Vùng chọn
+	From	Từ
+	Rotate:	Xoay:
+	Repairs	Sửa chữa
+	Repair log	Nhật ký sửa chữa
+	Split document	Tách tài liệu
+	Number of pages	Số trang
+	Pages per file	Số trang mỗi tệp
+	File size	Kích thước tệp
+	At most	Tối đa
+	Top-level bookmarks ({n})	Dấu trang cấp cao nhất ({n})
+	Before each selected page (select pages in Organize)	Trước mỗi trang được chọn (chọn trang trong Sắp xếp)
+	Creates 1 file from {n} pages.	Tạo 1 tệp từ {n} trang.
+	Creates {f} files from {n} pages.	Tạo {f} tệp từ {n} trang.
+	Each file holds as many of the {n} pages as fit.	Mỗi tệp chứa nhiều trang nhất có thể trong số {n} trang.
+	Replace Pages	Thay thế Trang
+	Original: replace pages	Gốc: thay thế trang
+	to	đến
+	to {n}	đến {n}
+	Replacement: pages of {name}	Thay bằng: trang của {name}
+	of {name}	của {name}
+	Only the page content changes: links, comments, form fields and bookmarks on the original pages stay.	Chỉ nội dung trang thay đổi: nối kết, chú thích, trường biểu mẫu và dấu trang trên các trang gốc được giữ nguyên.
+	The replacement file doesn't have that many pages.	Tệp thay thế không có nhiều trang đến vậy.
+	Tagged PDF	PDF được gắn thẻ
+	Document Properties	Thuộc tính Tài liệu
+	Description	Mô tả
+	Initial View	Dạng xem Ban đầu
+	Security	Bảo mật
+	Fonts	Phông
+	Advanced	Nâng cao
+	Title	Tiêu đề
+	Subject	Chủ đề
+	Keywords	Từ khóa
+	Application	Ứng dụng
+	PDF producer	Trình tạo PDF
+	Layout and Magnification	Bố trí và Phóng đại
+	Navigation tab	Ngăn điều hướng
+	Page Only	Chỉ Trang
+	Bookmarks Panel and Page	Ngăn Dấu trang và Trang
+	Pages Panel and Page	Ngăn Trang và Trang
+	Attachments Panel and Page	Ngăn Tệp đính kèm và Trang
+	Layers Panel and Page	Ngăn Lớp và Trang
+	Page layout	Bố trí trang
+	Default	Mặc định
+	Single Page	Một Trang
+	Single Page Continuous	Một Trang Liên tục
+	Two-Up (Facing)	Hai Trang (Đối diện)
+	Two-Up Continuous (Facing)	Hai Trang Liên tục (Đối diện)
+	Two-Up (Cover Page)	Hai Trang (Trang bìa)
+	Two-Up Continuous (Cover Page)	Hai Trang Liên tục (Trang bìa)
+	Magnification	Phóng đại
+	Actual Size	Kích thước Thực
+	Fit Page	Vừa Trang
+	Fit Width	Vừa Chiều rộng
+	Fit Height	Vừa Chiều cao
+	Fit Visible	Vừa Vùng hiển thị
+	Open to page	Mở tại trang
+	of {pages}	trên {pages}
+	Window Options	Tùy chọn Cửa sổ
+	Resize window to initial page	Đổi cỡ cửa sổ theo trang ban đầu
+	Center window on screen	Đặt cửa sổ giữa màn hình
+	Open in Full Screen mode	Mở ở chế độ Toàn màn hình
+	Show:	Hiện:
+	File Name	Tên Tệp
+	Document Title	Tiêu đề Tài liệu
+	User Interface Options	Tùy chọn Giao diện Người dùng
+	Hide menu bar	Ẩn thanh menu
+	Hide toolbars	Ẩn thanh công cụ
+	Hide window controls	Ẩn nút điều khiển cửa sổ
+	Security method	Phương thức bảo mật
+	No security	Không bảo mật
+	Restrictions	Hạn chế
+	None — everything is allowed	Không có — mọi thao tác đều được phép
+	Password security	Bảo mật bằng mật khẩu
+	Encryption	Mã hóa
+	Opened with	Đã mở bằng
+	— (protection is applied when you save)	— (bảo vệ được áp dụng khi bạn lưu)
+	Owner password (no restrictions apply)	Mật khẩu chủ sở hữu (không áp dụng hạn chế)
+	User password	Mật khẩu người dùng
+	Change settings…	Thay đổi Thiết đặt…
+	Printing	In
+	Not allowed	Không được phép
+	Allowed	Được phép
+	High resolution	Độ phân giải cao
+	Low resolution	Độ phân giải thấp
+	Changing the document	Thay đổi tài liệu
+	Document assembly	Ghép nối tài liệu
+	Content copying	Sao chép nội dung
+	Content copying for accessibility	Sao chép nội dung cho trợ năng
+	Commenting	Thêm chú thích
+	Filling of form fields	Điền trường biểu mẫu
+	No fonts are referenced by the pages.	Các trang không tham chiếu đến phông nào.
+	PDF version	Phiên bản PDF
+	Location	Vị trí
+	Page size	Kích thước trang
+	Yes	Có
+	No	Không
+	Revisions	Bản sửa đổi
+	View revision {n}	Xem bản sửa đổi {n}
+	Open the file as it was saved then	Mở tệp ở trạng thái khi được lưu lúc đó
+	Binding	Đóng gáy
+	Left Edge	Cạnh Trái
+	Right Edge	Cạnh Phải
+	Language	Ngôn ngữ
+	Saved {place}: {before} → {after} ({pct}% smaller){detail}	Đã lưu {place}: {before} → {after} (nhỏ hơn {pct}%){detail}
+	This file is already as small as it can be made ({size}). No copy was saved.	Tệp này đã nhỏ nhất có thể ({size}). Không lưu bản sao nào.
+	Saved {place}: {before} → {after} (not smaller){detail}	Đã lưu {place}: {before} → {after} (không nhỏ hơn){detail}
+	Couldn't save the image: {e}	Không thể lưu ảnh: {e}
+	Adding images arrives on the web with file pickers for images	Tính năng thêm ảnh sẽ có trên web cùng với hộp chọn tệp ảnh
+	Replacing images on page {p} arrives on the web with image pickers ({i})	Tính năng thay ảnh trên trang {p} sẽ có trên web cùng với hộp chọn ảnh ({i})
+	{name}: choosing images arrives on the web with file pickers for images	{name}: tính năng chọn ảnh sẽ có trên web cùng với hộp chọn tệp ảnh
+	Replacing images arrives on the web with image file pickers	Tính năng thay ảnh sẽ có trên web cùng với hộp chọn tệp ảnh
+	Couldn't create a PDF: {e}	Không thể tạo PDF: {e}
+	The clipboard has no image or text	Bảng tạm không có ảnh hoặc văn bản
+	On the web, open or drop an image to convert it	Trên web, hãy mở hoặc thả một ảnh vào để chuyển đổi
+	Couldn't optimize the file: {e}	Không thể tối ưu tệp: {e}
+	Couldn't write {path}: {e}	Không thể ghi {path}: {e}
+	The form asks to be submitted to {u}; PdfCraft doesn't send form data. Save the document to keep your entries.	Biểu mẫu yêu cầu gửi tới {u}; PdfCraft không gửi dữ liệu biểu mẫu. Hãy lưu tài liệu để giữ những gì bạn đã nhập.
+	This PDF uses the unsupported {s} action.	PDF này dùng hành động {s} chưa được hỗ trợ.
+	{name}: the {other} action isn't supported yet	{name}: hành động {other} chưa được hỗ trợ
+	{name} submits the form to {url}; PdfCraft doesn't send form data. Save the document to keep your entries.	{name} gửi biểu mẫu tới {url}; PdfCraft không gửi dữ liệu biểu mẫu. Hãy lưu tài liệu để giữ những gì bạn đã nhập.
+	Export stopped: {e}	Đã dừng xuất: {e}
+	Exported 1 image	Đã xuất 1 ảnh
+	Exported {n} images	Đã xuất {n} ảnh
+	 ({s} not exported: {first})	 ({s} không xuất được: {first})
+	Exported the text of 1 page	Đã xuất văn bản của 1 trang
+	Exported the text of {n} pages	Đã xuất văn bản của {n} trang
+	{msg} to {dir}	{msg} vào {dir}
+	Exporting… {d} of {t}	Đang xuất… {d}/{t}
+	Choose a folder for the exported files	Chọn thư mục cho các tệp xuất
+	New {tool} comments will look like this one	Chú thích {tool} mới sẽ trông giống chú thích này
+	This document can't be checked: it couldn't be read for editing	Không thể kiểm tra tài liệu này: không đọc được tài liệu để chỉnh sửa
+	The checker found no problems in this document.	Trình kiểm tra không tìm thấy vấn đề nào trong tài liệu này.
+	The checker found 1 problem which may prevent the document from being fully accessible.	Trình kiểm tra tìm thấy 1 vấn đề có thể khiến tài liệu không hỗ trợ trợ năng đầy đủ.
+	The checker found {n} problems which may prevent the document from being fully accessible.	Trình kiểm tra tìm thấy {n} vấn đề có thể khiến tài liệu không hỗ trợ trợ năng đầy đủ.
+	The text is the same	Văn bản giống nhau
+	1 difference found	Tìm thấy 1 điểm khác biệt
+	{n} differences found	Tìm thấy {n} điểm khác biệt
+	Added 1 comment	Đã thêm 1 chú thích
+	Added {n} comments	Đã thêm {n} chú thích
+	Choose a folder for the results	Chọn thư mục cho kết quả
+	Files for {name}	Tệp cho {name}
+	An action is already running	Một hành động đang chạy
+	Running action… file {d} of {t}	Đang chạy hành động… tệp {d}/{t}
+	No unlinked web addresses were found in the text	Không tìm thấy địa chỉ web chưa có nối kết nào trong văn bản
+	Created 1 link	Đã tạo 1 nối kết
+	Created {n} links	Đã tạo {n} nối kết
+	Text recognition is already running	Nhận dạng văn bản đang chạy
+	Recognizing text… file {d} of {t}	Đang nhận dạng văn bản… tệp {d}/{t}
+	Recognizing text… page {d} of {t}	Đang nhận dạng văn bản… trang {d}/{t}
+	Recognized 1 word	Đã nhận dạng 1 từ
+	Recognized {n} words	Đã nhận dạng {n} từ
+	{words} on {pages}	{words} trên {pages}
+	; 1 page already had text	; 1 trang đã có sẵn văn bản
+	; {n} pages already had text	; {n} trang đã có sẵn văn bản
+	Recognized {w} words in 1 file	Đã nhận dạng {w} từ trong 1 tệp
+	Recognized {w} words in {n} files	Đã nhận dạng {w} từ trong {n} tệp
+	; failed: {list}	; thất bại: {list}
+	1 file done	Xong 1 tệp
+	{n} files done	Xong {n} tệp
+	The selected area has been copied ({w} × {h} pixels)	Đã sao chép vùng chọn ({w} × {h} pixel)
+	Couldn't take the snapshot: {e}	Không thể chụp ảnh nhanh: {e}
+	Couldn't recover {name}: {e}	Không thể khôi phục {name}: {e}
+	The document now conforms to {level}; save it to keep the changes	Tài liệu hiện đã tuân thủ {level}; hãy lưu để giữ các thay đổi
+	Fixed what could be fixed; 1 problem remains	Đã sửa những gì có thể sửa; còn 1 vấn đề
+	Fixed what could be fixed; {n} problems remain	Đã sửa những gì có thể sửa; còn {n} vấn đề
+	Custom stamps arrive on the web with file pickers for images	Con dấu tùy chỉnh sẽ có trên web khi hỗ trợ chọn tệp ảnh
+	{file} is too large for a stamp (at most {n} MB)	{file} quá lớn để làm con dấu (tối đa {n} MB)
+	Sent to {printer}	Đã gửi tới {printer}
+	Sent to {printer}: {msg}	Đã gửi tới {printer}: {msg}
+	Looking for printers…	Đang tìm máy in…
+	Sending to {printer}…	Đang gửi tới {printer}…
+	Choose a folder for the searchable files	Chọn thư mục cho các tệp có thể tìm kiếm
+	Files are combined from top to bottom. Leave Pages empty to take every page.	Các tệp được kết hợp từ trên xuống dưới. Để trống ô Trang để lấy tất cả các trang.
+	Unlock…	Mở khóa…
+	Select a password-protected file first	Hãy chọn một tệp có mật khẩu trước
+	Enter the permissions password to allow combining	Nhập mật khẩu quyền để cho phép kết hợp
+	Enter the password that opens it	Nhập mật khẩu dùng để mở tệp
+	Unlock {name}	Mở khóa {name}
+	Unlock {n} files	Mở khóa {n} tệp
+	The same password is tried on each file.	Cùng một mật khẩu sẽ được thử cho từng tệp.
+	Hide password	Ẩn mật khẩu
+	Show password	Hiện mật khẩu
+	Wrong password	Sai mật khẩu
+	The password is only used to read the file; it isn't saved.	Mật khẩu chỉ dùng để đọc tệp và không được lưu lại.
+	Unlock	Mở khóa
+	Opened, but its security settings don't allow combining. Enter the permissions password.	Đã mở, nhưng thiết đặt bảo mật của tệp không cho phép kết hợp. Hãy nhập mật khẩu quyền.
+	Unlocked: the combined file won't be password-protected	Đã mở khóa: tệp kết hợp sẽ không có mật khẩu bảo vệ
+	Unlocked {n} of {m} files	Đã mở khóa {n} trên {m} tệp
+	Drop PDFs, images, text files or folders here, or choose them.	Thả PDF, ảnh, tệp văn bản hoặc thư mục vào đây, hoặc chọn chúng.
+	Add folder…	Thêm Thư mục…
+	Add folder and subfolders…	Thêm Thư mục và Thư mục con…
+	More ways to add files	Các cách khác để thêm tệp
+	Every PDF, image and text file in the folder	Mọi tệp PDF, ảnh và văn bản trong thư mục
+	Every PDF, image and text file in the folder and the folders inside it	Mọi tệp PDF, ảnh và văn bản trong thư mục và các thư mục bên trong
+	Add folder	Thêm Thư mục
+	Add folder and subfolders	Thêm Thư mục và Thư mục con
+	No PDFs, images or text files found in {folder}	Không tìm thấy PDF, ảnh hay tệp văn bản nào trong {folder}
+	Added the first {n} files in {folder}	Đã thêm {n} tệp đầu tiên trong {folder}
+	Click to sort, drag to move the column. Drag its edge to resize it.	Bấm để sắp xếp, kéo để di chuyển cột. Kéo mép cột để đổi kích thước.
+	Reset columns	Đặt lại Cột
+	Remove {n} files	Loại bỏ {n} tệp
+	{n} selected	Đã chọn {n}
+	sorted ascending	sắp xếp tăng dần
+	sorted descending	sắp xếp giảm dần
+	Protected: the combined file won't keep its security settings	Có bảo vệ: tệp kết hợp sẽ không giữ thiết đặt bảo mật của tệp này
+	Add open documents	Thêm Tài liệu đang Mở
+	All open documents	Tất cả tài liệu đang mở
+	No documents are open	Không có tài liệu nào đang mở
+	Select a file first	Hãy chọn một tệp trước
+	1 file	1 tệp
+	{n} files	{n} tệp
+	1 file needs attention	1 tệp cần bạn chú ý
+	{n} files need attention	{n} tệp cần bạn chú ý
+	{name} can't be combined: {why}	Không thể kết hợp {name}: {why}
+	Check the pages of {name}: {why}	Kiểm tra các trang của {name}: {why}
+	Add the files to combine	Thêm các tệp cần kết hợp
+	File name	Tên tệp
+	Warnings	Cảnh báo
+	Drag to reorder	Kéo để sắp xếp lại
+	{k} of {n}	{k} trên {n}
+	? of {n}	? trên {n}
+	Added more than once	Đã thêm nhiều lần
+	yesterday	hôm qua
+	{n} days ago	{n} ngày trước
+	No pages selected	Chưa chọn trang nào
+	Password-protected	Có mật khẩu bảo vệ
+	Its security settings don't allow copying pages	Thiết đặt bảo mật của tệp không cho phép sao chép trang
+	Can't be read: {e}	Không đọc được: {e}
+	Leave out files that can't be read?	Bỏ qua các tệp không đọc được?
+	These files can't be read, so they won't be in the combined PDF:	Không đọc được các tệp sau nên chúng sẽ không có trong PDF kết hợp:
+	Combine the rest	Kết hợp Phần còn lại
+	and {n} more	và {n} tệp khác
+	Includes unsaved changes	Có thay đổi chưa lưu
+	Pages of {name} to combine, e.g. 1-3, 6	Các trang của {name} cần kết hợp, ví dụ 1-3, 6
+	Remove {name}	Loại bỏ {name}
+	Add files…	Thêm Tệp…
+	Add at least two files	Hãy thêm ít nhất hai tệp
+	Couldn't add {name}: {e}	Không thể thêm {name}: {e}
+	Couldn't combine files: {e}	Không thể kết hợp các tệp: {e}
+	Export comments	Xuất Chú thích
+	Export form data	Xuất Dữ liệu Biểu mẫu
+	Comment and form data	Dữ liệu chú thích và biểu mẫu
+	Export	Xuất
+	Select data files to merge	Chọn các tệp dữ liệu cần hợp nhất
+	Form data and PDF forms	Dữ liệu biểu mẫu và biểu mẫu PDF
+	Save the spreadsheet	Lưu bảng tính
+	Save the accessibility report	Lưu báo cáo trợ năng
+	Save image	Lưu Ảnh
+	Export certificate	Xuất Chứng thư số
+	Choose a folder for the extracted pages	Chọn thư mục cho các trang được trích xuất
+	Choose a folder for the split files	Chọn thư mục cho các tệp được tách
+	Couldn't use {name}: {e}	Không thể dùng {name}: {e}
+	Couldn't extract pages: {e}	Không thể trích xuất trang: {e}
+	Couldn't write {name}: {e}	Không thể ghi {name}: {e}
+	Wrote 1 file to {dir}	Đã ghi 1 tệp vào {dir}
+	Wrote {n} files to {dir}	Đã ghi {n} tệp vào {dir}
+	No pages match those choices	Không có trang nào khớp với các lựa chọn đó
+	Couldn't split: {e}	Không thể tách: {e}
+	Couldn't summarize comments: {e}	Không thể tóm tắt chú thích: {e}
+	Couldn't open the result: {e}	Không thể mở kết quả: {e}
+	Importing data arrives on the web with file pickers for data files	Nhập dữ liệu sẽ có trên web khi hỗ trợ chọn tệp dữ liệu
+	Exported to {path}	Đã xuất ra {path}
+	Merging data files needs the desktop app	Hợp nhất tệp dữ liệu cần dùng ứng dụng máy tính
+	Merged 1 file into {path}	Đã hợp nhất 1 tệp vào {path}
+	Merged {n} files into {path}	Đã hợp nhất {n} tệp vào {path}
+	Combined {n} files	Đã kết hợp {n} tệp
+	Extracted 1 page	Đã trích xuất 1 trang
+	Extracted {n} pages	Đã trích xuất {n} trang
+	Created a comment summary	Đã tạo bản tóm tắt chú thích
+	Couldn't open {name}: {e}	Không thể mở {name}: {e}
+	Couldn't read {name}: {e}	Không thể đọc {name}: {e}
+	Couldn't save: {e}	Không thể lưu: {e}
+	Downloading attachments on the web arrives with M3.10 ({n} bytes ready)	Tải xuống tệp đính kèm trên web sẽ có từ M3.10 ({n} byte đã sẵn sàng)
+	`{command}` {when}	`{command}` {when}
+	ships in milestone {m}	sẽ có ở mốc {m}
+	needs an AI provider (off by default)	cần nhà cung cấp AI (tắt theo mặc định)
+	is available	đã có sẵn
+	is not available yet	chưa có sẵn
+	{label} failed: {e}	{label} thất bại: {e}
+	Undid {label}	Đã hoàn tác: {label}
+	Redid {label}	Đã làm lại: {label}
+	A document needs at least one page: copy instead	Tài liệu cần có ít nhất một trang: hãy sao chép thay vì cắt
+	Cut {what}	Đã cắt {what}
+	Copied {what}	Đã sao chép {what}
+	1 page	1 trang
+	{n} pages	{n} trang
+	Copy or cut pages first	Hãy sao chép hoặc cắt trang trước
+	Couldn't save {name}: {e}	Không thể lưu {name}: {e}
+	Saved {name}	Đã lưu {name}
+	Saved, but reopening failed: {e}	Đã lưu, nhưng không mở lại được: {e}
+	Downloaded {name}	Đã tải xuống {name}
+	Couldn't download {name}: {e}	Không thể tải xuống {name}: {e}
+	Reverted to the last saved version	Đã hoàn nguyên về phiên bản đã lưu gần nhất
+	That didn't work: an internal error stopped it ({m}). Your documents are unchanged.	Thao tác không thành công: một lỗi nội bộ đã dừng nó ({m}). Tài liệu của bạn không bị thay đổi.
+	Nothing to undo	Không có gì để hoàn tác
+	Nothing to redo	Không có gì để làm lại
+	This document has no form fields you can fill in	Tài liệu này không có trường biểu mẫu nào để điền
+	This document has no comments to flatten	Tài liệu này không có chú thích nào để làm phẳng
+	This document has no form fields to flatten	Tài liệu này không có trường biểu mẫu nào để làm phẳng
+	There are no redaction marks (mark text, areas or pages first)	Chưa có dấu che thông tin nào (hãy đánh dấu văn bản, vùng hoặc trang trước)
+	This document has no {kind} to change	Tài liệu này không có {kind} nào để thay đổi
+	header or footer	đầu trang hoặc chân trang
+	watermark	hình mờ
+	background	nền
+	This document isn't password-protected	Tài liệu này không có mật khẩu bảo vệ
+	Enter permissions password…	Nhập Mật khẩu Quyền…
+	Permissions password	Mật khẩu quyền
+	“{name}” has security restrictions. Enter its permissions password to lift them.	“{name}” có hạn chế bảo mật. Nhập mật khẩu quyền của tệp để gỡ bỏ các hạn chế này.
+	Restrictions lifted	Đã gỡ bỏ hạn chế
+	Couldn't unlock {name}: {e}	Không thể mở khóa {name}: {e}
+	This document has no restrictions to lift	Tài liệu này không có hạn chế nào cần gỡ bỏ
+	The document's security settings don't allow this change	Thiết đặt bảo mật của tài liệu không cho phép thay đổi này
+	The document's security settings don't allow copying text and images	Thiết đặt bảo mật của tài liệu không cho phép sao chép văn bản và ảnh
+	Open a document first	Hãy mở một tài liệu trước
+	Security will be removed when you save	Bảo mật sẽ bị gỡ bỏ khi bạn lưu
+	Click text or an image to edit it	Bấm vào văn bản hoặc ảnh để chỉnh sửa
+	Drag a rectangle to create a link; double-click a link to edit it	Kéo một hình chữ nhật để tạo nối kết; bấm đúp vào nối kết để chỉnh sửa
+	There are no redaction marks to apply	Không có dấu che thông tin nào để áp dụng
+	Drag to draw the area where the signature should appear.	Kéo để vẽ vùng sẽ hiển thị chữ ký.
+	Couldn't fit the visible content: {e}	Không thể khớp với nội dung hiển thị: {e}
+	Drag a rectangle around the area to copy	Kéo một hình chữ nhật quanh vùng cần sao chép
+	Click on the page to add a {tool}, or drag to set its size	Bấm vào trang để thêm {tool}, hoặc kéo để đặt kích thước
+	Drag a rectangle on a page to crop it; double-click a page for Set Page Boxes	Kéo một hình chữ nhật trên trang để cắt xén; bấm đúp vào trang để mở Đặt Khung Trang
+	Keep tool selected: on	Giữ công cụ đã chọn: bật
+	Keep tool selected	Giữ Công cụ đã Chọn
+	Opacity	Độ mờ đục
+	Line thickness	Độ dày Đường
+	What word or phrase would you like to search for?	Bạn muốn tìm từ hoặc cụm từ nào?
+	Searching… {s} of {p} pages	Đang tìm… {s} trên {p} trang
+	 (searching… {s} of {p} pages)	 (đang tìm… {s} trên {p} trang)
+	1 instance	1 kết quả
+	{n} instances	{n} kết quả
+	Go to this result	Đi tới kết quả này
+	Highlight	Tô sáng
+	Draw	Vẽ
+	Polygon	Đa giác
+	Connected lines	Đường gấp khúc
+	Eraser	Tẩy
+	Sign	Ký
+	Certified by {by}	Được chứng nhận bởi {by}
+	At least one signature is invalid.	Có ít nhất một chữ ký không hợp lệ.
+	Signed and all signatures are valid.	Đã ký và mọi chữ ký đều hợp lệ.
+	At least one signature has problems.	Có ít nhất một chữ ký gặp vấn đề.
+	This document is secured. Some changes are restricted by its security settings.	Tài liệu này được bảo mật. Thiết đặt bảo mật hạn chế một số thay đổi.
+	This is a dynamic XFA form, which PdfCraft can't display yet. What you see is the file's placeholder page.	Đây là biểu mẫu XFA động mà PdfCraft chưa hiển thị được. Nội dung bạn đang thấy là trang giữ chỗ của tệp.
+	This form also contains XFA data, which PdfCraft doesn't read yet. You can fill its fields, but Acrobat may show the XFA values instead.	Biểu mẫu này còn chứa dữ liệu XFA mà PdfCraft chưa đọc được. Bạn vẫn có thể điền các trường, nhưng Acrobat có thể hiển thị giá trị XFA thay thế.
+	This document contains {n} interactive form fields.	Tài liệu này có {n} trường biểu mẫu tương tác.
+	This file was damaged and has been repaired. Saving keeps the repaired version.	Tệp này bị hỏng và đã được sửa. Khi lưu sẽ giữ phiên bản đã sửa.
+	Dismiss	Bỏ qua
+	Hide field highlights	Ẩn Tô sáng Trường
+	Highlight fields	Tô sáng Trường
+	Security settings	Thiết đặt Bảo mật
+	Details	Chi tiết
+	Select (V)	Chọn (V)
+	Hand (H)	Bàn tay (H)
+	Delete pages (Delete)	Xóa Trang (Delete)
+	Insert a blank page after the selection	Chèn một trang trống sau vùng chọn
+	Insert pages from a file…	Chèn Trang từ Tệp…
+	Extract pages to a new document	Trích xuất trang sang tài liệu mới
+	Split into files…	Tách thành Tệp…
+	Select pages	Chọn Trang
+	Cut	Cắt
+	Copy	Sao chép
+	Paste after	Dán Sau
+	Rename	Đổi tên
+	Set to current page ({n})	Đặt thành trang hiện tại ({n})
+	Move up	Di chuyển Lên
+	Move down	Di chuyển Xuống
+	Indent	Thụt lề
+	Outdent	Giảm Thụt lề
+	This document has no form fields.	Tài liệu này không có trường biểu mẫu nào.
+	Tab order: move a field with its arrows.	Thứ tự Tab: dùng các mũi tên để di chuyển trường.
+	Unplaced	Chưa đặt vị trí
+	Has JavaScript actions (run in M6)	Có hành động JavaScript (chạy từ M6)
+	Page	Trang
+	None	Không có
+	Delete selected fields	Xóa các trường đã chọn
+	Diagnostic details	Chi tiết chẩn đoán
+	The operation failed.	Thao tác thất bại.
+	no such document	không có tài liệu này
+	nothing to undo	không có gì để hoàn tác
+	nothing to redo	không có gì để làm lại
+	this document is signed: rewriting it would invalidate its signatures (save it incrementally instead)	tài liệu này đã được ký: ghi lại toàn bộ sẽ làm mất hiệu lực chữ ký (hãy lưu theo kiểu tăng dần)
+	the document is protected by a password	tài liệu được bảo vệ bằng mật khẩu
+	the password is incorrect	mật khẩu không đúng
+	the document has no page tree	tài liệu không có cây trang
+	a document must keep at least one page	tài liệu phải giữ lại ít nhất một trang
+	a bookmark cannot be moved inside itself	không thể di chuyển dấu trang vào bên trong chính nó
+	the title must not be empty	tiêu đề không được để trống
+	the document has no form fields	tài liệu không có trường biểu mẫu nào
+	there are no redaction marks to apply	không có dấu che thông tin nào để áp dụng
+	there are no pages to print	không có trang nào để in
+	the document has no tags	tài liệu không có thẻ cấu trúc
+	{0}: {1}	{0}: {1}
+	the text recognition models are not installed (reinstall PdfCraft, or set PDFCRAFT_MODELS to the folder that holds them)	chưa cài đặt các mô hình nhận dạng văn bản (hãy cài lại PdfCraft, hoặc đặt PDFCRAFT_MODELS là thư mục chứa chúng)
+	the image is empty	ảnh trống
+	this file isn't XFDF, FDF, XML or text form data	tệp này không phải dữ liệu biểu mẫu XFDF, FDF, XML hay văn bản
+	nothing in the file matches this document	không có nội dung nào trong tệp khớp với tài liệu này
+	This page couldn't be displayed.\n{e}	Không thể hiển thị trang này.\n{e}
+	Go to page {p}	Đi tới trang {p}
+	{s} action	Hành động {s}
+	Page {p} of {n}	Trang {p}/{n}
+	1 page selected	Đã chọn 1 trang
+	{n} pages selected	Đã chọn {n} trang
+	{name} — unsaved changes	{name} — có thay đổi chưa lưu
+	{kind} field	Trường {kind}
+	Select a file for the stamp	Chọn tệp cho con dấu
+	JavaScript, e.g. getField("total").value	JavaScript, ví dụ getField("total").value
+	Font: Helvetica	Phông: Helvetica
+	e.g. en-US	ví dụ vi-VN
+	Rendering: hayro (bootstrap) · UI: egui · Icons: Lucide (ISC) · Fonts: Inter, JetBrains Mono, Dancing Script (OFL)	Kết xuất: hayro (khởi tạo) · Giao diện: egui · Biểu tượng: Lucide (ISC) · Phông: Inter, JetBrains Mono, Dancing Script (OFL)
+	CheckBox	Hộp kiểm
+	Radio	Nút Tùy chọn
+	PushButton	Nút bấm
+	Combo	Hộp tổ hợp
+	List	Danh sách
+	Unknown	Không xác định
+	The document has no XMP metadata	Tài liệu không có siêu dữ liệu XMP
+	The title in the metadata and the document information differ	Tiêu đề trong siêu dữ liệu khác với tiêu đề trong thông tin tài liệu
+	The document is encrypted	Tài liệu đã được mã hóa
+	Device colour is used, but there is no PDF/A output intent	Có dùng màu thiết bị nhưng không có output intent PDF/A
+	DeviceCMYK is used: it needs a CMYK output intent (not added automatically)	Có dùng DeviceCMYK: cần output intent CMYK (không tự động thêm)
+	The document has additional actions (/AA)	Tài liệu có hành động bổ sung (/AA)
+	The document has document-level JavaScript	Tài liệu có JavaScript cấp tài liệu
+	The form asks viewers to make appearances (NeedAppearances)	Biểu mẫu yêu cầu trình xem tự tạo hình thức hiển thị (NeedAppearances)
+	A form field has additional actions	Một trường biểu mẫu có hành động bổ sung
+	A stream uses LZW compression	Một luồng dữ liệu dùng nén LZW
+	A stream refers to an external file	Một luồng dữ liệu tham chiếu đến tệp bên ngoài
+	An image asks to be interpolated	Một ảnh yêu cầu nội suy
+	An image has alternates or OPI information	Một ảnh có phiên bản thay thế hoặc thông tin OPI
+	PostScript XObjects aren't allowed	Không cho phép PostScript XObject
+	Embedded files must be PDF/A files themselves (use PDF/A-3 for others)	Tệp nhúng phải là tệp PDF/A (dùng PDF/A-3 cho các loại tệp khác)
+	An embedded file has no AFRelationship	Một tệp nhúng không có AFRelationship
+	Select Icon	Chọn Biểu tượng
+	Choose images	Chọn ảnh
+	{dpi} pixels/inch	{dpi} pixel/inch
+	Type your {what}.	Nhập {what} của bạn.
+	Draw your {what} below.	Vẽ {what} của bạn bên dưới.
+	Your name	Tên của bạn
+	Images and text (converted to PDF)	Ảnh và văn bản (chuyển thành PDF)
+	Images and text	Ảnh và văn bản
+	Check Box Style:	Kiểu Hộp kiểm:
+	Button Style:	Kiểu Nút:
+	Check	Dấu mũ ngược
+	Circle	Hình tròn
+	Diamond	Hình thoi
+	Square	Hình vuông
+	Star	Ngôi sao
+	{month} {y}	{month} năm {y}
+	Change {key}	Thay đổi {key}
+	Insert pages from {name}	Chèn trang từ {name}
+	Insert pages from {name} — 1 field renamed	Chèn trang từ {name} — đã đổi tên 1 trường
+	Insert pages from {name} — fields renamed	Chèn trang từ {name} — đã đổi tên các trường
+	Fill in {name}	Điền {name}
+	Set the image of {name}	Đặt ảnh cho {name}
+	Edit script of {name}	Sửa tập lệnh của {name}
+	Import {name}	Nhập {name}
+	Add bookmark	Thêm dấu trang
+	Rename bookmark	Đổi tên dấu trang
+	Delete bookmark	Xóa dấu trang
+	Move bookmark	Di chuyển dấu trang
+	Set bookmark destination	Đặt đích của dấu trang
+	Add stamp	Thêm con dấu
+	Delete comment	Xóa chú thích
+	Edit comment	Sửa chú thích
+	Erase	Tẩy
+	Lock comment	Khóa chú thích
+	Unlock comment	Mở khóa chú thích
+	Move comment	Di chuyển chú thích
+	Resize comment	Đổi kích thước chú thích
+	Change comment properties	Thay đổi thuộc tính chú thích
+	Add field	Thêm trường
+	Change field properties	Thay đổi thuộc tính trường
+	Delete field	Xóa trường
+	Duplicate field	Nhân đôi trường
+	Set tab order	Đặt thứ tự Tab
+	Change initial view	Thay đổi dạng xem ban đầu
+	Set alternate text	Đặt văn bản thay thế
+	Mark figure as decorative	Đánh dấu hình là trang trí
+	Run JavaScript	Chạy JavaScript
+	Delete document JavaScript	Xóa JavaScript của tài liệu
+	Edit document JavaScript	Sửa JavaScript của tài liệu
+	Edit text	Sửa văn bản
+	Load document font	Tải phông của tài liệu
+	Move image	Di chuyển ảnh
+	Rotate image	Xoay ảnh
+	Flip image	Lật ảnh
+	Delete image	Xóa ảnh
+	Add header & footer	Thêm đầu trang & chân trang
+	Update header & footer	Cập nhật đầu trang & chân trang
+	Update watermark	Cập nhật hình mờ
+	Add background	Thêm nền
+	Update background	Cập nhật nền
+	Add image	Thêm ảnh
+	Edit content	Sửa nội dung
+	Delete content	Xóa nội dung
+	Remove redaction marks	Loại bỏ dấu che thông tin
+	Add link	Thêm nối kết
+	Change link properties	Thay đổi thuộc tính nối kết
+	Delete link	Xóa nối kết
+	Create link	Tạo nối kết
+	Flatten	Làm phẳng
+	Add sticky note	Thêm ghi chú dán
+	Add highlight	Thêm tô sáng
+	Add underline	Thêm gạch dưới
+	Add strikethrough	Thêm gạch ngang chữ
+	Add squiggly underline	Thêm gạch dưới lượn sóng
+	Add rectangle	Thêm hình chữ nhật
+	Add oval	Thêm hình bầu dục
+	Add arrow	Thêm mũi tên
+	Add line	Thêm đường kẻ
+	Add drawing	Thêm hình vẽ
+	Add text box	Thêm hộp văn bản
+	Add checkmark	Thêm dấu kiểm
+	Add cross	Thêm dấu chéo
+	Add dot	Thêm dấu chấm
+	Add signature	Thêm chữ ký
+	Add redaction mark	Thêm dấu che thông tin
+	Add cloud	Thêm hình đám mây
+	Add polygon	Thêm đa giác
+	Add connected lines	Thêm đường gấp khúc
+	Add callout	Thêm Chú dẫn
+	Add inserted text	Thêm văn bản chèn
+	Add file attachment	Thêm tệp đính kèm
+	Set status Accepted	Đặt trạng thái Đã chấp nhận
+	Set status Rejected	Đặt trạng thái Đã từ chối
+	Set status Cancelled	Đặt trạng thái Đã hủy
+	Set status Completed	Đặt trạng thái Đã hoàn tất
+	Set status None	Đặt trạng thái Không có
+	Set status Unmarked	Đặt trạng thái Chưa đánh dấu
+	Save as PDF/A-1b	Lưu dưới dạng PDF/A-1b
+	Save as PDF/A-2b	Lưu dưới dạng PDF/A-2b
+	Save as PDF/A-3b	Lưu dưới dạng PDF/A-3b
+	Fill & Sign: change signature	Điền & Ký: thay đổi chữ ký
+	Fill & Sign: change initials	Điền & Ký: thay đổi chữ ký tắt
+	Fill & Sign: remove saved signature	Điền & Ký: xóa chữ ký đã lưu
+	Fill & Sign: remove saved initials	Điền & Ký: xóa chữ ký tắt đã lưu
+	Change signature	Thay đổi Chữ ký
+	Change initials	Thay đổi Chữ ký tắt
+	Measure distance	Đo Khoảng cách
+	Measure perimeter	Đo Chu vi
+	Measure area	Đo Diện tích
+	Set measurement scale	Đặt Tỷ lệ Đo
+	Measurement information	Thông tin Đo
+	Measurement snapping	Bắt điểm khi Đo
+	Export measurements as CSV	Xuất Số đo ra CSV
+	Distance	Khoảng cách
+	Perimeter	Chu vi
+	Area	Vùng
+	Drawing scale	Tỷ lệ bản vẽ
+	Snapping	Bắt điểm
+	Export measurements	Xuất Số đo
+	Open a PDF to measure it.	Hãy mở một PDF để đo.
+	Click vertices. Enter or double-click finishes a perimeter or area. Click the first point to close an area.	Bấm vào các đỉnh. Nhấn Enter hoặc bấm đúp để hoàn tất chu vi hoặc diện tích. Bấm vào điểm đầu tiên để khép kín vùng.
+	Shift constrains to 45 degrees. Backspace removes a vertex. Escape cancels.	Giữ Shift để khóa theo góc 45 độ. Backspace xóa một đỉnh. Esc để hủy.
+	Angle	Góc
+	Click the first point to begin.	Bấm vào điểm đầu tiên để bắt đầu.
+	Snap to drawing	Bắt điểm vào Bản vẽ
+	Endpoints	Điểm cuối
+	Midpoints	Trung điểm
+	Intersections	Giao điểm
+	Paths	Đường dẫn hình
+	Sensitivity	Độ nhạy
+	Unit	Đơn vị
+	Decimals	Số chữ số thập phân
+	Calibrate from two points	Hiệu chỉnh từ Hai điểm
+	Entire page	Toàn bộ trang
+	Viewport rectangle in page points (x, y, width, height)	Hình chữ nhật khung nhìn theo điểm của trang (x, y, rộng, cao)
+	Viewport	Khung nhìn
+	Apply scale	Áp dụng Tỷ lệ
+	Saved measurements	Số đo đã lưu
+	Saved measurements.	Đã lưu số đo.
+	Endpoint	Điểm cuối
+	Midpoint	Trung điểm
+	Intersection	Giao
+	Path	Đường dẫn hình
+	This drawing exceeds the snapping limit; only the first paths are used.	Bản vẽ này vượt quá giới hạn bắt điểm; chỉ những đường dẫn hình đầu tiên được dùng.
+	Some page content couldn't be read; snapping uses the rest.	Không đọc được một phần nội dung trang; tính năng bắt điểm dùng phần còn lại.
+	Unsupported measurements	Số đo không được hỗ trợ
+	Label	Nhãn
+	{n} measurements use an unsupported format and are left out.	{n} số đo dùng định dạng không được hỗ trợ nên bị bỏ qua.
+	This area has too many overlapping paths; intersection snapping is limited.	Vùng này có quá nhiều đường dẫn hình chồng lên nhau; bắt điểm giao bị hạn chế.
+	This measurement needs at least {n} points.	Phép đo này cần ít nhất {n} điểm.
+	Change {what}	Thay đổi {what}
+	Cut and stack	Cắt và xếp chồng
+	Default workspace mode	Chế độ không gian làm việc mặc định
+	Documents and view	Tài liệu và dạng xem
+	Open email app	Mở Ứng dụng Email
+	Open link	Mở Nối kết
+	Open this web page?	Mở trang web này?
+	Scripts run in a sandbox without file or network access. A script that asks to open a web page needs your permission first. With JavaScript off, Acrobat's standard format, validate and calculate functions still work.	Tập lệnh chạy trong môi trường cách ly, không truy cập được tệp hay mạng. Tập lệnh muốn mở trang web phải được bạn cho phép trước. Khi tắt JavaScript, các hàm định dạng, xác thực và tính toán chuẩn của Acrobat vẫn hoạt động.
+	Sign yourself	Tự ký
+	Used when opening PDFs. An explicit launch or control mode takes precedence for the session.	Dùng khi mở PDF. Chế độ khởi chạy hoặc điều khiển được chỉ định rõ sẽ được ưu tiên trong phiên làm việc.
+	Write this email?	Soạn email này?
+	{who} in this document wants to open this address in your browser:	{who} trong tài liệu này muốn mở địa chỉ sau trong trình duyệt của bạn:
+	{who} in this document wants to open your email app with this address:	{who} trong tài liệu này muốn mở ứng dụng email của bạn với địa chỉ sau:
+	This web address mixes letters from different alphabets, a common way to imitate another site's name.	Địa chỉ web này trộn lẫn chữ cái từ nhiều bảng chữ cái khác nhau, một cách thường dùng để giả mạo tên của trang web khác.
+	This web address uses letters from another alphabet, which can look like familiar ones.	Địa chỉ web này dùng chữ cái từ bảng chữ cái khác, có thể trông giống các chữ cái quen thuộc.
+	Create PDF from images	Tạo PDF từ ảnh
+	Selected image files: {count}	Tệp ảnh đã chọn: {count}
+	Use image resolution	Dùng độ phân giải của ảnh
+	Use each image's embedded DPI; use 72 DPI when it is absent.	Dùng DPI nhúng trong từng ảnh; dùng 72 DPI nếu ảnh không có.
+	Use 72 DPI (one point per pixel)	Dùng 72 DPI (một điểm cho mỗi pixel)
+	Use custom DPI	Dùng DPI tùy chỉnh
+	DPI sets the printed page size without resampling the image.	DPI quyết định kích thước trang khi in mà không lấy mẫu lại ảnh.
+	Create	Tạo
+	Dynamic XFA form laid out from its template: {pages}, {fields}.	Biểu mẫu XFA động được dàn trang từ mẫu của nó: {pages}, {fields}.
+	This form's scripts are turned off because one ran too long. Reopen the document to run them again.	Tập lệnh của biểu mẫu này đã bị tắt vì có một tập lệnh chạy quá lâu. Hãy mở lại tài liệu để chạy lại chúng.
+	XFA form: its fields and its XFA data are kept in step, so other viewers show what you fill in.	Biểu mẫu XFA: các trường và dữ liệu XFA luôn được đồng bộ, nên trình xem khác cũng hiển thị những gì bạn điền.
+	Switch to two-page view first to show the cover page	Hãy chuyển sang dạng xem hai trang trước để hiện trang bìa
+	Page display: {layout}	Hiển thị trang: {layout}
+	Fit to width scrolling	Cuộn vừa chiều rộng
+	Fit one full page	Vừa một trang đầy đủ
+	Default page display	Hiển thị trang mặc định
+	Default zoom	Thu phóng mặc định
+	Used when a PDF doesn't ask for a layout or zoom. Continuous scrolling never snaps between pages.	Dùng khi PDF không chỉ định bố trí hay mức thu phóng. Chế độ cuộn liên tục không bao giờ tự dừng ở ranh giới trang.
+	Choose a PNG or JPEG image (up to 4 MiB). Transparency is preserved.	Chọn ảnh PNG hoặc JPEG (tối đa 4 MiB). Độ trong suốt được giữ nguyên.
+	Couldn't import the signature image: {e}	Không thể nhập ảnh chữ ký: {e}
+@plural	{n} page|{n} pages	{n} trang
+@plural	{n} field|{n} fields	{n} trường
+@plural	{n} field name collides with earlier files and will be renamed: {list}|{n} field names collide with earlier files and will be renamed: {list}	{n} tên trường trùng với các tệp trước và sẽ được đổi tên: {list}
+	Create PDF from multiple files…	Tạo PDF từ Nhiều Tệp…
+	Create separate PDFs…	Tạo các PDF Riêng…
+	Optimizing… removing user data	Đang tối ưu… xóa dữ liệu người dùng
+	Optimizing… image {d} of {t}	Đang tối ưu… ảnh {d}/{t}
+	Optimizing… cleaning up	Đang tối ưu… dọn dẹp
+	Optimizing… merging identical objects	Đang tối ưu… hợp nhất các đối tượng giống nhau
+	Optimizing… writing the copy	Đang tối ưu… ghi bản sao
+	Cancelling…	Đang hủy…
+	Created a PDF from {n} files	Đã tạo PDF từ {n} tệp
+	PDF, images and text	PDF, ảnh và văn bản
+	Insert a file before page {label}	Chèn tệp trước trang {label}
+	Insert a file at the end	Chèn tệp vào cuối
+	Save pages	Lưu Trang
+	Save these pages as one PDF	Lưu các trang này thành một PDF
+	No changes to save	Không có thay đổi nào để lưu
+	Created a PDF from {n} files; left out: {names}	Đã tạo PDF từ {n} tệp; đã bỏ qua: {names}
+	Created a PDF from the first {n} files	Đã tạo PDF từ {n} tệp đầu tiên
+	Go to page…	Đi tới Trang…
+	Optimization is already running	Quá trình tối ưu đang chạy
+	Optimization cancelled	Đã hủy tối ưu
+	Couldn't optimize the file	Không thể tối ưu tệp
+	Files are combined in this order. Leave Pages empty to take every page.	Các tệp được kết hợp theo thứ tự này. Để trống ô Trang để lấy tất cả các trang.
+	Portable mode is off: {folder} can't be written ({error}). Settings are kept in your user folder instead.	Chế độ portable đã tắt: không thể ghi vào {folder} ({error}). Thiết đặt sẽ được lưu trong thư mục người dùng của bạn.
+	PdfCraft is drawing without a graphics processor, so it may be slow. Updating the graphics driver may help.	PdfCraft đang vẽ mà không dùng bộ xử lý đồ họa nên có thể chạy chậm. Cập nhật trình điều khiển đồ họa có thể giúp cải thiện.
+	Show	Hiện
+	Sort	Sắp xếp
+	Reverse the order	Đảo ngược thứ tự
+	Grab bag	Tổng hợp
+	Table	Bảng
+	Username	Tên người dùng
+	Display name	Tên hiển thị
+	Real name	Tên thật
+	Name (A–Z)	Tên (A–Z)
+	Merged PRs	PR đã hợp nhất
+	PRs	PR
+	Commits	Commit
+	Lines added	Dòng đã thêm
+	+LOC	+LOC
+	Lines deleted	Dòng đã xóa
+	−LOC	−LOC
+	Line delta	Chênh lệch dòng
+	ΔLOC	ΔLOC
+	Binary assets added	Tệp nhị phân đã thêm
+	+Bin	+Bin
+	Binary assets removed	Tệp nhị phân đã xóa
+	−Bin	−Bin
+	First commit	Commit đầu tiên
+	First	Đầu tiên
+	Last commit	Commit gần nhất
+	Last	Cuối cùng
+	No contributor data was built into this copy.	Bản này không được tích hợp dữ liệu người đóng góp.
+	No model credits were built into this copy.	Bản này không được tích hợp thông tin ghi công mô hình.
+	{n} contributors · {c} commits	{n} người đóng góp · {c} commit
+	Company	Công ty
+	Model	Mô hình
+	% of all commits	% tổng số commit
+	Lines +/−	Dòng +/−
+	@{login}: {prs} PRs, {commits} commits, +{added} / −{deleted} lines (Δ {delta}), +{bin_added} / −{bin_deleted} binary assets, {first} – {last}	@{login}: {prs} PR, {commits} commit, +{added} / −{deleted} dòng (Δ {delta}), +{bin_added} / −{bin_deleted} tệp nhị phân, {first} – {last}
+	None of those files can be made into a PDF; use PDFs, images or .txt files	Không tệp nào trong số này có thể chuyển thành PDF; hãy dùng PDF, ảnh hoặc tệp .txt
+	About	Giới thiệu
+	Contributors	Người đóng góp
+	Models	Mô hình
+	Only continue if you trust this document. An address can carry information from the document, such as what you typed into its form.	Chỉ tiếp tục nếu bạn tin tưởng tài liệu này. Một địa chỉ có thể mang theo thông tin từ tài liệu, chẳng hạn những gì bạn đã nhập vào biểu mẫu của nó.
+	Print single-sided. Keep the sheets in order, cut at the marks, then stack the piles left to right, top to bottom.	In một mặt. Giữ các tờ theo đúng thứ tự, cắt theo vạch dấu, rồi xếp chồng các xấp từ trái sang phải, từ trên xuống dưới.
+comment menu	Edit	Sửa
+	Undo {action}	Hoàn tác {action}
+	Redo {action}	Làm lại {action}
+signature pad	Type	Nhập
+action wizard	Start	Bắt đầu
+calendar date	January	Tháng Một
+calendar date	February	Tháng Hai
+calendar date	March	Tháng Ba
+calendar date	April	Tháng Tư
+calendar date	May	Tháng Năm
+calendar date	June	Tháng Sáu
+calendar date	July	Tháng Bảy
+calendar date	August	Tháng Tám
+calendar date	September	Tháng Chín
+calendar date	October	Tháng Mười
+calendar date	November	Tháng Mười Một
+calendar date	December	Tháng Mười Hai
+	Reopen the files that were open when PdfCraft last closed	Mở lại các tệp đang mở khi PdfCraft đóng lần trước
+	Clear Recent Files	Xóa Tệp Gần đây
+	Remove from Recent	Gỡ khỏi Gần đây
+	Remove {name} from Recent	Gỡ {name} khỏi Gần đây
+	Inserted text	Văn bản đã chèn
+	Add {what}	Thêm {what}
+	Use {what}	Dùng {what}
+	Place saved {what}	Đặt {what} đã lưu
+	Remove saved {what}	Xóa {what} đã lưu
+	A link	Một nối kết
+	A button	Một nút
+	A script	Một tập lệnh
+	{who} in this document tried to open an address PdfCraft won't open: {e}.	{who} trong tài liệu này đã cố mở một địa chỉ mà PdfCraft không mở: {e}.
+	{who} in this document tried to open an address PdfCraft won't open: {e}. Only web (http, https) and email (mailto) links open from documents.	{who} trong tài liệu này đã cố mở một địa chỉ mà PdfCraft không mở: {e}. Chỉ nối kết web (http, https) và email (mailto) mới được mở từ tài liệu.
+	Another file dialog is still open. Finish with it first.	Một hộp thoại tệp khác vẫn đang mở. Hãy hoàn tất hộp thoại đó trước.
+	Couldn't show the file picker. Please try again.	Không thể hiển thị hộp chọn tệp. Hãy thử lại.
+	The document changed while you were choosing a file, so nothing was changed.	Tài liệu đã thay đổi trong lúc bạn chọn tệp nên không có gì được thay đổi.
+	The document was closed before it could be saved.	Tài liệu đã bị đóng trước khi kịp lưu.
+	The pages were extracted but not deleted, because the document changed while you were choosing a folder.	Các trang đã được trích xuất nhưng chưa bị xóa vì tài liệu đã thay đổi trong lúc bạn chọn thư mục.
+	That didn't work: an internal error stopped it ({m}).	Thao tác không thành công: một lỗi nội bộ đã làm gián đoạn ({m}).
+	The Windows store's digital IDs couldn't be listed: {e}	Không thể liệt kê ID số trong kho chứng thư của Windows: {e}
+	Align fields	Căn chỉnh trường
+	Distribute fields	Phân phối trường
+	Match field sizes	Làm khớp kích thước trường
+	Mark for redaction	Đánh dấu để che thông tin
+	Mark pages for redaction	Đánh dấu trang để che thông tin
+	Change document properties	Thay đổi thuộc tính tài liệu
+	Mark differences	Đánh dấu khác biệt
+	Run form script	Chạy tập lệnh biểu mẫu
+	Scripted content must be usable with a keyboard and assistive technology. Check the document's scripts.	Nội dung dùng tập lệnh phải sử dụng được bằng bàn phím và công nghệ hỗ trợ. Hãy kiểm tra các tập lệnh của tài liệu.
+	Table rows belong directly in a table or its head, body or foot. Fix the table's tags.	Hàng của bảng phải nằm trực tiếp trong bảng hoặc trong phần đầu, thân hay chân của bảng. Hãy sửa các thẻ của bảng.
+	Basic constraints	Ràng buộc cơ bản
+	Certificate authority	Tổ chức cấp chứng thư
+	End entity	Thực thể cuối
+	SHA-1 digest	Mã băm SHA-1
+	SHA-256 digest	Mã băm SHA-256
+	Squiggly	Lượn sóng
+	Home / End	Home / End
+	H / Space (hold)	H / Phím cách (giữ)
+	Rotation:	Xoay:
+	Line ending	Đầu mút đường
+	Open arrow	Mũi tên mở
+	Closed arrow	Mũi tên đóng
+	Butt	Đầu phẳng
+	Reverse open arrow	Mũi tên mở ngược
+	Reverse closed arrow	Mũi tên đóng ngược
+	Slash	Gạch chéo
+	The PDF text fonts can't draw “{c}” ({code}). Choose supported text.	Phông văn bản PDF không vẽ được “{c}” ({code}). Hãy chọn văn bản được hỗ trợ.
+	The standard fonts can't draw “{c}” ({code}). Only Western European characters can be added as text for now.	Phông chuẩn không vẽ được “{c}” ({code}). Hiện chỉ có thể thêm ký tự Tây Âu dưới dạng văn bản.
+	This field's font can't draw “{c}” ({code}), so PdfCraft shows ? in its place. The value is saved, and other PDF viewers redraw the field from it.	Phông của trường này không vẽ được “{c}” ({code}) nên PdfCraft hiển thị ? thay thế. Giá trị vẫn được lưu và các trình xem PDF khác sẽ vẽ lại trường từ giá trị đó.
+	The fonts PdfCraft writes with can't draw “{c}” ({code}), so it shows as ? in every PDF viewer. The text is saved.	Phông mà PdfCraft dùng để ghi không vẽ được “{c}” ({code}) nên ký tự này hiện thành ? trong mọi trình xem PDF. Văn bản vẫn được lưu.
+	Larger pages	Trang lớn hơn
+	Smaller pages	Trang nhỏ hơn
+	Reset page size	Đặt lại kích thước trang
+	Flatten Fill & Sign when saving	Làm phẳng Điền & Ký khi lưu
+	Text, marks and signatures become part of the page. Other comments stay editable.	Văn bản, dấu và chữ ký sẽ trở thành một phần của trang. Các chú thích khác vẫn sửa được.
+	Date format	Định dạng ngày
+	Fill & Sign dates	Ngày của Điền & Ký
+	Pattern	Mẫu định dạng
+	Today: {date}	Hôm nay: {date}
+	yyyy or yy year · m or mm month · mmm or mmmm month name · d or dd day · ddd or dddd weekday. H, h, M, s and t are time letters and can't be used on their own: put {escape} before a letter to show it as is.	yyyy hoặc yy: năm · m hoặc mm: tháng · mmm hoặc mmmm: tên tháng · d hoặc dd: ngày · ddd hoặc dddd: thứ. H, h, M, s và t là ký tự chỉ giờ và không dùng riêng được: đặt {escape} trước một ký tự để hiển thị nguyên dạng.
+	Same as interface ({language})	Giống giao diện ({language})
+	{chars} can't be written into the PDF yet: Fill & Sign text is Western European only. Pick a numeric format such as dd.mm.yyyy.	Chưa thể ghi {chars} vào PDF: văn bản Điền & Ký chỉ hỗ trợ ký tự Tây Âu. Hãy chọn định dạng số như dd.mm.yyyy.
+	Opens the printer driver's preferences. They are saved for every print from this computer; the copies, two-sided, grayscale and paper chosen here still apply.	Mở tùy chọn của trình điều khiển máy in. Các tùy chọn này được lưu cho mọi lần in từ máy tính này; số bản sao, in hai mặt, thang xám và giấy chọn ở đây vẫn được áp dụng.
+	The printer driver's own settings for this print: paper tray, paper type, finishing and more.	Thiết đặt riêng của trình điều khiển máy in cho lần in này: khay giấy, loại giấy, hoàn thiện và các mục khác.
+	Couldn't open the printer's preferences: {e}	Không thể mở tùy chọn của máy in: {e}
+	Printer properties	Thuộc tính Máy in
+	Reset to printer defaults	Đặt lại về mặc định của máy in
+	This printer offers no settings of its own.	Máy in này không có thiết đặt riêng.
+certificate	Subject	Chủ thể
+	Scroll tabs left	Cuộn thẻ sang trái
+	Scroll tabs right	Cuộn thẻ sang phải
+	Shared Field Properties	Thuộc tính Chung của Trường
+	{n} fields selected	Đã chọn {n} trường
+	Mixed	Khác nhau
+	Custom font	Phông tùy chỉnh
+	Only checked properties will change. Mixed means the selected fields have different values.	Chỉ các thuộc tính được đánh dấu chọn mới thay đổi. “Khác nhau” nghĩa là các trường đã chọn có giá trị khác nhau.
+	Shift- or Ctrl/Command-click to select several fields.	Bấm cùng Shift hoặc Ctrl/Command để chọn nhiều trường.
+	Font size 0 uses automatic sizing.	Cỡ phông 0 sẽ tự động điều chỉnh kích thước.
+	Character limit:	Giới hạn ký tự:
+	Character limit 0 means no limit. A comb of characters needs a limit.	Giới hạn ký tự 0 nghĩa là không giới hạn. Chia ô ký tự cần có giới hạn.
+	To change locked fields, also set Locked to No.	Để thay đổi trường bị khóa, hãy đặt cả Đã khóa thành Không.
+	Comb of characters	Chia ô ký tự
+	The document changed while you were editing field properties.	Tài liệu đã thay đổi trong lúc bạn sửa thuộc tính trường.
+	The document is no longer open.	Tài liệu không còn mở.
+	The field properties dialog is no longer open.	Hộp thoại thuộc tính trường không còn mở.
+	The field properties could not be changed.	Không thể thay đổi thuộc tính trường.
+	The selected fields could not be found. Select them again.	Không tìm thấy các trường đã chọn. Hãy chọn lại.
+	The field {name} no longer exists.	Trường {name} không còn tồn tại.
+	A selected field has no widget on any page, so the fields can't be edited together.	Một trường đã chọn không có widget trên trang nào nên không thể sửa các trường cùng lúc.
+	Text recognition isn't installed: its models are missing (run `cargo xtask models`, or set PDFCRAFT_MODELS).	Chưa cài đặt nhận dạng văn bản: thiếu các mô hình (chạy `cargo xtask models` hoặc đặt PDFCRAFT_MODELS).
+	 ({n} at {dpi} dpi, the largest size they can be drawn at)	 ({n} ở {dpi} dpi, kích thước lớn nhất có thể vẽ)
+	Margins	Lề
+	For page sizes and margins.	Dùng cho kích thước trang và lề.
+@plural	{n} object selected|{n} objects selected	Đã chọn {n} đối tượng
+	Drag the selection to move it. Esc clears the selection.	Kéo vùng chọn để di chuyển. Esc để bỏ chọn.
+	Shift-click to select several objects. Drag empty space to select an area.	Bấm cùng Shift để chọn nhiều đối tượng. Kéo trên vùng trống để chọn một khu vực.
+	Select at most 1000 objects at a time.	Chọn tối đa 1000 đối tượng mỗi lần.
+	Finish or discard the text being edited before selecting several objects.	Hãy hoàn tất hoặc hủy văn bản đang sửa trước khi chọn nhiều đối tượng.
+	Move object	Di chuyển đối tượng
+	Move objects	Di chuyển các đối tượng
+	Vertical text cannot be moved with this selection.	Không thể di chuyển văn bản dọc bằng vùng chọn này.
+	Text used as a clipping path cannot be moved with this selection.	Không thể di chuyển văn bản dùng làm đường xén bằng vùng chọn này.
+	These objects could not be moved. Select them again and try a smaller move.	Không thể di chuyển các đối tượng này. Hãy chọn lại và thử di chuyển một khoảng nhỏ hơn.
+	This page contains objects that cannot be selected together.	Trang này chứa các đối tượng không thể chọn cùng nhau.
+	Fill colour	Màu Tô
+	No fill	Không Tô
+	Fill colour: none	Màu tô: không có
+key	Ctrl	Ctrl
+key	Shift	Shift
+key	Delete	Delete
+key	Esc	Esc
+key	Home	Home
+key	End	End
+key	Space	Phím cách
+	Grid view	Dạng xem Lưới
+	List view	Dạng xem Danh sách
+	Files are combined in the order shown. Drag them to change it.	Các tệp được kết hợp theo thứ tự hiển thị. Kéo tệp để thay đổi thứ tự.
+	Preview unavailable: {e}	Không có bản xem trước: {e}
+	Pages: {k} of {n}	Trang: {k} trên {n}
+	Check the pages	Kiểm tra các trang
+	Switch to List view to change the pages it takes.	Chuyển sang Dạng xem Danh sách để thay đổi các trang được lấy.
+	Expand all	Mở rộng Tất cả
+	Collapse all	Thu gọn Tất cả
+	Remove page	Gỡ trang
+	Remove {n} pages	Gỡ {n} trang
+	Reset panel layout	Đặt lại Bố trí Ngăn
+	Float panel	Thả nổi Ngăn
+	Move to group	Chuyển vào nhóm
+	Panels	Ngăn
+	Resize panels	Đổi kích thước ngăn
+	Resize panel window	Đổi kích thước cửa sổ ngăn
+	PDF page: {size}	Trang PDF: {size}
+	Match page at 100%	Khớp trang ở 100%
+	PDF scale: {scale}%	Tỷ lệ PDF: {scale}%
+	Printer paper and scaling may differ. Check driver settings.	Giấy và tỷ lệ của máy in có thể khác. Hãy kiểm tra thiết đặt trình điều khiển.
+	Drawing scale changes. Use Actual size for full-scale plans.	Tỷ lệ bản vẽ sẽ thay đổi. Dùng Kích thước Thực cho bản vẽ đúng tỷ lệ.
+	Reload documents when their files change on disk	Tải lại tài liệu khi tệp của chúng thay đổi trên đĩa
+	This file changed on disk. Reload it to see the new version; your unsaved changes will be lost.	Tệp này đã thay đổi trên đĩa. Tải lại để xem phiên bản mới; các thay đổi chưa lưu của bạn sẽ bị mất.
+	Reload	Tải lại
+	Couldn't reload {name}: {e}	Không thể tải lại {name}: {e}
+	Select page {label}	Chọn trang {label}
+	Rotate page {label} counterclockwise	Xoay trang {label} ngược chiều kim đồng hồ
+	Rotate page {label} clockwise	Xoay trang {label} theo chiều kim đồng hồ
+	Delete page {label}	Xóa trang {label}
+	Mouse wheel scroll speed	Tốc độ cuộn con lăn chuột
+scroll speed	Slow	Chậm
+scroll speed	Normal	Bình thường
+scroll speed	Fast	Nhanh
+	Animation effects	Hiệu ứng hoạt hình
+animation effects	On	Bật
+animation effects	Off	Tắt
+	Enhance camera image	Tăng cường Ảnh Chụp
+	Drag the corners onto the document's edges, then choose Enhance page.	Kéo các góc khớp với mép tài liệu, sau đó chọn Tăng cường Trang.
+	Enhance page	Tăng cường Trang
+	Done adding text	Hoàn tất thêm văn bản
+	Discard this text (Esc)	Bỏ văn bản này (Esc)
+	Clean-up	Làm sạch
+	Original	Gốc
+	Greyscale	Thang xám
+	Black and white	Đen trắng
+	Reading colours	Màu đọc
+	Replace document colours	Thay màu tài liệu
+	Black on white	Đen trên nền trắng
+	White on black	Trắng trên nền đen
+	Yellow on black	Vàng trên nền đen
+	Green on black	Xanh lá trên nền đen
+	Page background	Nền trang
+	Only change the colour of black text or line art	Chỉ đổi màu văn bản đen hoặc nét vẽ
+	Change the colour of line art as well as text	Đổi màu cả nét vẽ lẫn văn bản
+	Colours are remapped while rendering; the document itself never changes.	Màu được ánh xạ lại khi hiển thị; bản thân tài liệu không bao giờ thay đổi.
+	This printer's driver doesn't take two-sided settings from other programs, so its own setting applies. Change it in Properties…	Trình điều khiển của máy in này không nhận thiết đặt in hai mặt từ chương trình khác nên thiết đặt riêng của nó được áp dụng. Hãy thay đổi trong Thuộc tính…
+	Browser's print dialog	Hộp thoại in của trình duyệt
+	Copies, two-sided printing and colour are chosen in the browser's print dialog.	Số bản sao, in hai mặt và màu được chọn trong hộp thoại in của trình duyệt.
+	Preparing {n} sheets for printing…	Đang chuẩn bị {n} tờ để in…
+	Preparing sheet {done} of {total} for printing…	Đang chuẩn bị tờ {done} trên {total} để in…
+	Opening the browser's print dialog…	Đang mở hộp thoại in của trình duyệt…
+	Couldn't print from the browser ({e}); downloaded {name} to print instead	Không thể in từ trình duyệt ({e}); đã tải {name} xuống để in
+	Tools panel side	Vị trí ngăn Công cụ
+	Add comment	Thêm chú thích
+	Change tag properties	Thay đổi thuộc tính thẻ
+	Tags panel	Ngăn Thẻ
+	Tags	Thẻ
+	Tag type	Loại thẻ
+	Actual text	Văn bản thực
+	Find a tag	Tìm thẻ
+	Collapse tag	Thu gọn thẻ
+	Expand tag	Mở rộng thẻ
+	Revert changes	Hoàn nguyên thay đổi
+	Save tag properties	Lưu thuộc tính thẻ
+	This document has no editable structure tags.	Tài liệu này không có thẻ cấu trúc nào sửa được.
+	{n} tags	{n} thẻ
+	Save or revert changes before selecting another tag.	Hãy lưu hoặc hoàn nguyên thay đổi trước khi chọn thẻ khác.
+	Left out: {names}	Đã bỏ qua: {names}
+	already a PDF	đã là PDF
+	no unused output name	không còn tên đầu ra chưa dùng
+	no output folder was chosen	chưa chọn thư mục đầu ra
+@plural	Downloaded {n} PDF|Downloaded {n} PDFs	Đã tải xuống {n} PDF
+	Scan	Quét
+	Sign a sheet of white paper and take a photo of it in bright, even light (use the flash). Choose the photo or drop it here: PdfCraft finds the signature and removes the paper.	Ký lên một tờ giấy trắng và chụp ảnh dưới ánh sáng mạnh, đều (dùng đèn flash). Chọn ảnh hoặc thả ảnh vào đây: PdfCraft sẽ tìm chữ ký và loại bỏ nền giấy.
+	Choose photo…	Chọn Ảnh…
+	No photo chosen	Chưa chọn ảnh
+	Photo	Ảnh
+	Ink sensitivity	Độ nhạy mực
+	No signature was found in the frame. Move the frame over the signature or raise the ink sensitivity.	Không tìm thấy chữ ký trong khung. Hãy di chuyển khung lên chữ ký hoặc tăng độ nhạy mực.
+	Couldn't use the photo: {e}	Không thể dùng ảnh: {e}
+	Close Tab	Đóng Thẻ
+	Reopen Closed Tab	Mở lại Thẻ đã Đóng
+	Reveal in Finder	Hiện trong Finder
+	Reveal in File Explorer	Hiện trong File Explorer
+	Other colour…	Màu Khác…
+	Recent colours	Màu Gần đây
+	Couldn't follow linked PDF: {reason}	Không thể mở PDF được nối kết: {reason}
+	The linked PDF opened, but its named destination was not applied.	Đã mở PDF được nối kết, nhưng không áp dụng được đích đến có tên.
+	The linked PDF opened, but its page destination was out of range.	Đã mở PDF được nối kết, nhưng trang đích nằm ngoài phạm vi.
+	Local cross-PDF links require the desktop app	Nối kết cục bộ giữa các PDF cần ứng dụng trên máy tính
+	Minimize	Thu nhỏ
+	Maximize	Phóng to
+	Restore	Khôi phục
+	Use system title bar	Dùng thanh tiêu đề của hệ thống
+	Show a basic title bar for the window buttons instead of the tab strip. GNOME doesn't draw title bars for apps, so this one doesn't follow its theme.	Hiện thanh tiêu đề cơ bản cho các nút cửa sổ thay vì dải thẻ. GNOME không vẽ thanh tiêu đề cho ứng dụng nên thanh này không theo chủ đề của GNOME.
+	Allow	Cho phép
+	Only allow this if you trust the source document.	Chỉ cho phép nếu bạn tin cậy tài liệu nguồn.
+	Open this local PDF?	Mở PDF cục bộ này?
+	This document is trying to open a local file:	Tài liệu này đang cố mở một tệp cục bộ:
+	Move tag earlier	Đưa thẻ lên trước
+	Move tag later	Đưa thẻ ra sau
+	Tools	Công cụ
+	Inspector	Trình kiểm tra
+	Save (M4)	Lưu (M4)
+	Only the document's owner can change its security (open it with the permissions password)	Chỉ chủ sở hữu tài liệu mới thay đổi được bảo mật (mở tài liệu bằng mật khẩu quyền)
+	Creator	Ứng dụng tạo
+	Producer	Trình tạo PDF
+	Enter a name.	Hãy nhập tên.
+	The password must have at least 6 characters.	Mật khẩu phải có ít nhất 6 ký tự.
+	The passwords do not match.	Mật khẩu không khớp.
+	There is no folder to save the digital ID in.	Không có thư mục để lưu ID số.
+	The password is incorrect.	Mật khẩu không đúng.
+	Choose a digital ID.	Hãy chọn một ID số.
+	Unsigned signature field: {name}	Trường chữ ký chưa ký: {name}
+	Rev. {rev}: Signed by {name}	Phiên bản {rev}: Do {name} ký
+	Rev. {rev}: Signed by an unknown signer	Phiên bản {rev}: Do người ký không xác định ký
+	Rev. {rev}: Certified by {name}	Phiên bản {rev}: Do {name} chứng nhận
+	Rev. {rev}: Certified by an unknown signer	Phiên bản {rev}: Do người ký không xác định chứng nhận
+	{who}, certificate issued by {issuer}.	{who}, chứng thư số do {issuer} cấp.
+	{who}, certificate issued by an unknown issuer.	{who}, chứng thư số do bên cấp không xác định cấp.
+	Digital Signature	Chữ ký số
+	Non-Repudiation	Chống chối bỏ
+	Key Encipherment	Mã hóa khóa
+	Data Encipherment	Mã hóa dữ liệu
+	Key Agreement	Thỏa thuận khóa
+	Certificate Signing	Ký chứng thư
+	CRL Signing	Ký CRL
+	Encipher Only	Chỉ mã hóa
+	Decipher Only	Chỉ giải mã
+	Enter a page number	Nhập số trang
+	Enter a URL	Nhập URL
+	Enter the field names	Nhập tên các trường
+	Cut and stack needs Two-sided: Off. Print single-sided sheets.	Cắt và xếp chồng cần Hai mặt: Tắt. Hãy in các tờ một mặt.
+	Panel layout could not be restored: {error}	Không thể khôi phục bố trí ngăn: {error}
+	Panel move was not applied: {error}	Chưa áp dụng việc di chuyển ngăn: {error}
+	Rendering…	Đang hiển thị…
+	Still rendering — this page is unusually complex…	Vẫn đang hiển thị — trang này phức tạp bất thường…
+	English	Tiếng Anh
+@plural	{n} image optimized|{n} images optimized	Đã tối ưu {n} ảnh
+@plural	{n} item discarded|{n} items discarded	Đã loại bỏ {n} mục
+@plural	{n} byte|{n} bytes	{n} byte
+@plural	{n} pixel|{n} pixels	{n} pixel
+@plural	Delete {n} field|Delete {n} fields	Xóa {n} trường
+	 on page {label}	 trên trang {label}
+	Drop PDFs or folders here, or choose them.	Thả PDF hoặc thư mục vào đây, hoặc chọn chúng.
+	Every PDF in the folder	Mọi PDF trong thư mục
+	Every PDF in the folder and the folders inside it	Mọi PDF trong thư mục và các thư mục con
+	No PDFs found in {folder}	Không tìm thấy PDF nào trong {folder}
+	Added the first {n} PDFs in {folder}	Đã thêm {n} PDF đầu tiên trong {folder}
+	Add the PDFs to combine	Thêm các PDF cần kết hợp
+	Document properties (⌘D)	Thuộc tính tài liệu (⌘D)
+	New bookmark (⌘B)	Dấu trang mới (⌘B)
+	Next (⌘G)	Tiếp (⌘G)
+	Open a PDF (⌘O)	Mở PDF (⌘O)
+	Previous (⇧⌘G)	Trước (⇧⌘G)
+	Print (⌘P)	In (⌘P)
+	Rotate view clockwise (⇧⌘+)	Xoay dạng xem theo chiều kim đồng hồ (⇧⌘+)
+	Zoom in (⌘+)	Phóng to (⌘+)
+	Zoom in / out (also pinch or ⌘-scroll)	Phóng to / thu nhỏ (hoặc chụm ngón tay hay ⌘ + cuộn)
+	Zoom out (⌘−)	Thu nhỏ (⌘−)
+	DeviceCMYK is used, but the PDF/A output intent isn't a CMYK profile	Có dùng DeviceCMYK nhưng mục đích đầu ra (output intent) của PDF/A không phải hồ sơ CMYK
+	DeviceRGB is used, but the PDF/A output intent isn't an RGB profile	Có dùng DeviceRGB nhưng mục đích đầu ra (output intent) của PDF/A không phải hồ sơ RGB
+	Flatten Fill & Sign	Làm phẳng Điền & Ký
+	The security settings don't allow screen readers to read the text	Thiết đặt bảo mật không cho phép trình đọc màn hình đọc văn bản
+	No page has text: the document appears to be images of pages	Không trang nào có văn bản: tài liệu có vẻ là ảnh chụp các trang
+	The document has no tags (structure tree)	Tài liệu không có thẻ (cây cấu trúc)
+	The document isn't marked as tagged (MarkInfo Marked)	Tài liệu không được đánh dấu là đã gắn thẻ (MarkInfo Marked)
+	No document language is set	Chưa đặt ngôn ngữ tài liệu
+	The document has no title	Tài liệu không có tiêu đề
+	The window shows the file name, not the title (Initial View > Show)	Cửa sổ hiển thị tên tệp chứ không phải tiêu đề (Dạng xem Ban đầu > Hiện)
+	{n} pages and no bookmarks	{n} trang nhưng không có dấu trang
+	The document isn't tagged, so none of its content is	Tài liệu chưa gắn thẻ nên không nội dung nào được gắn thẻ
+	Page {p}: {n} untagged content item	Trang {p}: {n} mục nội dung chưa gắn thẻ
+	Page {p}: {n} untagged content items	Trang {p}: {n} mục nội dung chưa gắn thẻ
+	Form field on page {p} isn't tagged	Trường biểu mẫu trên trang {p} chưa được gắn thẻ
+	{} annotation on page {p} isn't tagged	Chú thích {} trên trang {p} chưa được gắn thẻ
+	Page {p} doesn't tab in structure order	Thứ tự Tab của trang {p} không theo thứ tự cấu trúc
+	Font {} on page {p} doesn't map its characters to Unicode	Phông {} trên trang {p} không ánh xạ ký tự sang Unicode
+	Font (unnamed) on page {p} doesn't map its characters to Unicode	Phông (không tên) trên trang {p} không ánh xạ ký tự sang Unicode
+	Field "{}" on page {p} has no description (tooltip)	Trường "{}" trên trang {p} không có mô tả (chú giải công cụ)
+	{ty} element: {what}	Phần tử {ty}: {what}
+	{ty} element on page {p}: {what}	Phần tử {ty} trên trang {p}: {what}
+	no alternate text	không có văn bản thay thế
+	its alternate text is inside another element's and will never be read	văn bản thay thế của phần tử nằm trong văn bản thay thế của phần tử khác nên sẽ không bao giờ được đọc
+	alternate text on an element with no page content	có văn bản thay thế trên phần tử không có nội dung trang
+	alternate text hides an annotation inside it	văn bản thay thế che mất một chú thích bên trong
+	not in a Table, THead, TBody or TFoot	không nằm trong Table, THead, TBody hoặc TFoot
+	not in a TR	không nằm trong TR
+	no header cells (TH)	không có ô tiêu đề (TH)
+	rows have between {min} and {max} columns	các hàng có từ {min} đến {max} cột
+	no summary	không có tóm tắt
+	not in an L (list)	không nằm trong L (danh sách)
+	not in an LI (list item)	không nằm trong LI (mục danh sách)
+	the first heading is an H{n}; headings should not skip levels	đầu đề đầu tiên là H{n}; đầu đề không nên bỏ qua cấp
+	H{n} follows an H{d}; headings should not skip levels	H{n} đứng sau H{d}; đầu đề không nên bỏ qua cấp
+	… and {n} more	… và {n} mục khác
+	Accessibility Report	Báo cáo Trợ năng
+	Filename	Tên tệp
+	Report created	Thời điểm tạo báo cáo
+	The checker found problems which may prevent the document from being fully accessible.	Trình kiểm tra đã phát hiện vấn đề có thể khiến tài liệu không đáp ứng đầy đủ trợ năng.
+	Detailed Report	Báo cáo Chi tiết
+	Rule Name	Tên Quy tắc
+	The metadata doesn't identify the file as {}	Siêu dữ liệu không xác định tệp là {}
+	Page {} has additional actions	Trang {} có hành động bổ sung
+	A {} action isn't allowed	Không cho phép hành động {}
+	{} annotations aren't allowed	Không cho phép chú thích {}
+	A {} annotation isn't set to print, or is hidden	Một chú thích {} không được đặt để in hoặc bị ẩn
+	A {} annotation has no appearance stream	Một chú thích {} không có luồng hiển thị (appearance stream)
+	A {} annotation has additional actions	Một chú thích {} có hành động bổ sung
+	The font {} isn't embedded	Phông {} không được nhúng
+	A font isn't embedded	Có phông không được nhúng
+	The signature has no valid byte range.	Chữ ký không có phạm vi byte hợp lệ.
+	The signature's byte range does not match the file.	Phạm vi byte của chữ ký không khớp với tệp.
+	The signature's byte range does not exclude exactly its contents.	Phạm vi byte của chữ ký không loại trừ đúng phần nội dung của chữ ký.
+	The signature contents are not hexadecimal.	Nội dung chữ ký không ở dạng thập lục phân.
+	The signature could not be read ({}).	Không thể đọc chữ ký ({}).
+	PdfCraft can't check this signature yet: {}.	PdfCraft chưa thể kiểm tra chữ ký này: {}.
+	The signature uses the legacy adbe.x509.rsa_sha1 format.	Chữ ký dùng định dạng cũ adbe.x509.rsa_sha1.
+	The signature is BER-encoded (indefinite lengths) rather than DER; it was read leniently.	Chữ ký được mã hóa BER (độ dài không xác định) thay vì DER; chữ ký đã được đọc theo cách nới lỏng.
+	The signed content is a constructed (segmented) OCTET STRING, as BER allows; it was read anyway.	Nội dung đã ký là một OCTET STRING dạng cấu trúc (phân đoạn) như BER cho phép; nội dung vẫn được đọc.
+	The RSA signature value does not have the length of the key's modulus (leading zero bytes dropped or added); it was read anyway.	Giá trị chữ ký RSA không có độ dài bằng modulus của khóa (thiếu hoặc thừa byte 0 ở đầu); chữ ký vẫn được đọc.
+	The RSA signature's DigestInfo has no NULL parameter (older signers write it so); it was read anyway.	DigestInfo của chữ ký RSA không có tham số NULL (các trình ký cũ ghi như vậy); chữ ký vẫn được đọc.
+	The ECDSA signature is not in canonical DER (trailing bytes, padding or a missing sign byte); it was read anyway.	Chữ ký ECDSA không ở dạng DER chuẩn tắc (thừa byte ở cuối, có phần đệm hoặc thiếu byte dấu); chữ ký vẫn được đọc.
+	The ECDSA signature is the raw r and s values instead of a DER sequence; it was read anyway.	Chữ ký ECDSA là các giá trị r và s thô thay vì một chuỗi DER; chữ ký vẫn được đọc.
+	The signature algorithm and the SignerInfo's digest algorithm name different hashes; the signature was made with the SignerInfo's.	Thuật toán chữ ký và thuật toán băm của SignerInfo chỉ định hai hàm băm khác nhau; chữ ký được tạo bằng hàm băm của SignerInfo.
+	This signature uses SHA-1, a weak hash algorithm: collisions in it have been demonstrated. It still validates because many documents signed years ago use it, but it should not be relied on.	Chữ ký này dùng SHA-1, một thuật toán băm yếu đã bị chứng minh có xung đột. Chữ ký vẫn hợp lệ vì nhiều tài liệu ký từ nhiều năm trước dùng thuật toán này, nhưng không nên tin cậy.
+	This signature uses RIPEMD-160, a legacy 160-bit hash algorithm that is no longer recommended for signatures. It still validates, but it should not be relied on.	Chữ ký này dùng RIPEMD-160, một thuật toán băm 160 bit cũ không còn được khuyến nghị cho chữ ký. Chữ ký vẫn hợp lệ nhưng không nên tin cậy.
+	The document has been altered or corrupted since the signature was applied.	Tài liệu đã bị thay đổi hoặc bị hỏng kể từ khi áp dụng chữ ký.
+	The signer's certificate is not in the signature.	Chứng thư số của người ký không có trong chữ ký.
+	The signature value does not match the signer's certificate: the signature is corrupt.	Giá trị chữ ký không khớp với chứng thư số của người ký: chữ ký bị hỏng.
+	The signature could not be checked ({}).	Không thể kiểm tra chữ ký ({}).
+	The signature could not be verified ({}).	Không thể xác minh chữ ký ({}).
+	This document has not been modified since this signature was applied.	Tài liệu này chưa bị sửa đổi kể từ khi áp dụng chữ ký này.
+	The document has been modified since this signature was applied, but the changes are permitted ({}).	Tài liệu đã bị sửa đổi kể từ khi áp dụng chữ ký này, nhưng các thay đổi được cho phép ({}).
+	The document has been altered since this signature was applied in ways it does not permit ({}).	Tài liệu đã bị thay đổi kể từ khi áp dụng chữ ký này theo những cách chữ ký không cho phép ({}).
+	The signer's certificate was not valid at the time of signing.	Chứng thư số của người ký không hợp lệ tại thời điểm ký.
+	The signer's certificate does not allow digital signatures (its key usage has neither digital signature nor non-repudiation).	Chứng thư số của người ký không cho phép chữ ký số (mục sử dụng khóa không có chữ ký số hay chống chối bỏ).
+	The signer's certificate is not issued for signing documents (its extended key usage has no document-signing purpose).	Chứng thư số của người ký không được cấp để ký tài liệu (mục sử dụng khóa mở rộng không có mục đích ký tài liệu).
+	The signer's certificate has critical extensions PdfCraft does not recognize ({}).	Chứng thư số của người ký có phần mở rộng quan trọng mà PdfCraft không nhận diện được ({}).
+	The certificate of {} is not a CA certificate that may issue certificates, so it is not used to vouch for {}.	Chứng thư số của {} không phải là chứng thư CA được phép cấp chứng thư nên không được dùng để bảo chứng cho {}.
+	The certificate of {} does not allow this many CA certificates below it (path length), so it is not used to vouch for {}.	Chứng thư số của {} không cho phép nhiều chứng thư CA cấp dưới như vậy (độ dài đường dẫn) nên không được dùng để bảo chứng cho {}.
+	The certificate of {} was not valid at the time of signing, so it is not used to vouch for {}.	Chứng thư số của {} không hợp lệ tại thời điểm ký nên không được dùng để bảo chứng cho {}.
+	The signer's identity is unknown because it has not been included in your list of trusted certificates and none of its parent certificates are trusted certificates.	Không xác định được danh tính người ký vì chứng thư số chưa có trong danh sách chứng thư tin cậy của bạn và không chứng thư cấp trên nào của nó là chứng thư tin cậy.
+	The signer's identity is valid.	Danh tính người ký hợp lệ.
+	The signature includes an embedded timestamp.	Chữ ký có kèm dấu thời gian nhúng.
+	Signing time is from the clock on the signer's computer.	Thời gian ký lấy từ đồng hồ trên máy tính của người ký.
+	The signature's timestamp token does not cover the signature value.	Mã thông báo dấu thời gian của chữ ký không bao gồm giá trị chữ ký.
+	The signature's timestamp token could not be verified ({}).	Không thể xác minh mã thông báo dấu thời gian của chữ ký ({}).
+	The embedded timestamp token is valid and its authority is trusted; trusted time is {}.	Mã thông báo dấu thời gian nhúng hợp lệ và tổ chức cấp được tin cậy; thời gian tin cậy là {}.
+	The signature carries an unverified timestamp ({}): the timestamp authority is not in your list of trusted certificates, so the signing time claimed by the signer is used instead.	Chữ ký mang dấu thời gian chưa được xác minh ({}): tổ chức cấp dấu thời gian không có trong danh sách chứng thư tin cậy của bạn nên thời gian ký do người ký khai báo được dùng thay thế.
+	The signer's certificate has been revoked ({}).	Chứng thư số của người ký đã bị thu hồi ({}).
+	The document's embedded revocation information shows that the signer's certificate has not been revoked.	Thông tin thu hồi nhúng trong tài liệu cho thấy chứng thư số của người ký chưa bị thu hồi.
+	The timestamp has no valid byte range.	Dấu thời gian không có phạm vi byte hợp lệ.
+	The timestamp's byte range does not match the file.	Phạm vi byte của dấu thời gian không khớp với tệp.
+	The timestamp's byte range does not exclude exactly its contents.	Phạm vi byte của dấu thời gian không loại trừ đúng phần nội dung của dấu thời gian.
+	The timestamp contents are not hexadecimal.	Nội dung dấu thời gian không ở dạng thập lục phân.
+	The timestamp token could not be read ({}).	Không thể đọc mã thông báo dấu thời gian ({}).
+	The document has been altered or corrupted since the timestamp was applied.	Tài liệu đã bị thay đổi hoặc bị hỏng kể từ khi áp dụng dấu thời gian.
+	The timestamp authority's certificate was not valid at the time of timestamping.	Chứng thư số của tổ chức cấp dấu thời gian không hợp lệ tại thời điểm đóng dấu thời gian.
+	This document has not been modified since this timestamp was applied.	Tài liệu này chưa bị sửa đổi kể từ khi áp dụng dấu thời gian này.
+	The document has been modified since this timestamp was applied, but the changes are permitted ({}).	Tài liệu đã bị sửa đổi kể từ khi áp dụng dấu thời gian này, nhưng các thay đổi được cho phép ({}).
+	The document has been altered since this timestamp was applied in ways it does not permit ({}).	Tài liệu đã bị thay đổi kể từ khi áp dụng dấu thời gian này theo những cách không được cho phép ({}).
+	The timestamp token is valid and its authority is trusted.	Mã thông báo dấu thời gian hợp lệ và tổ chức cấp được tin cậy.
+	The timestamp token is valid, but the timestamp authority is not in your list of trusted certificates.	Mã thông báo dấu thời gian hợp lệ, nhưng tổ chức cấp dấu thời gian không có trong danh sách chứng thư tin cậy của bạn.
+	Unsigned signature field	Trường chữ ký chưa ký
+	Signature is valid	Chữ ký hợp lệ
+	Signature validity is unknown	Chưa rõ tính hợp lệ của chữ ký
+	Signature is invalid	Chữ ký không hợp lệ
+	page content	nội dung trang
+	form fill	điền biểu mẫu
+	comments	chú thích
+	document security store	kho bảo mật tài liệu
+	metadata	siêu dữ liệu
+	links	nối kết
+	document structure	cấu trúc tài liệu
+	pages added or removed	thêm hoặc xóa trang
+	other changes	thay đổi khác
+	the signed version could not be read	không thể đọc phiên bản đã ký
+	page {n} is out of range (1–{count})	trang {n} nằm ngoài phạm vi (1–{count})
+	{page} is not a page number or label	{page} không phải số trang hoặc nhãn trang
+	Change Title	Đổi Tiêu đề
+	Change Author	Đổi Tác giả
+	Change Subject	Đổi Chủ đề
+	Change Keywords	Đổi Từ khóa
+	Save as {level}	Lưu dưới dạng {level}
+	Create links	Tạo nối kết
+	Paste	Dán
+	Select all	Chọn Tất cả
+	Next	Tiếp theo
+	Previous	Trước
+	Choose…	Chọn…
+	Refresh	Làm mới
+	Loading…	Đang tải…
+	Save changes?	Lưu thay đổi?
+	Page {n}	Trang {n}
+	of	trên
+	Comment	Chú thích
+	Font	Phông
+	Color	Màu
+	Theme	Chủ đề
+	System	Hệ thống
+	Save file	Lưu tệp
+	Import	Nhập
+	Help…	Trợ giúp…
+	Automatically	Tự động
+	Never	Không bao giờ
+	Always	Luôn luôn
+	On	Bật
+	Enabled	Đã bật
+	Disabled	Đã tắt
+	Error	Lỗi
+	Warning	Cảnh báo
+	Information	Thông tin
+	Success	Thành công
+	Folder	Thư mục
+	Choose a file…	Chọn tệp…
+	Choose a folder…	Chọn thư mục…
+	Open folder	Mở thư mục
+	Create folder	Tạo thư mục
+	Duplicate	Nhân đôi
+	Move	Di chuyển
+	Copy to clipboard	Sao chép vào bảng tạm
+	Copied to clipboard	Đã sao chép vào bảng tạm
+	Organize	Sắp xếp
+	Comment and review	Chú thích và xem lại
+	Search results	Kết quả tìm kiếm
+	No results	Không có kết quả
+	Page {n} of {total}	Trang {n} trên {total}
+calendar weekday	Su	CN
+calendar weekday	Mo	T2
+calendar weekday	Tu	T3
+calendar weekday	We	T4
+calendar weekday	Th	T5
+calendar weekday	Fr	T6
+calendar weekday	Sa	T7
+certificate	Issued to	Cấp cho
+certificate	Issued by	Cấp bởi
+certificate	Valid from	Có hiệu lực từ
+certificate	Valid to	Có hiệu lực đến
+certificate	Intended usage	Mục đích sử dụng
+certificate	Version	Phiên bản
+certificate	Serial number	Số sê-ri
+certificate	Issuer	Bên cấp
+certificate	Validity starts	Ngày bắt đầu hiệu lực
+certificate	Validity ends	Ngày hết hiệu lực
+certificate	Public key	Khóa công khai
+certificate	Basic constraints	Ràng buộc cơ bản
+certificate	Key usage	Sử dụng khóa
+certificate	Self-signed	Tự ký
+certificate	SHA-1 digest	Mã băm SHA-1
+certificate	SHA-256 digest	Mã băm SHA-256
+@plural	{n} file|{n} files	{n} tệp
+@plural	{n} comment|{n} comments	{n} chú thích
+@plural	{n} result|{n} results	{n} kết quả

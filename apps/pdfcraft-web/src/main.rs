@@ -76,7 +76,7 @@ fn main() {
                         app.host_dirty = Some(bridge.dirty_fn());
                         bridge.post_ready();
                     }
-                    Ok(Box::new(app))
+                    Ok(Box::new(language::SiteLanguage::new(app)))
                 }),
             )
             .await;
@@ -104,6 +104,9 @@ fn warn_before_unload(unsaved: std::sync::Arc<std::sync::atomic::AtomicBool>) {
         handler.forget();
     }
 }
+
+#[cfg(target_arch = "wasm32")]
+mod language;
 
 /// The JavaScript side of [`pdfcraft_ui_egui::drafts`]: `window.erpDrafts.{put, remove, ready}`
 /// of the ERPCons office shell, looked up at every call (absent: the feature is off), and the
