@@ -19,6 +19,8 @@ thiserror = { workspace = true }
 log = { workspace = true }
 # The reading-colours setting is persisted with the app state and echoed by the automation tool.
 serde = { workspace = true }
+# Search matches precomposed and decomposed letters alike (NFC).
+unicode-normalization = { workspace = true }
 # Reads rendered pixel words as bytes; already in the tree through hayro.
 bytemuck = { version = "1" }
 

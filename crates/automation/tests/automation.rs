@@ -3034,6 +3034,53 @@ fn redacting_word_lists_through_tools() {
     assert!(matches!(a.call("redact_mark", &json!({ "doc": doc, "words": ["absent", "nowhere"] })), Err(ToolError::Failed(_))));
 }
 
+/// One 300×200 pt page reading "Thử nay" over "Thử kia" in Helvetica, whose `/ToUnicode` spells
+/// the first "ử" decomposed ("u", horn, hook above: one glyph each) and the second precomposed.
+fn vietnamese_mixed_normalization_fixture() -> Vec<u8> {
+    let cmap = "/CIDInit /ProcSet findresource begin 12 dict begin begincmap /CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def /CMapName /TestVi def /CMapType 2 def 1 begincodespacerange <00> <FF> endcodespacerange 12 beginbfchar <20> <0020> <54> <0054> <68> <0068> <75> <0075> <6E> <006E> <61> <0061> <79> <0079> <6B> <006B> <69> <0069> <31> <031B> <32> <0309> <33> <1EED> endbfchar endcmap CMapName currentdict /CMap defineresource pop end end";
+    let body = "BT /F1 24 Tf 20 140 Td (Thu12 nay) Tj 0 -40 Td (Th3 kia) Tj ET";
+    let objs: Vec<String> = vec![
+        "<< /Type /Catalog /Pages 2 0 R >>".into(),
+        "<< /Type /Pages /Kids [4 0 R] /Count 1 /MediaBox [0 0 300 200] >>".into(),
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /ToUnicode 6 0 R >>".into(),
+        "<< /Type /Page /Parent 2 0 R /Contents 5 0 R /Resources << /Font << /F1 3 0 R >> >> >>".into(),
+        format!("<< /Length {} >>\nstream\n{body}\nendstream", body.len()),
+        format!("<< /Length {} >>\nstream\n{cmap}\nendstream", cmap.len()),
+    ];
+    let mut out = b"%PDF-1.7\n".to_vec();
+    let mut offsets = Vec::new();
+    for (i, o) in objs.iter().enumerate() {
+        offsets.push(out.len());
+        out.extend_from_slice(format!("{} 0 obj\n{o}\nendobj\n", i + 1).as_bytes());
+    }
+    let xref = out.len();
+    out.extend_from_slice(format!("xref\n0 {}\n0000000000 65535 f \n", objs.len() + 1).as_bytes());
+    for o in offsets {
+        out.extend_from_slice(format!("{o:010} 00000 n \n").as_bytes());
+    }
+    out.extend_from_slice(format!("trailer\n<< /Size {} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n", objs.len() + 1).as_bytes());
+    out
+}
+
+#[test]
+fn redaction_search_matches_decomposed_and_precomposed_vietnamese() {
+    let dir = workdir("redact-vi-normalization");
+    std::fs::write(dir.join("vi.pdf"), vietnamese_mixed_normalization_fixture()).unwrap();
+    let mut a = auto(&dir);
+    let doc = ok(&mut a, "doc_open", json!({ "path": "vi.pdf" }))["doc"].as_u64().unwrap();
+    let before = page_text(&mut a, doc)[0].clone();
+    assert_eq!(before, "Thu\u{31B}\u{309} nay\nTh\u{1EED} kia");
+    let mark = |a: &mut Automation, args: Value| ok(a, "redact_mark", args)["marked"].as_u64().unwrap();
+    assert_eq!(mark(&mut a, json!({ "doc": doc, "words": ["Thu\u{31B}\u{309}"] })), 2, "a decomposed query finds both lines");
+    ok(&mut a, "edit_undo", json!({ "doc": doc }));
+    assert!(matches!(a.call("redact_mark", &json!({ "doc": doc, "find": "Thu nay" })), Err(ToolError::Failed(_))), "the accent still counts");
+    assert_eq!(mark(&mut a, json!({ "doc": doc, "find": "Th\u{1EED}", "whole_words": true })), 2, "a precomposed query finds both lines");
+    ok(&mut a, "redact_apply", json!({ "doc": doc }));
+    let text = page_text(&mut a, doc)[0].clone();
+    assert!(!text.contains("Th") && !text.contains('\u{31B}') && !text.contains('\u{309}') && !text.contains('\u{1EED}'), "{text:?}");
+    assert!(text.contains("nay") && text.contains("kia"), "{text:?}");
+}
+
 #[test]
 fn redaction_search_respects_case_and_word_boundaries() {
     let dir = workdir("redact-find-options");

@@ -16,6 +16,8 @@ use hayro::hayro_interpret::{
 use kurbo::{Affine, BezPath, Rect, Shape};
 use std::collections::HashMap;
 
+use crate::canonical;
+
 /// One glyph on the page.
 #[derive(Clone, Debug, PartialEq)]
 pub struct TextGlyph {
@@ -40,15 +42,16 @@ pub struct TextGlyph {
 /// four are treated as one letter; this only adds matches where an `ı` or `İ` is involved.
 /// Greek sigma's normal and word-final forms (`σ`/`ς`) both fold to `σ`, as does `Σ`.
 pub fn fold_case(s: &str) -> String {
-    let mut out = String::with_capacity(s.len());
-    for c in s.chars() {
-        match c {
-            'I' | 'i' | '\u{130}' | '\u{131}' => out.push('i'),
-            'Σ' | 'σ' | 'ς' => out.push('σ'),
-            _ => out.extend(c.to_lowercase()),
-        }
+    s.chars().flat_map(fold_char).collect()
+}
+
+/// One character of [`fold_case`].
+fn fold_char(c: char) -> std::char::ToLowercase {
+    match c {
+        'I' | 'i' | '\u{130}' | '\u{131}' => 'i'.to_lowercase(),
+        'Σ' | 'σ' | 'ς' => 'σ'.to_lowercase(),
+        _ => c.to_lowercase(),
     }
-    out
 }
 
 /// The text of one page, in content order, with line structure.
@@ -96,6 +99,7 @@ impl PageText {
     }
 
     /// Search with Acrobat's find options: case-sensitive, whole words only.
+    /// Precomposed and decomposed spellings of a letter match each other; diacritics always count.
     pub fn find_opts(&self, needle: &str, case_sensitive: bool, whole_words: bool) -> Vec<std::ops::Range<usize>> {
         self.find_opts_limited(needle, case_sensitive, whole_words, usize::MAX)
     }
@@ -105,34 +109,40 @@ impl PageText {
         if limit == 0 {
             return Vec::new();
         }
-        let fold = |s: &str| if case_sensitive { s.to_string() } else { fold_case(s) };
-        let needle: Vec<char> = fold(needle).split_whitespace().collect::<Vec<_>>().join(" ").chars().collect();
+        // Both sides are composed (NFC) before folding, so precomposed and decomposed spellings
+        // of a letter match; folding the composed letter also keeps "İ" one letter either way.
+        let fold = |chars: Vec<canonical::Spanned>| -> Vec<canonical::Spanned> {
+            if case_sensitive { chars } else { chars.into_iter().flat_map(|(c, a, b)| fold_char(c).map(move |f| (f, a, b))).collect() }
+        };
+        let query: Vec<(char, usize)> = needle.split_whitespace().collect::<Vec<_>>().join(" ").chars().map(|c| (c, 0)).collect();
+        let needle: Vec<char> = fold(canonical::compose_spanned(&query)).into_iter().map(|c| c.0).collect();
         if needle.is_empty() {
             return Vec::new();
         }
         // Flatten to chars with the glyph index each char came from.
-        let mut chars: Vec<(char, usize)> = Vec::new();
+        let mut flat: Vec<(char, usize)> = Vec::new();
         for (i, g) in self.glyphs.iter().enumerate() {
-            if i > 0 && (self.space_before[i] || self.line_of[i] != self.line_of[i - 1]) && chars.last().is_some_and(|c| c.0 != ' ') {
-                chars.push((' ', i));
+            if i > 0 && (self.space_before[i] || self.line_of[i] != self.line_of[i - 1]) && flat.last().is_some_and(|c| c.0 != ' ') {
+                flat.push((' ', i));
             }
-            for c in fold(&g.text).chars() {
+            for c in g.text.chars() {
                 let c = if c.is_whitespace() { ' ' } else { c };
                 // The query collapses a run of whitespace to one space, so collapse the page too.
-                if c == ' ' && chars.last().is_some_and(|k| k.0 == ' ') {
+                if c == ' ' && flat.last().is_some_and(|k| k.0 == ' ') {
                     continue;
                 }
-                chars.push((c, i));
+                flat.push((c, i));
             }
         }
-        let word = |k: Option<&(char, usize)>| k.is_some_and(|c| c.0.is_alphanumeric());
+        let chars = fold(canonical::compose_spanned(&flat));
+        let word = |k: Option<&canonical::Spanned>| k.is_some_and(|c| c.0.is_alphanumeric());
         let mut out = Vec::new();
         let mut i = 0;
         while i + needle.len() <= chars.len() {
             let bounded = !whole_words || (!word(i.checked_sub(1).and_then(|p| chars.get(p))) && !word(chars.get(i + needle.len())));
             if bounded && chars[i..i + needle.len()].iter().map(|c| c.0).eq(needle.iter().copied()) {
                 let start = chars[i].1;
-                let end = chars[i + needle.len() - 1].1 + 1;
+                let end = chars[i + needle.len() - 1].2 + 1;
                 out.push(start..end);
                 if out.len() == limit {
                     break;
@@ -1930,6 +1940,64 @@ mod tests {
         let text = layout(glyphs);
         assert_eq!(text.find_opts_limited("o", false, false, 2), vec![0..1, 1..2]);
         assert_eq!(text.find_opts_limited("o", false, false, 10), vec![0..1, 1..2, 2..3, 3..4]);
+    }
+
+    /// One line of words, one glyph per entry, each glyph six points wide.
+    fn spaced_line(words: &[&[&str]]) -> PageText {
+        let (mut glyphs, mut space_before) = (Vec::new(), Vec::new());
+        for (w, letters) in words.iter().enumerate() {
+            for (k, letter) in letters.iter().enumerate() {
+                let x = glyphs.len() as f32 * 6.0;
+                glyphs.push(g(letter, x, 10.0, x + 6.0));
+                space_before.push(w > 0 && k == 0);
+            }
+        }
+        let n = glyphs.len();
+        PageText { glyphs, line_of: vec![0; n], space_before }
+    }
+
+    #[test]
+    fn decomposed_and_precomposed_letters_find_each_other() {
+        // "Thử nay" with "ử" drawn as "u", horn, hook above (one glyph each), and drawn as U+1EED.
+        let nfd = spaced_line(&[&["T", "h", "u", "\u{31B}", "\u{309}"], &["n", "a", "y"]]);
+        let nfc = spaced_line(&[&["T", "h", "\u{1EED}"], &["n", "a", "y"]]);
+        let (composed, decomposed) = ("thử", "thu\u{31B}\u{309}");
+        assert_eq!(nfd.find(composed), vec![0..5], "the match covers both mark glyphs");
+        assert_eq!(nfd.find(decomposed), vec![0..5]);
+        assert_eq!(nfd.find_opts("Thử", true, true), vec![0..5]);
+        assert_eq!(nfd.find("thử nay"), vec![0..8]);
+        assert_eq!(nfc.find(composed), vec![0..3]);
+        assert_eq!(nfc.find(decomposed), vec![0..3]);
+        assert_eq!(nfc.find_opts("Thu\u{31B}\u{309}", true, true), vec![0..3]);
+        let rects = nfd.line_rects(nfd.find(composed).remove(0));
+        assert_eq!(rects, vec![[0.0, 10.0, 30.0, 20.0]], "the highlight reaches the last mark glyph");
+        // Marks split across glyphs in canonical-equivalent order, one sharing its letter's glyph.
+        let mixed = spaced_line(&[&["T", "h", "u\u{309}", "\u{31B}"]]);
+        assert_eq!(mixed.find(composed), vec![0..4]);
+    }
+
+    #[test]
+    fn diacritics_still_tell_letters_apart() {
+        // "a ả á thử": a plain "a", a decomposed "ả", a precomposed "á", then a decomposed "thử".
+        let t = spaced_line(&[&["a"], &["a", "\u{309}"], &["\u{E1}"], &["t", "h", "u", "\u{31B}", "\u{309}"]]);
+        assert_eq!(t.find("a"), vec![0..1], "no accent-insensitive match");
+        assert_eq!(t.find("ả"), vec![1..3]);
+        assert_eq!(t.find("Ả"), vec![1..3], "case still folds");
+        assert!(t.find_opts("Ả", true, false).is_empty());
+        assert_eq!(t.find("a\u{301}"), vec![3..4]);
+        assert!(t.find("thu").is_empty(), "the base letters of a decomposed word are not a match on their own");
+        assert!(t.find("thư").is_empty());
+        assert_eq!(t.find_opts("ả", false, true), vec![1..3]);
+    }
+
+    #[test]
+    fn a_decomposed_text_layer_is_searchable_after_extraction() {
+        // Helvetica codes mapped by /ToUnicode to "Thu" + horn + hook above, one glyph per mark.
+        let unicode = "5 beginbfchar <54> <0054> <68> <0068> <75> <0075> <31> <031B> <32> <0309> endbfchar";
+        let pdf = ligature_pages(unicode, "Thu12", &["1 0 0 1 100 150"]);
+        let text = extract_page(&pdf, 0, &InterpreterSettings::default()).unwrap();
+        assert_eq!(text.plain_text(), "Thu\u{31B}\u{309}");
+        assert_eq!(text.find("thử"), vec![0..5]);
     }
 
     fn word(v: &mut Vec<TextGlyph>, s: &str, x: f32, y: f32, advance: f32) {
