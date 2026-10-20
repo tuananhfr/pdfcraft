@@ -2,7 +2,7 @@
 
 use egui::{Align, Align2, Color32, CornerRadius, Layout, Rect, Sense, Stroke, vec2};
 
-use crate::bar_fit::{self, ModeBarFit, StripFit};
+use crate::bar_fit::{self, ModeBarFit};
 use crate::canvas::{DocView, Fit, PageLayout};
 use crate::theme::{self, ThemePreference, Tokens};
 use crate::{Dialog, Mode, PdfCraftApp, PropsTab, RightPanel, icons, widgets, window_controls};
@@ -82,13 +82,9 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                 let open_full = ui.fonts_mut(|f| f.layout_no_wrap(tl!("Open").into(), theme::medium(13.0), t.text).size().x) + 38.0 + 12.0;
                 let open_icon = tab_h + 12.0;
                 let fixed = 12.0 + window_controls::width(&controls.right);
-                let fit = if app.narrow.is_narrow() {
-                    // Room for one tab at its narrowest before any control gives way.
-                    let one_tab = natural.iter().map(|w| w.min(TAB_MIN_WIDTH)).fold(0.0, f32::max);
-                    bar_fit::fit_tab_strip(ui.available_width() - fixed, one_tab, open_full, open_icon, button)
-                } else {
-                    StripFit::FULL
-                };
+                // Room for one tab at its narrowest before any control gives way.
+                let one_tab = natural.iter().map(|w| w.min(TAB_MIN_WIDTH)).fold(0.0, f32::max);
+                let fit = bar_fit::fit_tab_strip(ui.available_width() - fixed, one_tab, open_full, open_icon, button);
                 // Keep the icon buttons and their gaps outside the scrolling tabs.
                 let controls_width = (usize::from(fit.theme) + usize::from(fit.help)) as f32 * button + fixed;
                 let open_width = if fit.open_icon { open_icon } else { open_full };
@@ -497,7 +493,7 @@ pub fn mode_bar(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
         .show(ui, |ui| {
             ui.horizontal_centered(|ui| {
                 ui.spacing_mut().item_spacing.x = 2.0;
-                let (fit, picker_room) = if app.narrow.is_narrow() { mode_bar_fit(app, ui) } else { (ModeBarFit::FULL, f32::INFINITY) };
+                let (fit, picker_room, search_width) = mode_bar_fit(app, ui);
                 main_menu(app, ui, fit.menu_icon);
                 ui.add_space(6.0);
                 ui.painter().vline(ui.cursor().left(), ui.max_rect().y_range().shrink(12.0), Stroke::new(1.0, t.divider));
@@ -536,7 +532,7 @@ pub fn mode_bar(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                     let search = if fit.search_icon {
                         icons::button(ui, "search", 32.0, false, tl!("Find tools and commands"))
                     } else {
-                        widgets::search_box(ui, tl!("Find tools and commands"), 260.0)
+                        widgets::search_box(ui, tl!("Find tools and commands"), search_width)
                     };
                     if search.clicked() {
                         app.palette_open = true;
@@ -549,9 +545,13 @@ pub fn mode_bar(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
 const MODES: [(Mode, &str); 5] =
     [(Mode::AllTools, "All tools"), (Mode::Read, "Read"), (Mode::Edit, "Edit"), (Mode::Convert, "Convert"), (Mode::Sign, "E-Sign")];
 
-/// What the mode bar keeps at phone width, from the widths its parts take in this language,
-/// and the room left for the mode picker.
-fn mode_bar_fit(app: &PdfCraftApp, ui: &egui::Ui) -> (ModeBarFit, f32) {
+/// The search box's width, and its narrowest before it becomes an icon.
+const SEARCH_BOX: f32 = 260.0;
+const SEARCH_BOX_SHORT: f32 = 160.0;
+
+/// What the mode bar keeps, from the widths its parts take in this language; the room left for
+/// the mode picker; and the search box's width.
+fn mode_bar_fit(app: &PdfCraftApp, ui: &egui::Ui) -> (ModeBarFit, f32, f32) {
     let t = Tokens::get(ui.ctx());
     let gap = ui.spacing().item_spacing.x;
     let text = |label: &str| ui.fonts_mut(|f| f.layout_no_wrap(label.to_owned(), theme::medium(13.0), t.text).size().x);
@@ -564,12 +564,15 @@ fn mode_bar_fit(app: &PdfCraftApp, ui: &egui::Ui) -> (ModeBarFit, f32) {
         tabs: MODES.iter().map(|(mode, label)| widgets::mode_tab_width(ui, tl!(label), app.mode == *mode, false) + gap).sum(),
         picker: widgets::mode_tab_width(ui, tl!(current), true, true) + gap,
         // The right-hand run spaces its items 4 apart and leaves 8 before the search.
-        search: 260.0 + 8.0 + 4.0,
+        search: SEARCH_BOX + 8.0 + 4.0,
+        search_short: SEARCH_BOX_SHORT + 8.0 + 4.0,
         search_icon: 32.0 + 8.0 + 4.0,
         icon: 32.0 + 4.0,
     };
-    let fit = bar_fit::fit_mode_bar(ui.available_width(), &widths);
-    (fit, ui.available_width() - (fit.width(&widths) - widths.picker) - gap)
+    let available = ui.available_width();
+    let fit = bar_fit::fit_mode_bar(available, &widths);
+    let search = if fit.search_short { SEARCH_BOX_SHORT + fit.search_box_growth(available, &widths) } else { SEARCH_BOX };
+    (fit, available - (fit.width(&widths) - widths.picker) - gap, search)
 }
 
 /// The current mode, opening the list of modes: the tabs folded for a phone-width bar.

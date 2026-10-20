@@ -1,5 +1,6 @@
-//! How the tab strip and the mode bar shed controls at phone width: from measured widths, the
-//! lowest-priority control gives way first, so nothing overlaps or falls off the edge.
+//! How the tab strip and the mode bar shed controls when the window is too narrow for them (a
+//! phone, or a tablet in a long language): from measured widths, the lowest-priority control
+//! gives way first, so nothing overlaps or falls off the edge.
 
 /// Measured widths (points) of the mode bar's parts, each including its own spacing.
 #[derive(Clone, Copy, Debug)]
@@ -12,6 +13,8 @@ pub(crate) struct ModeBarWidths {
     /// The current mode alone, as a button that opens the list of modes.
     pub picker: f32,
     pub search: f32,
+    /// The search box at its narrowest, before it becomes an icon.
+    pub search_short: f32,
     pub search_icon: f32,
     /// One icon button (Print, Save, Properties) with its gap.
     pub icon: f32,
@@ -20,6 +23,8 @@ pub(crate) struct ModeBarWidths {
 /// What the mode bar shows. [`ModeBarFit::FULL`] is the desktop bar.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct ModeBarFit {
+    /// The search box shrinks towards its narrowest: see [`ModeBarFit::search_box_width`].
+    pub search_short: bool,
     pub menu_icon: bool,
     pub search_icon: bool,
     pub mode_picker: bool,
@@ -29,21 +34,37 @@ pub(crate) struct ModeBarFit {
 }
 
 impl ModeBarFit {
-    pub const FULL: Self = Self { menu_icon: false, search_icon: false, mode_picker: false, print: true, properties: true };
+    pub const FULL: Self = Self { search_short: false, menu_icon: false, search_icon: false, mode_picker: false, print: true, properties: true };
 
     pub fn width(&self, w: &ModeBarWidths) -> f32 {
         let menu = if self.menu_icon { w.menu_icon } else { w.menu };
         let tabs = if self.mode_picker { w.picker } else { w.tabs };
-        let search = if self.search_icon { w.search_icon } else { w.search };
+        let search = match (self.search_icon, self.search_short) {
+            (true, _) => w.search_icon,
+            (false, true) => w.search_short,
+            (false, false) => w.search,
+        };
         let icons = 1 + usize::from(self.print) + usize::from(self.properties);
         menu + w.divider + tabs + search + icons as f32 * w.icon
+    }
+
+    /// How much wider than its narrowest a shrunk search box can be in `available`: the box
+    /// takes the room the rest of the bar leaves, up to its full width.
+    pub fn search_box_growth(&self, available: f32, w: &ModeBarWidths) -> f32 {
+        if self.search_short && !self.search_icon { (available - self.width(w)).clamp(0.0, (w.search - w.search_short).max(0.0)) } else { 0.0 }
     }
 }
 
 /// The fullest mode bar that fits in `available`; past the last step it shows what it can.
 pub(crate) fn fit_mode_bar(available: f32, w: &ModeBarWidths) -> ModeBarFit {
-    let steps: [fn(&mut ModeBarFit); 5] =
-        [|f| f.search_icon = true, |f| f.menu_icon = true, |f| f.mode_picker = true, |f| f.print = false, |f| f.properties = false];
+    let steps: [fn(&mut ModeBarFit); 6] = [
+        |f| f.search_short = true,
+        |f| f.search_icon = true,
+        |f| f.menu_icon = true,
+        |f| f.mode_picker = true,
+        |f| f.print = false,
+        |f| f.properties = false,
+    ];
     let mut fit = ModeBarFit::FULL;
     for step in steps {
         if fit.width(w) <= available {
@@ -92,7 +113,17 @@ mod tests {
     use super::*;
 
     fn widths() -> ModeBarWidths {
-        ModeBarWidths { menu: 75.0, menu_icon: 34.0, divider: 18.0, tabs: 440.0, picker: 140.0, search: 268.0, search_icon: 36.0, icon: 36.0 }
+        ModeBarWidths {
+            menu: 75.0,
+            menu_icon: 34.0,
+            divider: 18.0,
+            tabs: 440.0,
+            picker: 140.0,
+            search: 268.0,
+            search_short: 168.0,
+            search_icon: 36.0,
+            icon: 36.0,
+        }
     }
 
     #[test]
@@ -103,8 +134,14 @@ mod tests {
     #[test]
     fn controls_give_way_in_priority_order() {
         let w = widths();
-        let search_only = ModeBarFit { search_icon: true, ..ModeBarFit::FULL };
+        let short = ModeBarFit { search_short: true, ..ModeBarFit::FULL };
+        assert_eq!(fit_mode_bar(short.width(&w), &w), short, "the search box gives way first");
+        let search_only = ModeBarFit { search_short: true, search_icon: true, ..ModeBarFit::FULL };
         assert_eq!(fit_mode_bar(search_only.width(&w), &w), search_only);
+        // A tablet in portrait (768 wide) keeps the menu and every mode.
+        let tablet = fit_mode_bar(748.0, &w);
+        assert!(!tablet.menu_icon && !tablet.mode_picker && tablet.print && tablet.properties, "{tablet:?}");
+        assert!(tablet.width(&w) <= 748.0);
         // A phone: the modes fold into a picker, Save and the search stay.
         let phone = fit_mode_bar(370.0, &w);
         assert!(phone.search_icon && phone.menu_icon && phone.mode_picker, "{phone:?}");
@@ -113,6 +150,17 @@ mod tests {
         let tight = fit_mode_bar(300.0, &w);
         assert!(!tight.print && tight.properties, "{tight:?}");
         assert!(tight.width(&w) <= 300.0);
+    }
+
+    #[test]
+    fn a_shrunk_search_box_takes_the_room_left() {
+        let w = widths();
+        let full = ModeBarFit::FULL.width(&w);
+        let fit = fit_mode_bar(full - 40.0, &w);
+        assert!(fit.search_short && !fit.search_icon);
+        assert_eq!(fit.search_box_growth(full - 40.0, &w), 60.0, "40 short of full: 100 - 40 above the narrowest");
+        assert_eq!(fit.width(&w) + fit.search_box_growth(full - 40.0, &w), full - 40.0, "it fills the bar exactly");
+        assert_eq!(ModeBarFit::FULL.search_box_growth(full, &w), 0.0);
     }
 
     #[test]

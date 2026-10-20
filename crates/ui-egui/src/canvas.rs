@@ -22,6 +22,9 @@ const GAP: f32 = 14.0;
 const MARGIN: f32 = 28.0;
 /// Horizontal gutter that keeps pages clear of the floating quick-action bar.
 const SIDE: f32 = 70.0;
+/// The gutter in a phone-width window, where a page clear of the bar would be too small to
+/// read: the page spans the view and the bar floats over its edge.
+const COMPACT_SIDE: f32 = 8.0;
 const THUMB_TAG: u64 = 1 << 63;
 const TEXT_TAG: u64 = 1 << 62;
 /// A page rendered for the organize grid at the size it is drawn there.
@@ -360,6 +363,10 @@ pub struct DocView {
     selection_drag: bool,
     /// The finger gesture on the page, for touch-only behaviour of the Select tool.
     touch: crate::touch_page::TouchGesture,
+    /// The page gliding on after a quick one-finger pan.
+    fling: crate::fling::Fling,
+    /// The window is phone-width: pages use [`COMPACT_SIDE`] gutters.
+    pub(crate) compact: bool,
     /// Clicks in the current run on the text layer: two select a word, three the line, four the page.
     clicks: u32,
     last_press_time: f64,
@@ -621,6 +628,8 @@ impl DocView {
             selection: None,
             selection_drag: false,
             touch: Default::default(),
+            fling: Default::default(),
+            compact: false,
             clicks: 0,
             last_press_time: 0.0,
             last_press_pos: None,
@@ -1042,7 +1051,7 @@ impl DocView {
         let point = |x: Option<f32>, y: Option<f32>| p.dest_fraction(x, y, self.rotation);
         // The window's top-left as far as pages go: its left edge is the gutter that keeps them
         // clear of the floating quick-action bar, so `left` 0 shows the page's edge beside it.
-        let corner = vec2(SIDE, 0.0);
+        let corner = vec2(self.side(), 0.0);
         let (fx, fy, rel) = match dest {
             DestView::Top => return,
             DestView::Xyz { left, top, zoom } => {
@@ -1679,6 +1688,11 @@ impl DocView {
         }
     }
 
+    /// The horizontal gutter either side of the pages.
+    fn side(&self) -> f32 {
+        if self.compact { COMPACT_SIDE } else { SIDE }
+    }
+
     fn fit_zoom(&mut self, info: &DocInfo) {
         let largest = |side: fn((f32, f32)) -> f32| info.pages.iter().map(|p| side(self.display_size(p))).fold(1.0, f32::max);
         let max_w = largest(|s| s.0);
@@ -1690,7 +1704,7 @@ impl DocView {
         } else {
             (max_w, largest(|s| s.1))
         };
-        let avail_w = (self.viewport_w - 2.0 * SIDE).max(100.0);
+        let avail_w = (self.viewport_w - 2.0 * self.side()).max(100.0);
         let per_row = if self.layout == PageLayout::TwoUp { 2.0 } else { 1.0 };
         match self.fit {
             Fit::Width => self.zoom = (avail_w - GAP * (per_row - 1.0)) / (w * PT * per_row),
@@ -1712,12 +1726,13 @@ impl DocView {
         let shown = info.pages.iter().enumerate().filter(|&(i, _)| single.is_none_or(|c| c == i));
         let max_w = shown.map(|(_, p)| self.display_size(p).0).fold(0.0, f32::max);
         let per_row = if self.layout == PageLayout::TwoUp { 2.0 } else { 1.0 };
-        (max_w * self.zoom * PT * per_row + 2.0 * SIDE).max(avail_w)
+        (max_w * self.zoom * PT * per_row + 2.0 * self.side()).max(avail_w)
     }
 
     /// Page rects in content coordinates (origin at the scroll content's top-left).
     fn layout(&self, info: &DocInfo, content_w: f32) -> Vec<Rect> {
         let s = self.zoom * PT;
+        let side = self.side();
         let mut rects = Vec::with_capacity(info.pages.len());
         let mut y = MARGIN;
         match self.layout {
@@ -1725,7 +1740,7 @@ impl DocView {
                 for p in &info.pages {
                     let (w, h) = self.display_size(p);
                     let size = vec2(w * s, h * s);
-                    rects.push(Rect::from_min_size(pos2(((content_w - size.x) / 2.0).max(SIDE), y), size));
+                    rects.push(Rect::from_min_size(pos2(((content_w - size.x) / 2.0).max(side), y), size));
                     y += size.y + GAP;
                 }
             }
@@ -1740,7 +1755,7 @@ impl DocView {
                     let sizes: Vec<Vec2> = pair.iter().map(|p| self.display_size(p)).map(|(w, h)| vec2(w * s, h * s)).collect();
                     let row_w: f32 = sizes.iter().map(|v| v.x).sum::<f32>() + GAP * (sizes.len() as f32 - 1.0);
                     let row_h = sizes.iter().map(|v| v.y).fold(0.0, f32::max);
-                    let mut x = if self.cover && ri == 0 { (content_w / 2.0 + GAP / 2.0).max(SIDE) } else { ((content_w - row_w) / 2.0).max(SIDE) };
+                    let mut x = if self.cover && ri == 0 { (content_w / 2.0 + GAP / 2.0).max(side) } else { ((content_w - row_w) / 2.0).max(side) };
                     for size in sizes {
                         rects.push(Rect::from_min_size(pos2(x, y + (row_h - size.y) / 2.0), size));
                         x += size.x + GAP;
@@ -2127,6 +2142,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     let avail = ui.available_rect_before_wrap();
     view.viewport_w = avail.width();
     view.viewport_h = avail.height();
+    view.compact = app.narrow.is_narrow();
     let old_zoom = view.zoom;
     view.fit_zoom(info);
     if view.shown && view.zoom_anchor.is_none() && view.goto.is_none() && view.goto_point.is_none() && (view.zoom - old_zoom).abs() > 1e-4 {
@@ -2423,9 +2439,33 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
             // Only interactions pause; the document must keep its original colours.
             ui.set_opacity(opacity);
         }
-        // Middle-button auto-scroll, the keyboard and precise touchpad input (#759); positive y
-        // moves the content down. All three scroll without easing, unlike egui's wheel default.
-        let delta = auto_delta - vec2(0.0, key_scroll) + precise_scroll;
+        // A press stops a fling, and so does any other way of scrolling.
+        let (pressed, held, wheel, pinching, dt) = ui.input(|i| {
+            (
+                i.pointer.any_pressed(),
+                i.pointer.any_down(),
+                i.events.iter().any(|e| matches!(e, egui::Event::MouseWheel { .. })),
+                i.multi_touch().is_some(),
+                i.stable_dt,
+            )
+        });
+        if pressed {
+            view.fling.press();
+        }
+        if pinching {
+            view.fling.pinch();
+        } else if held || wheel {
+            view.fling.stop();
+        }
+        let fling = if view.fling.flinging() {
+            ui.ctx().request_repaint();
+            view.fling.step(dt, viewport.min.to_vec2(), (vec2(content_w, content_h) - viewport.size()).max(Vec2::ZERO))
+        } else {
+            Vec2::ZERO
+        };
+        // Middle-button auto-scroll, the keyboard, precise touchpad input (#759) and a fling;
+        // positive y moves the content down. They scroll without easing, unlike egui's wheel.
+        let delta = auto_delta - vec2(0.0, key_scroll) + precise_scroll + fling;
         if delta != Vec2::ZERO {
             ui.scroll_with_delta_animation(delta, egui::style::ScrollAnimation::none());
         }
@@ -3201,14 +3241,18 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
         }
         (wanted, visible_now)
     });
-    if touch_pan
-        && !view.continuous
-        && ui.input(|i| i.pointer.any_released())
+    if hand
         && let Some(delta) = view.touch.pan_delta()
+        && ui.input(|i| i.pointer.any_released())
     {
         let pans = out.content_size - out.inner_rect.size();
-        if let Some(forward) = crate::touch_page::swipe_turn(delta, out.inner_rect.size(), pans.x > 1.0, pans.y > 1.0) {
-            view.step_page(forward);
+        let turned = touch_pan && !view.continuous && {
+            let turn = crate::touch_page::swipe_turn(delta, out.inner_rect.size(), pans.x > 1.0, pans.y > 1.0);
+            turn.inspect(|forward| view.step_page(*forward)).is_some()
+        };
+        // Like egui's own easing, no glide when animation effects are off.
+        if !turned && crate::motion::animated(ui.ctx()) {
+            view.fling.release(ui.input(|i| i.pointer.velocity()));
         }
     }
     view.single_edges = visible_pages.first().copied().filter(|_| !view.continuous).map(|page| {
@@ -5331,6 +5375,22 @@ trailer << /Root 1 0 R >>
             v.fit_zoom(&info);
             assert!(v.zoom > big, "{fit:?}: single-page view fits the page it shows");
         }
+    }
+
+    #[test]
+    fn a_phone_width_window_fits_the_page_across_the_view_under_the_floating_bar() {
+        let page = pdfcraft_render::PageInfo { width: 612.0, height: 792.0, label: String::new(), crop: [0.0, 0.0, 612.0, 792.0], rotation: 0 };
+        let info = DocInfo { pages: vec![page; 2], ..Default::default() };
+        let mut v = DocView::new(DocId(1), &info, ViewDefaults::default());
+        (v.fit, v.viewport_w, v.viewport_h, v.compact) = (Fit::Width, 342.0, 700.0, true);
+        v.fit_zoom(&info);
+        let shown = v.layout(&info, v.content_width(&info, 342.0))[0];
+        assert!((shown.left() - COMPACT_SIDE).abs() < 1e-2 && (shown.width() - (342.0 - 2.0 * COMPACT_SIDE)).abs() < 1e-2, "{shown:?}");
+        // A wide window keeps pages clear of the bar.
+        (v.viewport_w, v.compact) = (1000.0, false);
+        v.fit_zoom(&info);
+        let shown = v.layout(&info, v.content_width(&info, 1000.0))[0];
+        assert!((shown.left() - SIDE).abs() < 1e-2 && (shown.width() - (1000.0 - 2.0 * SIDE)).abs() < 1e-2, "{shown:?}");
     }
 
     #[test]

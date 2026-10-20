@@ -81,6 +81,7 @@ mod editing;
 pub mod file_watch;
 mod files;
 pub mod fill_sign;
+mod fling;
 pub mod folders_ui;
 pub mod forms_ui;
 mod home;
@@ -2979,6 +2980,7 @@ impl eframe::App for PdfCraftApp {
         let mut panels = narrow::Panels { left_open: self.left_open, right: self.right };
         self.narrow.update(ctx.content_rect().width(), &mut panels);
         (self.left_open, self.right) = (panels.left_open, panels.right);
+        self.narrow.fit_documents(&mut self.views);
         for view in &mut self.views {
             view.begin_render_frame();
         }

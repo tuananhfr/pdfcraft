@@ -42,6 +42,39 @@ fn harness_at(width: f32, height: f32) -> Harness<'static, PdfCraftApp> {
     h
 }
 
+/// The zoomed page of [`page_harness`] at 60 frames a second with animation effects on, as a
+/// phone runs it: kittest steps a quarter second and turns egui's animations off, and a finger
+/// then has no velocity to fling with.
+fn fling_harness() -> (Harness<'static, PdfCraftApp>, usize, Pos2) {
+    let mut h = Harness::builder().with_size(vec2(1400.0, 900.0)).with_step_dt(1.0 / 60.0).build_eframe(|_cc| {
+        let mut app = PdfCraftApp::new();
+        app.set_option("language", "en").unwrap();
+        app.animation_effects = pdfcraft_ui_egui::motion::AnimationEffects::On;
+        app.open_bytes("a.pdf", None, fixture(3)).unwrap();
+        app
+    });
+    h.ctx.all_styles_mut(|s| s.animation_time = 1.0 / 12.0);
+    h.state_mut().set_option("zoom", "200").unwrap();
+    h.state_mut().set_option("left", "closed").unwrap();
+    h.state_mut().set_option("panel", "none").unwrap();
+    h.run_steps(30);
+    let view = h.state().active.unwrap();
+    let page = h.state().views[view].page_screen_rect(0).unwrap();
+    (h, view, page.center())
+}
+
+/// A finger dragged `step` points a frame for five frames, then lifted.
+fn flick(h: &mut Harness<'static, PdfCraftApp>, from: Pos2, step: egui::Vec2) {
+    finger_down(h, from);
+    h.run_steps(1);
+    for i in 1..=5 {
+        finger_move(h, from + step * i as f32);
+        h.run_steps(1);
+    }
+    finger_up(h, from + step * 5.0);
+    h.run_steps(1);
+}
+
 /// A document zoomed in with the panels closed, and a point on its first line of text.
 fn page_harness() -> (Harness<'static, PdfCraftApp>, usize, Pos2) {
     let mut h = harness_at(1400.0, 900.0);
@@ -95,6 +128,60 @@ fn one_finger_drag_on_the_page_scrolls_without_selecting() {
     let after = page_top(&h, view);
     assert!(after < before - 100.0, "the page follows the finger: {before} -> {after}");
     assert!(h.state().views[view].selected_text().is_none());
+}
+
+#[test]
+fn a_quick_flick_keeps_the_page_moving_until_it_slows_to_a_stop() {
+    let (mut h, view, centre) = fling_harness();
+    let start = page_top(&h, view);
+    flick(&mut h, centre, vec2(0.0, -24.0));
+    let lifted = page_top(&h, view);
+    assert!(lifted < start - 100.0, "the page followed the finger: {start} -> {lifted}");
+    h.run_steps(10);
+    let gliding = page_top(&h, view);
+    assert!(gliding < lifted - 30.0, "it keeps going after the finger lifts: {lifted} -> {gliding}");
+    h.run_steps(120);
+    let stopped = page_top(&h, view);
+    assert!(stopped < gliding, "and slows down rather than stopping dead");
+    h.run_steps(10);
+    assert_eq!(page_top(&h, view), stopped, "then it stops");
+}
+
+#[test]
+fn a_slow_drag_does_not_fling_and_a_new_touch_stops_a_fling() {
+    let (mut h, view, centre) = fling_harness();
+    flick(&mut h, centre, vec2(0.0, -3.0));
+    let lifted = page_top(&h, view);
+    h.run_steps(10);
+    assert_eq!(page_top(&h, view), lifted, "a slow release leaves the page where the finger did");
+
+    flick(&mut h, centre, vec2(0.0, -24.0));
+    h.run_steps(3);
+    finger_down(&h, centre);
+    h.run_steps(2);
+    let caught = page_top(&h, view);
+    h.run_steps(10);
+    assert_eq!(page_top(&h, view), caught, "a finger on the page catches it");
+    finger_up(&h, centre);
+    h.run_steps(10);
+    assert_eq!(page_top(&h, view), caught);
+}
+
+#[test]
+fn a_quick_swipe_still_turns_one_page_with_flinging_on() {
+    let (mut h, view, _) = fling_harness();
+    h.state_mut().set_option("layout", "single").unwrap();
+    h.state_mut().set_option("zoom", "100").unwrap();
+    h.run_steps(10);
+    let centre = h.state().views[view].page_screen_rect(0).unwrap().center();
+    flick(&mut h, centre, vec2(-48.0, 1.0));
+    h.run_steps(60);
+    assert_eq!(h.state().views[view].current, 1, "one page, and the glide doesn't scroll the next");
+    let shown = |h: &Harness<'static, PdfCraftApp>| h.state().views[view].page_screen_rect(1).map(|r| r.top());
+    let top = shown(&h);
+    assert!(top.is_some());
+    h.run_steps(10);
+    assert_eq!(shown(&h), top);
 }
 
 #[test]
@@ -192,6 +279,54 @@ fn a_phone_width_window_folds_the_side_panels_once() {
     h.run_steps(3);
     assert!(!h.state().is_narrow());
     assert_eq!((h.state().left_open, h.state().right), (true, Some(RightPanel::Bookmarks)));
+}
+
+#[test]
+fn a_phone_width_window_fits_the_page_width_and_widening_gives_the_zoom_back() {
+    let mut h = harness_at(1400.0, 900.0);
+    h.state_mut().set_option("zoom", "150").unwrap();
+    h.run_steps(3);
+    let view = h.state().active.unwrap();
+    let zoom = |h: &Harness<'static, PdfCraftApp>| (h.state().views[view].fit, h.state().views[view].zoom);
+    assert_eq!(zoom(&h), (pdfcraft_ui_egui::canvas::Fit::None, 1.5));
+    h.set_size(vec2(390.0, 844.0));
+    h.run_steps(3);
+    assert_eq!(zoom(&h).0, pdfcraft_ui_egui::canvas::Fit::Width, "the page fits the phone's width");
+    let page = h.state().views[view].page_screen_rect(0).unwrap();
+    let canvas = h.state().views[view].viewport_rect();
+    assert!(page.left() >= canvas.left() && page.right() <= canvas.right(), "nothing is cut at the sides: {page:?} in {canvas:?}");
+    assert!(page.width() >= 0.85 * canvas.width(), "the page fills the canvas's width: {page:?} in {canvas:?}");
+    // A zoom picked on the phone stands while it stays narrow.
+    h.state_mut().set_option("zoom", "300").unwrap();
+    h.run_steps(3);
+    h.set_size(vec2(420.0, 844.0));
+    h.run_steps(3);
+    assert_eq!(zoom(&h), (pdfcraft_ui_egui::canvas::Fit::None, 3.0));
+    h.set_size(vec2(1400.0, 900.0));
+    h.run_steps(3);
+    assert_eq!(zoom(&h), (pdfcraft_ui_egui::canvas::Fit::None, 1.5), "the wide zoom is back");
+}
+
+#[test]
+fn a_tablet_mode_bar_keeps_every_mode_clear_of_the_search() {
+    for (lang, width) in [("vi", 768.0), ("en", 768.0), ("vi", 1024.0), ("vi", 1366.0)] {
+        let mut h = harness_at(width, 1024.0);
+        h.state_mut().set_option("language", lang).unwrap();
+        h.run_steps(4);
+        let tr = |s: &'static str| pdfcraft_ui_egui::i18n::tr(pdfcraft_ui_egui::i18n::Lang::from_pref(lang), s);
+        // The mode bar is the row under the tab strip; "All tools" also heads the Tools pane.
+        let in_bar = |label: &str| {
+            let found: Vec<egui::Rect> = h.get_all_by_label(label).map(|n| n.rect()).filter(|r| r.center().y > 38.0 && r.center().y < 86.0).collect();
+            assert_eq!(found.len(), 1, "{lang} {width}: {label} once in the mode bar");
+            found[0]
+        };
+        let find = in_bar(tr("Find tools and commands"));
+        for mode in ["All tools", "Read", "Edit", "Convert", "E-Sign"] {
+            let r = in_bar(tr(mode));
+            assert!(r.right() <= find.left(), "{lang} {width}: {mode} {r:?} runs under the search {find:?}");
+        }
+        assert!(find.right() <= width);
+    }
 }
 
 #[test]
