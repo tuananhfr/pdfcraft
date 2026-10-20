@@ -2,6 +2,8 @@
 
 This branch (`erpcons`) is the ERPCons Văn phòng fork of [PdfCraft](https://github.com/storytold/pdfcraft), based on PdfCraft by the ArtCraft team, licensed MIT OR Apache-2.0 (see `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`). Changes from upstream `main` (Apache-2.0 §4b):
 
+- (web) PDF saves time out after 60 seconds, show Save failed and offer Download of the pending PDF bytes while keeping the document unsaved; late callbacks are ignored and subsequent saves download instead of writing to the uncertain destination again.
+- (web) Closing the last open document calls the optional ERP shell's no-argument window.erpEditorClosed hook once; closing other documents or an already empty editor does not call it.
 - (both) Export to Word asks once before writing when the document has form fields, annotations/comments, signature fields or PDF encryption/permissions, lists their losses and counts plus possible layout changes, and offers Export anyway / Cancel. Clean text PDFs export without the warning.
 - (both) PDF selection Copy and annotation Copy text now use the same copy-permission guard as Ctrl+C and Copy Image, showing the existing refusal notice without writing restricted content to the clipboard.
 - (web) Create from clipboard reads plain text and PNG/JPEG images through the browser clipboard API; denied reads show a localized notice suggesting Ctrl+V. Desktop clipboard reading is unchanged.

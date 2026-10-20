@@ -80,6 +80,7 @@ mod dialogs;
 pub mod drafts;
 mod edit_text_ui;
 mod editing;
+mod editor_closed;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod file_watch;
 mod files;
@@ -102,6 +103,7 @@ mod pickers;
 pub mod prepare;
 mod print_ui;
 mod save_all;
+mod save_deadline;
 mod save_status;
 mod signature_drag;
 pub mod units;
@@ -1836,6 +1838,7 @@ impl PdfCraftApp {
         if index >= self.views.len() {
             return;
         }
+        let before = self.views.len();
         let id = self.views.remove(index).id;
         self.keep_closed(id);
         self.forget_recovery(id);
@@ -1846,6 +1849,7 @@ impl PdfCraftApp {
             Some(a) if a >= self.views.len() => Some(self.views.len() - 1),
             other => other,
         };
+        crate::editor_closed::document_closed(before, self.views.len());
     }
 
     /// Moves the tab at `from` so it sits at `to` (#1537). The same document stays active

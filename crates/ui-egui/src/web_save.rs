@@ -15,6 +15,7 @@ use pdfcraft_engine::DocId;
 
 use crate::PdfCraftApp;
 use crate::editing::SaveTarget;
+use crate::save_deadline::SaveDeadline;
 
 /// A file the browser's picker chose, which later saves write to again.
 pub type FileId = u64;
@@ -57,16 +58,18 @@ enum Destination {
     Picked(FileId),
     /// Downloaded once under its current name: Save downloads it again under that name.
     Downloaded,
+    TimedOut,
 }
 
 /// A save handed to the browser that hasn't ended yet.
-struct Pending {
+pub(crate) struct Pending {
     token: u64,
-    doc: DocId,
+    deadline: SaveDeadline,
+    pub(crate) doc: DocId,
     /// The document's edit generation when `bytes` were taken.
     generation: u64,
     bytes: Arc<Vec<u8>>,
-    name: String,
+    pub(crate) name: String,
     download: bool,
     after: After,
 }
@@ -84,7 +87,9 @@ pub struct NamePrompt {
 pub struct WebSaves {
     browser: Box<dyn BrowserSave>,
     pending: Vec<Pending>,
-    results: Rc<RefCell<Vec<(u64, SaveOutcome)>>>,
+    results: Rc<RefCell<Vec<(u64, f64, SaveOutcome)>>>,
+    clock: Rc<dyn Fn() -> f64>,
+    pub(crate) timed_out: Vec<Pending>,
     next_token: u64,
     destinations: HashMap<DocId, Destination>,
     pub(crate) prompt: Option<NamePrompt>,
@@ -94,7 +99,28 @@ pub struct WebSaves {
 
 impl WebSaves {
     pub fn new(browser: Box<dyn BrowserSave>) -> Self {
-        Self { browser, pending: vec![], results: Rc::default(), next_token: 0, destinations: HashMap::new(), prompt: None, download_unnamed: false }
+        #[cfg(not(target_arch = "wasm32"))]
+        let clock: Rc<dyn Fn() -> f64> = {
+            let started = std::time::Instant::now();
+            Rc::new(move || started.elapsed().as_secs_f64())
+        };
+        #[cfg(target_arch = "wasm32")]
+        let clock: Rc<dyn Fn() -> f64> = Rc::new(|| js_sys::Date::now() / 1000.0);
+        Self::with_clock(browser, clock)
+    }
+
+    fn with_clock(browser: Box<dyn BrowserSave>, clock: Rc<dyn Fn() -> f64>) -> Self {
+        Self {
+            browser,
+            pending: vec![],
+            results: Rc::default(),
+            clock,
+            timed_out: vec![],
+            next_token: 0,
+            destinations: HashMap::new(),
+            prompt: None,
+            download_unnamed: false,
+        }
     }
 
     /// The fallback prompt is asking for a file name.
@@ -134,10 +160,11 @@ impl PdfCraftApp {
         let Some(name) = self.session.get(id).map(|d| pdf_file_name(&d.name).unwrap_or_else(|| "document.pdf".to_string())) else {
             return false;
         };
-        let destination = if target == SaveTarget::InPlace { saves.destinations.get(&id).copied() } else { None };
+        let previous = saves.destinations.get(&id).copied();
+        let destination = if target == SaveTarget::InPlace || previous == Some(Destination::TimedOut) { previous } else { None };
         let has_picker = saves.browser.has_picker();
         match destination {
-            Some(Destination::Downloaded) => self.start_web_save(id, name, Write::Download, after),
+            Some(Destination::Downloaded | Destination::TimedOut) => self.start_web_save(id, name, Write::Download, after),
             Some(Destination::Picked(file)) => self.start_web_save(id, name, Write::To(file), after),
             None if has_picker => self.start_web_save(id, name, Write::Pick, after),
             None if saves.download_unnamed => self.start_web_save(id, name, Write::Download, after),
@@ -191,16 +218,21 @@ impl PdfCraftApp {
         saves.next_token = saves.next_token.wrapping_add(1);
         let token = saves.next_token;
         let results = saves.results.clone();
+        let clock = saves.clock.clone();
+        let deadline = SaveDeadline::new(clock());
         let done: SaveDone = Box::new(move |outcome| {
             if let Ok(mut r) = results.try_borrow_mut() {
-                r.push((token, outcome));
+                r.push((token, clock(), outcome));
             }
             if let Some(ctx) = ctx {
                 ctx.request_repaint();
             }
         });
         let download = matches!(write, Write::Download);
-        saves.pending.push(Pending { token, doc: id, generation, bytes: bytes.clone(), name: name.clone(), download, after });
+        saves.pending.push(Pending { token, deadline, doc: id, generation, bytes: bytes.clone(), name: name.clone(), download, after });
+        if let Some(ctx) = &self.ctx {
+            ctx.request_repaint_after(crate::save_deadline::TIMEOUT);
+        }
         match write {
             Write::Pick => saves.browser.pick_and_write(&name, &bytes, done),
             Write::To(file) => saves.browser.write_to(file, &name, &bytes, done),
@@ -223,11 +255,17 @@ impl PdfCraftApp {
         };
         let open: Vec<DocId> = self.views.iter().map(|v| v.id).collect();
         saves.destinations.retain(|id, _| open.contains(id));
+        saves.timed_out.retain(|p| open.contains(&p.doc));
+        saves.pending.retain(|p| open.contains(&p.doc));
         let mut written = vec![];
-        for (token, outcome) in results {
+        for (token, completed_at, outcome) in results {
             let Some(saves) = self.web_save.as_mut() else { break };
             let Some(i) = saves.pending.iter().position(|p| p.token == token) else { continue };
             let p = saves.pending.remove(i);
+            if p.deadline.expired(completed_at) {
+                self.timeout_web_save(p);
+                continue;
+            }
             match outcome {
                 SaveOutcome::Saved { name, file } => {
                     written.push(token);
@@ -240,7 +278,52 @@ impl PdfCraftApp {
                 SaveOutcome::Failed(e) => self.save_failed(p.doc, "Couldn't save {name}: {e}", &[("name", &p.name), ("e", &e)]),
             }
         }
+        let expired = if let Some(saves) = self.web_save.as_mut() {
+            let now = (saves.clock)();
+            let mut expired = vec![];
+            let mut i = 0;
+            while i < saves.pending.len() {
+                if saves.pending.get(i).is_some_and(|p| p.deadline.expired(now)) {
+                    expired.push(saves.pending.remove(i));
+                } else {
+                    i += 1;
+                }
+            }
+            expired
+        } else {
+            vec![]
+        };
+        for pending in expired {
+            self.timeout_web_save(pending);
+        }
         written
+    }
+
+    fn timeout_web_save(&mut self, pending: Pending) {
+        self.save_failed(pending.doc, "Save failed", &[]);
+        if let Some(saves) = self.web_save.as_mut() {
+            // Ignore late callbacks and download future saves: the original write may still finish.
+            saves.destinations.insert(pending.doc, Destination::TimedOut);
+            saves.timed_out.retain(|p| p.doc != pending.doc);
+            saves.timed_out.push(pending);
+        }
+    }
+
+    pub(crate) fn download_timed_out_save(&mut self, id: DocId) {
+        let result = self.web_save.as_ref().and_then(|saves| {
+            let pending = saves.timed_out.iter().find(|p| p.doc == id)?;
+            Some((pending.name.clone(), saves.browser.download(&pending.name, &pending.bytes)))
+        });
+        match result {
+            Some((name, Ok(()))) => {
+                if let Some(saves) = self.web_save.as_mut() {
+                    saves.timed_out.retain(|p| p.doc != id);
+                }
+                self.notify_fmt("Downloaded {name}", &[("name", &name)]);
+            }
+            Some((name, Err(e))) => self.save_failed(id, "Couldn't download {name}: {e}", &[("name", &name), ("e", &e)]),
+            None => {}
+        }
     }
 
     /// The file is written: adopt the name the user picked, and mark the document saved if it is
@@ -255,7 +338,10 @@ impl PdfCraftApp {
         }
         let _ = self.session.rename(p.doc, name.clone());
         if let Some(saves) = self.web_save.as_mut() {
-            saves.destinations.insert(p.doc, file.map_or(Destination::Downloaded, Destination::Picked));
+            saves.timed_out.retain(|pending| pending.doc != p.doc);
+            if saves.destinations.get(&p.doc) != Some(&Destination::TimedOut) {
+                saves.destinations.insert(p.doc, file.map_or(Destination::Downloaded, Destination::Picked));
+            }
         }
         if let Some(doc) = self.session.get(p.doc)
             && let Some(view) = self.views.iter_mut().find(|v| v.id == p.doc)
@@ -280,6 +366,10 @@ enum Write {
 }
 
 #[cfg(test)]
+#[path = "web_save_timeout_tests.rs"]
+mod timeout_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use pdfcraft_engine::{Edit, FieldValue};
@@ -291,10 +381,12 @@ mod tests {
         picker: bool,
         calls: Vec<String>,
         waiting: Vec<SaveDone>,
+        downloads: Vec<Vec<u8>>,
+        download_error: Option<String>,
     }
 
     #[derive(Clone, Default)]
-    struct Fake(Rc<RefCell<Log>>);
+    pub(super) struct Fake(Rc<RefCell<Log>>);
 
     impl BrowserSave for Fake {
         fn has_picker(&self) -> bool {
@@ -310,24 +402,32 @@ mod tests {
             log.calls.push(format!("WriteTo({file})"));
             log.waiting.push(done);
         }
-        fn download(&self, name: &str, _: &[u8]) -> Result<(), String> {
-            self.0.borrow_mut().calls.push(format!("Download({name:?})"));
-            Ok(())
+        fn download(&self, name: &str, bytes: &[u8]) -> Result<(), String> {
+            let mut log = self.0.borrow_mut();
+            log.calls.push(format!("Download({name:?})"));
+            log.downloads.push(bytes.to_vec());
+            log.download_error.clone().map_or(Ok(()), Err)
         }
     }
 
     impl Fake {
         /// The browser answers the oldest waiting save.
-        fn answer(&self, outcome: SaveOutcome) {
+        pub(super) fn answer(&self, outcome: SaveOutcome) {
             let done = self.0.borrow_mut().waiting.remove(0);
             done(outcome);
         }
-        fn calls(&self) -> String {
+        pub(super) fn calls(&self) -> String {
             format!("[{}]", self.0.borrow().calls.join(", "))
+        }
+        pub(super) fn downloads(&self) -> Vec<Vec<u8>> {
+            self.0.borrow().downloads.clone()
+        }
+        pub(super) fn fail_download(&self) {
+            self.0.borrow_mut().download_error = Some("NotAllowedError".into());
         }
     }
 
-    fn app(picker: bool) -> (PdfCraftApp, Fake, DocId) {
+    pub(super) fn app(picker: bool) -> (PdfCraftApp, Fake, DocId) {
         let fake = Fake::default();
         fake.0.borrow_mut().picker = picker;
         let mut app = PdfCraftApp::new();
@@ -337,11 +437,11 @@ mod tests {
         (app, fake, id)
     }
 
-    fn edit(app: &mut PdfCraftApp, value: &str) {
+    pub(super) fn edit(app: &mut PdfCraftApp, value: &str) {
         assert!(app.apply_edit(Edit::SetFieldValue { name: "name".into(), value: FieldValue::Text(value.into()) }));
     }
 
-    fn dirty(app: &PdfCraftApp, id: DocId) -> bool {
+    pub(super) fn dirty(app: &PdfCraftApp, id: DocId) -> bool {
         app.session.get(id).unwrap().dirty
     }
 

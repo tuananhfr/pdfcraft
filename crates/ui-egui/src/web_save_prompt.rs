@@ -6,6 +6,7 @@ use egui::{Align, Layout};
 use crate::{PdfCraftApp, widgets};
 
 pub(crate) fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
+    show_timeout(app, ctx);
     let Some(prompt) = app.web_save.as_mut().and_then(|s| s.prompt.as_mut()) else { return };
     let mut save = false;
     let mut cancel = false;
@@ -39,5 +40,26 @@ pub(crate) fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
         app.confirm_save_name();
     } else if cancel || modal.should_close() {
         app.cancel_save_name();
+    }
+}
+
+fn show_timeout(app: &mut PdfCraftApp, ctx: &egui::Context) {
+    let Some(pending) = app.web_save.as_ref().and_then(|s| s.timed_out.first()) else { return };
+    let (id, name) = (pending.doc, pending.name.clone());
+    let mut open = true;
+    let mut download = false;
+    egui::Window::new(tl!("Save failed"))
+        .id(egui::Id::new("web_save_timeout"))
+        .open(&mut open)
+        .collapsible(false)
+        .resizable(false)
+        .show(ctx, |ui| {
+            ui.label(name);
+            download = widgets::pill_button(ui, tl!("Download"), true).clicked();
+        });
+    if download {
+        app.download_timed_out_save(id);
+    } else if !open && let Some(saves) = app.web_save.as_mut() {
+        saves.timed_out.retain(|p| p.doc != id);
     }
 }
