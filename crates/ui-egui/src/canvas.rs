@@ -22,8 +22,7 @@ const GAP: f32 = 14.0;
 const MARGIN: f32 = 28.0;
 /// Horizontal gutter that keeps pages clear of the floating quick-action bar.
 const SIDE: f32 = 70.0;
-/// The gutter in a phone-width window, where a page clear of the bar would be too small to
-/// read: the page spans the view and the bar floats over its edge.
+/// Compact gutters inside the page viewport; phones reserve the quick bar separately.
 const COMPACT_SIDE: f32 = 8.0;
 const THUMB_TAG: u64 = 1 << 63;
 const TEXT_TAG: u64 = 1 << 62;
@@ -2141,7 +2140,10 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
         return;
     }
 
-    let avail = ui.available_rect_before_wrap();
+    let rail_area = ui.available_rect_before_wrap();
+    let rail_margin = crate::narrow::tool_rail_margin(ui.ctx().content_rect().width());
+    let mut avail = rail_area;
+    avail.min.x = (avail.min.x + rail_margin).min(avail.max.x);
     view.viewport_w = avail.width();
     view.viewport_h = avail.height();
     view.compact = app.narrow.is_narrow();
@@ -2435,7 +2437,9 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
             scroll = scroll.vertical_scroll_offset((r.top() - y_shift + fy * r.height() - rel.y).clamp(0.0, max_y));
         }
     }
-    let out = scroll.show_viewport(ui, |ui, viewport| {
+    // Clip horizontal panning to the page viewport so it cannot slip behind the rail.
+    let mut page_ui = (rail_margin > 0.0).then(|| ui.new_child(egui::UiBuilder::new().max_rect(avail)));
+    let out = scroll.show_viewport(page_ui.as_mut().unwrap_or(&mut *ui), |ui, viewport| {
         // egui's drag responses accept every pointer button. Keep a wheel gesture from also
         // selecting text, drawing a mark, or panning with the Hand tool.
         if middle_gesture {
@@ -3547,7 +3551,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     if let Some((name, action)) = app.views[index].forms.button.take() {
         run_button(app, index, &name, action);
     }
-    quick_bar(app, avail, ui);
+    quick_bar(app, rail_area, ui);
     if let Some((source, file, destination)) = remote_open {
         app.open_remote_link(source, file, destination);
     }

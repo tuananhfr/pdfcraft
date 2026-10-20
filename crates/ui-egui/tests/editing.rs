@@ -488,6 +488,35 @@ fn closing_a_dirty_tab_asks_and_cancel_keeps_it() {
 }
 
 #[test]
+fn single_document_save_prompt_fits_phone_and_keeps_desktop_width() {
+    for language in ["en", "vi"] {
+        let mut h = harness(1, move |app| {
+            app.set_option("language", language).unwrap();
+        });
+        h.state_mut().apply_edit(pdfcraft_engine::Edit::RotatePages { pages: vec![0], degrees: 90 });
+        h.state_mut().request_close_tab(0);
+        for width in [390.0, 1366.0] {
+            h.set_size(egui::vec2(width, 844.0));
+            h.run_steps(8);
+            let card: egui::Rect = h.ctx.data(|d| d.get_temp(egui::Id::new("save_prompt").with("card"))).unwrap();
+            let screen = h.ctx.content_rect();
+            assert!(screen.shrink(16.0).contains_rect(card), "{language} {width}: {card:?} outside {screen:?}");
+            if width == 1366.0 {
+                assert!((card.width() - 460.0).abs() <= 1.0, "desktop retains 420-point content: {card:?}");
+            }
+            let tr = |s| pdfcraft_ui_egui::i18n::tr(pdfcraft_ui_egui::i18n::Lang::from_pref(language), s);
+            for label in ["Save", "Cancel", "Don't save"] {
+                let button = h.get_by_label(tr(label)).rect();
+                assert!(card.contains_rect(button), "{language} {width}: {label} {button:?} outside {card:?}");
+            }
+            if let Ok(dir) = std::env::var("PDFCRAFT_SHOTS") {
+                h.render().unwrap().save(format!("{dir}/single-close-{}-{language}.png", width as u32)).unwrap();
+            }
+        }
+    }
+}
+
+#[test]
 fn closing_a_dirty_tab_can_save_first() {
     let out = temp_path("closed.pdf");
     let mut h = organize(2);

@@ -308,6 +308,30 @@ fn a_phone_width_window_fits_the_page_width_and_widening_gives_the_zoom_back() {
 }
 
 #[test]
+fn phone_tool_rail_stays_left_of_the_page_and_wide_layout_is_restored() {
+    let mut h = harness_at(1366.0, 844.0);
+    let view = h.state().active.unwrap();
+    let wide_page = h.state().views[view].page_screen_rect(0).unwrap();
+    let wide_viewport = h.state().views[view].viewport_rect();
+    let wide_rail = h.get_by_label("Select (V)").rect();
+    for width in [390.0, 480.0] {
+        h.set_size(vec2(width, 844.0));
+        h.run_steps(8);
+        let rail = h.get_by_label("Select (V)").rect().expand(6.0);
+        let page = h.state().views[view].page_screen_rect(0).unwrap();
+        let viewport = h.state().views[view].viewport_rect();
+        assert!(rail.right() <= viewport.left(), "rail {rail:?} overlaps viewport {viewport:?}");
+        assert!(rail.right() <= page.left(), "rail {rail:?} overlaps page {page:?}");
+        assert!(page.width() >= 240.0, "page remains usable beside both rails: {page:?}");
+    }
+    h.set_size(vec2(1366.0, 844.0));
+    h.run_steps(8);
+    assert_eq!(h.state().views[view].page_screen_rect(0).unwrap(), wide_page);
+    assert_eq!(h.state().views[view].viewport_rect(), wide_viewport);
+    assert_eq!(h.get_by_label("Select (V)").rect(), wide_rail);
+}
+
+#[test]
 fn a_tablet_mode_bar_keeps_every_mode_clear_of_the_search() {
     for (lang, width) in [("vi", 768.0), ("en", 768.0), ("vi", 1024.0), ("vi", 1366.0)] {
         let mut h = harness_at(width, 1024.0);

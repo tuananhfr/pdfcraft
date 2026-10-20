@@ -1414,7 +1414,7 @@ fn save_prompt(app: &mut PdfCraftApp, ctx: &egui::Context) {
     let shown = shorten_middle(&name, 80);
     let mut choice: Option<Option<bool>> = None;
     let modal = widgets::show_modal(ctx, "save_prompt", |ui| {
-        ui.set_width(420.0);
+        ui.set_width(widgets::modal_content_width(ctx, 420.0));
         ui.horizontal(|ui| {
             ui.add(crate::icons::image("save", 22.0, t.accent));
             let title = ui.add(
@@ -1438,7 +1438,7 @@ fn save_prompt(app: &mut PdfCraftApp, ctx: &egui::Context) {
             if widgets::pill_button(ui, tl!("Cancel"), false).clicked() {
                 choice = Some(None);
             }
-            ui.add_space(24.0);
+            ui.add_space(if narrow(ctx) { 8.0 } else { 24.0 });
             if widgets::pill_button(ui, tl!("Don't save"), false).clicked() {
                 choice = Some(Some(false));
             }
@@ -1484,8 +1484,7 @@ fn several_prompt(ctx: &egui::Context, rows: &[(String, Row)], primary: &str, bu
     let t = Tokens::get(ctx);
     let mut choice: Option<Option<bool>> = None;
     let modal = widgets::show_modal(ctx, "save_prompt", |ui| {
-        // A phone keeps the card inside the screen.
-        ui.set_width(420.0_f32.min(ctx.content_rect().width() - 64.0).max(200.0));
+        ui.set_width(widgets::modal_content_width(ctx, 420.0));
         ui.horizontal_top(|ui| {
             ui.add(crate::icons::image("save", 22.0, t.accent));
             ui.add(egui::Label::new(egui::RichText::new(tl!("Save changes to these documents before closing?")).font(theme::semibold(16.0))).wrap());

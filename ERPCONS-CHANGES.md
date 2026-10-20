@@ -2,6 +2,9 @@
 
 This branch (`erpcons`) is the ERPCons Văn phòng fork of [PdfCraft](https://github.com/storytold/pdfcraft), based on PdfCraft by the ArtCraft team, licensed MIT OR Apache-2.0 (see `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`). Changes from upstream `main` (Apache-2.0 §4b):
 
+- (both) At window widths up to 480 points, the quick tool rail has its own space beside the page viewport so it no longer hides page text; wider layouts are unchanged.
+- (both) Single-document and multi-document save confirmation dialogs fit within the screen with at least 16-point side margins, keeping wrapped text and action buttons reachable on phones.
+
 - (both) Export to Word preserves visual line breaks within the existing paragraph groups and writes known PDF font families, including subset/PostScript name normalization, into Word text runs without embedding fonts.
 - (web) OCR recognition commands are hidden through the existing platform availability filter; direct OCR entry points explain that OCR is unavailable on the web and suggest the desktop app, while desktop behaviour is unchanged.
 - (both) Form fields, text boxes and Add text write Vietnamese and other characters covered by the bundled Inter face using an embedded TrueType subset with Unicode copy/search mappings and real advance widths; WinAnsi text keeps its existing font path and unsupported characters keep the existing warning/refusal.

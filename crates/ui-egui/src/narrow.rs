@@ -11,6 +11,11 @@ use crate::canvas::{DocView, Fit};
 /// (768+) stays wide.
 pub const NARROW_WIDTH: f32 = 600.0;
 
+/// Space for the quick bar's 14-point inset, 44-point frame and a 6-point gap.
+pub(crate) fn tool_rail_margin(window_width: f32) -> f32 {
+    if window_width <= 480.0 { 64.0 } else { 0.0 }
+}
+
 /// Which side panels are open: the Tools pane on the left and the right (inspector) panel.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Panels {
@@ -115,6 +120,14 @@ mod tests {
 
     const WIDE: f32 = 1366.0;
     const PHONE: f32 = 390.0;
+
+    #[test]
+    fn rail_space_is_reserved_only_through_480_points() {
+        assert_eq!(tool_rail_margin(PHONE), 64.0);
+        assert_eq!(tool_rail_margin(480.0), 64.0);
+        assert_eq!(tool_rail_margin(481.0), 0.0);
+        assert_eq!(tool_rail_margin(WIDE), 0.0);
+    }
 
     fn open() -> Panels {
         Panels { left_open: true, right: Some(RightPanel::Bookmarks) }

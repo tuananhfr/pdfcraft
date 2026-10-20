@@ -41,6 +41,12 @@ pub fn show_modal<R>(ctx: &egui::Context, id: &str, content: impl FnOnce(&mut eg
     })
 }
 
+/// Content width leaving 16 points outside each modal edge, including its padding and stroke.
+pub(crate) fn modal_content_width(ctx: &egui::Context, preferred: f32) -> f32 {
+    let frame_width = 2.0 * (f32::from(DIALOG_PAD_X) + 1.0);
+    preferred.min((ctx.content_rect().width() - 32.0 - frame_width).max(0.0))
+}
+
 /// A tooltip's text, wrapped within a phone's width (egui's own width runs off a narrow screen).
 pub fn fitted_tip(ui: &mut egui::Ui, text: &str) {
     ui.set_max_width((ui.ctx().content_rect().width() - 24.0).min(ui.spacing().tooltip_width));
