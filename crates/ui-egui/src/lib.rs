@@ -28,6 +28,7 @@ mod appearance;
 pub mod canvas;
 mod cert_guard;
 mod chrome;
+pub mod clipboard;
 mod closed_docs;
 mod combine_grid;
 mod image_pick;
@@ -736,6 +737,7 @@ pub struct PdfCraftApp {
     /// system clipboard as a file when `system_clipboard` is on.
     pub last_copied_file: Option<(String, Vec<u8>)>,
     pub system_clipboard: bool,
+    pub clipboard: Option<clipboard::HostClipboard>,
     /// Attach file: the file to attach instead of asking (tests, automation).
     pub attach_override: Option<(String, Vec<u8>)>,
     /// Duplicate Field: which field and onto which pages.
@@ -1033,6 +1035,7 @@ impl PdfCraftApp {
             last_copied_image: None,
             last_copied_file: None,
             system_clipboard: true,
+            clipboard: None,
             attach_override: None,
             duplicate_draft: None,
             form_preview: false,
@@ -2764,7 +2767,16 @@ impl PdfCraftApp {
             return;
         }
         let Some((id, text)) = self.views.get(i).and_then(|v| Some((v.id, v.selected_text()?))) else { return };
-        if self.may_copy(id) {
+        self.copy_document_text(id, text, ctx);
+    }
+
+    pub(crate) fn copy_document_text(&mut self, id: DocId, text: String, ctx: &egui::Context) {
+        if !self.may_copy(id) {
+            return;
+        }
+        if let Some(clipboard) = &self.clipboard {
+            (clipboard.write)(&text);
+        } else {
             ctx.copy_text(text);
         }
     }
@@ -2828,6 +2840,7 @@ impl eframe::App for PdfCraftApp {
         // Notices raised outside `ui` (opened files, OS events, the control channel) translate too.
         let lang = i18n::Lang::from_pref(&self.language);
         i18n::set_current(lang);
+        self.poll_clipboard();
         #[cfg(not(target_arch = "wasm32"))]
         {
             if let Some(worker) = &self.open_worker {

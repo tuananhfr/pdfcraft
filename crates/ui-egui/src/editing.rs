@@ -201,6 +201,11 @@ impl PdfCraftApp {
     /// Returns false when a field refused the typing queued for it (its editor is open again).
     pub(crate) fn process_pending_edits(&mut self) -> bool {
         let Some(i) = self.active else { return true };
+        if let Some((id, text)) = self.views.get_mut(i).and_then(|v| v.pending_copy_text.take().map(|text| (v.id, text)))
+            && let Some(ctx) = self.ctx.clone()
+        {
+            self.copy_document_text(id, text, &ctx);
+        }
         let applied = self.apply_queued_edit(i);
         if !applied {
             // Nor may a shortcut pressed with it (⌘S right after Enter) run behind the refusal.

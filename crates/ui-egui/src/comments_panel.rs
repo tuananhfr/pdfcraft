@@ -433,7 +433,7 @@ fn card(
                 ui.close();
             }
             if ui.button(tl!("Copy text")).clicked() {
-                ui.ctx().copy_text(a.contents.clone().unwrap_or_default());
+                view.pending_copy_text = Some(a.contents.clone().unwrap_or_default());
                 ui.close();
             }
             if ui.button(tl!("Properties…")).clicked() {

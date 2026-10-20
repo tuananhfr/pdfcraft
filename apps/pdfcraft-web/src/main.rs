@@ -23,6 +23,7 @@ fn main() {
                 options,
                 Box::new(|cc| {
                     let mut app = PdfCraftApp::new();
+                    app.clipboard = Some(clipboard::install(cc.egui_ctx.clone()));
                     // "printcraft": settings saved under the app's former name, PrintCraft.
                     if let Some(json) = cc.storage.and_then(|s| s.get_string("pdfcraft").or_else(|| s.get_string("printcraft"))) {
                         app.restore(&json);
@@ -107,6 +108,11 @@ fn warn_before_unload(unsaved: std::sync::Arc<std::sync::atomic::AtomicBool>) {
 
 #[cfg(target_arch = "wasm32")]
 mod language;
+
+#[cfg(target_arch = "wasm32")]
+mod clipboard;
+#[cfg(any(target_arch = "wasm32", test))]
+mod clipboard_html;
 
 /// The JavaScript side of [`pdfcraft_ui_egui::drafts`]: `window.erpDrafts.{put, remove, ready}`
 /// of the ERPCons office shell, looked up at every call (absent: the feature is off), and the

@@ -1526,6 +1526,7 @@
 	Replacing images arrives on the web with image file pickers	Tính năng thay ảnh sẽ có trên web cùng với hộp chọn tệp ảnh
 	Couldn't create a PDF: {e}	Không thể tạo PDF: {e}
 	The clipboard has no image or text	Bảng tạm không có ảnh hoặc văn bản
+	The browser won't allow reading the clipboard — use Ctrl+V	Trình duyệt không cho đọc bảng tạm — hãy dùng Ctrl+V
 	On the web, open or drop an image to convert it	Trên web, hãy mở hoặc thả một ảnh vào để chuyển đổi
 	Couldn't optimize the file: {e}	Không thể tối ưu tệp: {e}
 	Couldn't write {path}: {e}	Không thể ghi {path}: {e}

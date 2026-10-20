@@ -111,6 +111,10 @@ impl PdfCraftApp {
     /// Create ▸ Clipboard: a new document from the image (one page, its size) or the text on
     /// the clipboard, as Acrobat does.
     pub(crate) fn create_from_clipboard(&mut self) {
+        if let Some(clipboard) = &self.clipboard {
+            (clipboard.read)();
+            return;
+        }
         #[cfg(not(target_arch = "wasm32"))]
         let clip = read_clipboard();
         #[cfg(target_arch = "wasm32")]

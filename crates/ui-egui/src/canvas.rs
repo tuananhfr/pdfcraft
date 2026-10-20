@@ -355,6 +355,7 @@ pub struct DocView {
     tiles: HashMap<(usize, u64, u32, u32), TextureHandle>,
     /// Text layers, extracted in the background on demand (selection, find, copy).
     pub(crate) texts: HashMap<usize, Arc<PageText>>,
+    pub(crate) pending_copy_text: Option<String>,
     pub(crate) text_failed: HashSet<usize>,
     pub find: Option<Find>,
     selection: Option<Selection>,
@@ -623,6 +624,7 @@ impl DocView {
             print_pages: HashMap::new(),
             tiles: HashMap::new(),
             texts: HashMap::new(),
+            pending_copy_text: None,
             text_failed: HashSet::new(),
             find: None,
             selection: None,
@@ -3615,7 +3617,7 @@ fn selection_actions(
     });
     let Some(action) = chosen else { return };
     if let SelectionAction::Copy = action {
-        ui.ctx().copy_text(selected);
+        view.pending_copy_text = Some(selected);
         return;
     }
     let Some((page, quads)) = view.selection_quads(info) else { return };
