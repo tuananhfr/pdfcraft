@@ -72,7 +72,7 @@ mod tests {
 
     fn losses(bytes: Vec<u8>) -> Vec<LossItem> {
         let mut session = Session::new();
-        let id = session.open("doc.pdf", None, bytes, None).unwrap();
+        let id = session.open("doc.pdf", None, std::sync::Arc::new(bytes), None).unwrap();
         export_losses(session.get(id).unwrap())
     }
 
