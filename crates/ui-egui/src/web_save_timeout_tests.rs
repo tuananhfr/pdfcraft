@@ -143,7 +143,7 @@ fn failed_fallback_download_keeps_the_offer_and_unsaved_work() {
 #[test]
 fn timeout_download_button_works_at_desktop_and_phone_widths() {
     use egui_kittest::Harness;
-    use egui_kittest::kittest::{NodeT, Queryable};
+    use egui_kittest::kittest::Queryable;
 
     for size in [egui::vec2(1366.0, 768.0), egui::vec2(390.0, 844.0)] {
         let (mut app, fake, id) = app(true);

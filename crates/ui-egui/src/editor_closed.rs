@@ -5,21 +5,25 @@ fn should_notify(before: usize, after: usize) -> bool {
 }
 
 pub(crate) fn document_closed(before: usize, after: usize) {
-    if !should_notify(before, after) {
-        return;
-    }
-    #[cfg(target_arch = "wasm32")]
-    {
-        use wasm_bindgen::{JsCast, JsValue};
-
-        let Some(window) = web_sys::window() else { return };
-        let hook = js_sys::Reflect::get(&window, &JsValue::from_str("erpEditorClosed"));
-        let Some(hook) = hook.ok().and_then(|v| v.dyn_into::<js_sys::Function>().ok()) else { return };
-        if let Err(e) = hook.call0(&window) {
-            log::warn!("erpEditorClosed failed: {e:?}");
-        }
+    if should_notify(before, after) {
+        notify_host();
     }
 }
+
+#[cfg(target_arch = "wasm32")]
+fn notify_host() {
+    use wasm_bindgen::{JsCast, JsValue};
+
+    let Some(window) = web_sys::window() else { return };
+    let hook = js_sys::Reflect::get(&window, &JsValue::from_str("erpEditorClosed"));
+    let Some(hook) = hook.ok().and_then(|v| v.dyn_into::<js_sys::Function>().ok()) else { return };
+    if let Err(e) = hook.call0(&window) {
+        log::warn!("erpEditorClosed failed: {e:?}");
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn notify_host() {}
 
 #[cfg(test)]
 mod tests {
