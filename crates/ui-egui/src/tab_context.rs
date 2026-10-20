@@ -1,4 +1,4 @@
-//! PDF-tab actions. Closed history contains paths only, never bytes or passwords.
+//! PDF-tab actions. What Reopen keeps of a closed document is in `closed_docs`.
 use pdfcraft_engine::DocId;
 
 pub(crate) enum Action {
@@ -16,22 +16,7 @@ impl crate::PdfCraftApp {
                 }
             }
             Action::Reopen => {
-                #[cfg(not(target_arch = "wasm32"))]
-                if let Some(path) = self.closed_tabs.last().cloned() {
-                    // A tab may already have been reopened through File > Open.
-                    if let Some(index) = self.views.iter().position(|v| self.session.get(v.id).is_some_and(|d| d.path.as_deref() == Some(&path))) {
-                        self.active = Some(index);
-                        self.closed_tabs.pop();
-                    } else {
-                        let tabs = self.views.len();
-                        self.open_path(&path);
-                        // open_path reports errors through notifications, not a Result.
-                        // Keep the entry until an actual document tab has been opened.
-                        if self.views.len() > tabs {
-                            self.closed_tabs.pop();
-                        }
-                    }
-                }
+                self.reopen_closed();
             }
             Action::Reveal(id) => {
                 #[cfg(not(target_arch = "wasm32"))]
@@ -143,16 +128,16 @@ mod tests {
         app.session.apply(first, pdfcraft_engine::Edit::InsertBlankPage { at: 0, width: 300.0, height: 400.0 }).unwrap();
         app.tab_action(Action::Close(first));
         assert_eq!(app.views.len(), 2);
-        assert!(app.closed_tabs.is_empty());
+        assert_eq!(app.closed.len(), 0);
         app.resolve_close(&egui::Context::default(), None);
-        assert!(app.closed_tabs.is_empty());
+        assert_eq!(app.closed.len(), 0, "a cancelled close keeps nothing");
         app.tab_action(Action::Close(first));
         app.resolve_close(&egui::Context::default(), Some(false));
         assert_eq!(app.views.len(), 1);
-        assert_eq!(app.closed_tabs, ["/tmp/first.pdf"]);
+        assert_eq!(app.closed.names(), ["first.pdf"]);
         assert_eq!(app.active, Some(0));
         app.close_tab(0);
-        assert_eq!(app.closed_tabs.len(), 1, "pathless tabs are not recorded");
+        assert_eq!(app.closed.names(), ["first.pdf", "second.pdf"], "a document without a file is kept too");
     }
 
     #[test]
@@ -169,13 +154,13 @@ mod tests {
             app.open_path(path_text);
             app.close_tab(0);
         }
-        assert_eq!(app.closed_tabs.len(), 10);
+        assert_eq!(app.closed.len(), 10);
         app.tab_action(Action::Reopen);
         assert_eq!(app.views.len(), 1);
         let doc = app.session.get(app.views[0].id).unwrap();
         assert_eq!(doc.path.as_deref(), Some(path_text));
         assert!(!doc.dirty);
-        assert_eq!(app.closed_tabs.len(), 9);
+        assert_eq!(app.closed.len(), 9);
         std::fs::remove_file(path).unwrap();
     }
 
@@ -194,15 +179,17 @@ mod tests {
         std::fs::remove_file(&path).unwrap();
         app.tab_action(Action::Reopen);
         assert!(app.views.is_empty());
-        assert_eq!(app.closed_tabs, [text]);
+        assert_eq!(app.closed.len(), 1, "kept to try again");
         std::fs::write(&path, PDF).unwrap();
         app.tab_action(Action::Reopen);
         assert_eq!(app.views.len(), 1);
-        assert!(app.closed_tabs.is_empty());
-        app.closed_tabs.push(text.into());
+        assert_eq!(app.closed.len(), 0);
+        // Closed, then opened again through File > Open: Reopen shows that tab.
+        app.close_tab(0);
+        app.open_path(text);
         app.tab_action(Action::Reopen);
         assert_eq!(app.views.len(), 1, "an already-open file is selected, not duplicated");
-        assert!(app.closed_tabs.is_empty());
+        assert_eq!(app.closed.len(), 0);
         std::fs::remove_file(path).unwrap();
     }
 

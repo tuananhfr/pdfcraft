@@ -87,6 +87,9 @@ impl PdfCraftApp {
         if self.combine_showing() && matches!(spec.needs, commands::Needs::Undo | commands::Needs::Redo) {
             return self.combine_can_undo(spec.needs == commands::Needs::Undo);
         }
+        if spec.id == "file.reopen_closed" {
+            return self.can_reopen_closed();
+        }
         commands::is_enabled(spec, &self.session, self.active_ids().map(|(_, id)| id))
             && (spec.needs != commands::Needs::TwoPageView || self.active.and_then(|i| self.views.get(i)).is_some_and(crate::DocView::cover_applies))
     }
@@ -109,7 +112,10 @@ impl PdfCraftApp {
     fn execute_unguarded(&mut self, id: &str) -> bool {
         let Some(spec) = commands::command(id).filter(|s| commands::available(s)) else { return false };
         if !self.command_enabled(spec) {
+            let certified = self.certification_refusal(spec.needs);
             let why = match spec.needs {
+                _ if spec.id == "file.reopen_closed" => tl!("No closed document to reopen.").to_string(),
+                _ if certified.is_some() => certified.map(str::to_string).unwrap_or_default(),
                 commands::Needs::Undo => tl!("Nothing to undo").to_string(),
                 commands::Needs::Redo => tl!("Nothing to redo").to_string(),
                 commands::Needs::FillForms if self.active.is_some() => tl!("This document has no form fields you can fill in").to_string(),
@@ -159,6 +165,9 @@ impl PdfCraftApp {
                 Some(p) => self.open_recent(&p),
                 None => self.notify_tr("No recent files"),
             },
+            "file.reopen_closed" => {
+                self.reopen_closed();
+            }
             "file.clear_recent" if self.recent.is_empty() => self.notify_tr("No recent files"),
             "file.clear_recent" => self.recent.clear(),
             "file.pin_folder" => self.pin_folder_dialog(),
@@ -769,7 +778,10 @@ pub(crate) fn registry_menu(app: &mut PdfCraftApp, ui: &mut egui::Ui, menu: &str
         }
         let shortcut = spec.shortcut.map(|s| shortcut_label(ui.ctx(), s)).unwrap_or_default();
         let enabled = app.command_enabled(spec);
-        let resp = ui.add_enabled(enabled, egui::Button::new(label).shortcut_text(shortcut));
+        let mut resp = ui.add_enabled(enabled, egui::Button::new(label).shortcut_text(shortcut));
+        if !enabled && let Some(why) = app.certification_refusal(spec.needs) {
+            resp = resp.on_disabled_hover_ui(|ui| widgets::fitted_tip(ui, why));
+        }
         if resp.clicked() {
             app.execute(spec.id);
             ui.close();

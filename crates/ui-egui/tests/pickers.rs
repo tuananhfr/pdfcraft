@@ -192,15 +192,41 @@ fn close_all_saves_each_untitled_document_in_turn() {
     }
     h.state_mut().close_all();
     let ctx = h.ctx.clone();
-    for (n, name) in ["first.pdf", "second.pdf"].iter().enumerate() {
-        assert!(h.state().close_request.is_some(), "asks about document {n}");
-        h.state_mut().pick_override = Some(vec![dir.join(name).to_string_lossy().into_owned()]);
-        h.state_mut().resolve_close(&ctx, Some(true));
-        h.run_steps(2);
-    }
+    assert!(h.state().close_request.is_some(), "one question covers both documents");
+    let pick = |name: &str| Some(vec![dir.join(name).to_string_lossy().into_owned()]);
+    h.state_mut().pick_override = pick("first.pdf");
+    h.state_mut().resolve_close(&ctx, Some(true));
+    // The first picker has its answer; the second is asked once the first file is written.
+    h.state_mut().pick_override = pick("second.pdf");
+    h.run_steps(4);
+    assert!(h.state().close_request.is_none(), "Save all asks nothing more");
     assert!(h.state().views.is_empty());
     assert_eq!(page_count(std::fs::read(dir.join("first.pdf")).unwrap()), 2);
     assert_eq!(page_count(std::fs::read(dir.join("second.pdf")).unwrap()), 3);
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// Cancelling one save picker of Save all stops there: the documents not yet saved stay open,
+/// with their changes.
+#[test]
+fn cancelling_a_picker_of_save_all_closes_nothing_still_unsaved() {
+    let dir = scratch("close-all-cancel");
+    let mut h = harness(&[2, 3, 1]);
+    for i in 0..3 {
+        h.state_mut().active = Some(i);
+        rotate_first_page(h.state_mut());
+    }
+    h.state_mut().close_all();
+    let ctx = h.ctx.clone();
+    h.state_mut().pick_override = Some(vec![dir.join("first.pdf").to_string_lossy().into_owned()]);
+    h.state_mut().resolve_close(&ctx, Some(true));
+    // An empty answer is a cancelled picker.
+    h.state_mut().pick_override = Some(Vec::new());
+    h.run_steps(6);
+    assert_eq!(page_count(std::fs::read(dir.join("first.pdf")).unwrap()), 2, "the first was saved and closed");
+    assert_eq!(h.state().views.len(), 2);
+    assert_eq!(h.state().unsaved_tabs(), [0, 1], "the rest keep their changes");
+    assert!(h.state().close_request.is_none());
     let _ = std::fs::remove_dir_all(&dir);
 }
 

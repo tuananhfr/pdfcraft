@@ -28,6 +28,7 @@ mod appearance;
 pub mod canvas;
 mod cert_guard;
 mod chrome;
+mod closed_docs;
 mod combine_grid;
 mod image_pick;
 mod tags_ui;
@@ -98,6 +99,8 @@ mod panels;
 mod pickers;
 pub mod prepare;
 mod print_ui;
+mod save_all;
+mod save_status;
 mod signature_drag;
 pub mod units;
 mod web_print;
@@ -153,6 +156,7 @@ pub use cert_guard::HeldSave;
 pub use editing::{CloseRequest, SaveTarget};
 pub use files::{ExtractDraft, FilePurpose, FileRequest, RotateDraft, SplitDraft, SplitMode, SplitPlan};
 pub use recovery::{AUTOSAVE_SECS, RecoveryMeta, RecoveryStore};
+pub use save_status::SaveState;
 use theme::{ThemeKind, ThemePreference};
 
 /// Top-level workspace modes (Acrobat's mode bar).
@@ -484,7 +488,12 @@ pub struct PdfCraftApp {
     pub(crate) pending_panel_reveals: Vec<docking::Panel>,
     pub session: Session,
     pub views: Vec<DocView>,
-    pub(crate) closed_tabs: Vec<String>,
+    /// Documents closed in this session, for Reopen Closed Tab.
+    pub(crate) closed: closed_docs::ClosedDocs,
+    /// Saves that failed, shown on their tabs until the next save or edit.
+    pub(crate) save_failures: save_status::SaveFailures,
+    /// Save all on the web, a click per save picker (see `save_all`).
+    pub(crate) save_all: Option<save_all::SaveAllRun>,
     /// `None` shows the Home tab.
     pub active: Option<usize>,
     pub mode: Mode,
@@ -883,7 +892,9 @@ impl PdfCraftApp {
         Self {
             session: Session::new(),
             views: Vec::new(),
-            closed_tabs: Vec::new(),
+            closed: Default::default(),
+            save_failures: Default::default(),
+            save_all: None,
             active: None,
             mode: Mode::AllTools,
             default_mode: Mode::AllTools,
@@ -1820,13 +1831,7 @@ impl PdfCraftApp {
             return;
         }
         let id = self.views.remove(index).id;
-        #[cfg(not(target_arch = "wasm32"))]
-        if let Some(path) = self.session.get(id).and_then(|d| d.path.clone()) {
-            if self.closed_tabs.len() == 10 {
-                self.closed_tabs.remove(0);
-            }
-            self.closed_tabs.push(path);
-        }
+        self.keep_closed(id);
         self.forget_recovery(id);
         self.session.close(id);
         self.active = match self.active {
@@ -1860,6 +1865,7 @@ impl PdfCraftApp {
     pub(crate) fn modal_open(&self) -> bool {
         self.dialog.is_some()
             || self.close_request.is_some()
+            || self.save_all.is_some()
             || self.held_save.is_some()
             || self.password_prompt.is_some()
             || self.unlock_prompt.is_some()
@@ -2682,6 +2688,12 @@ impl PdfCraftApp {
             }
             return;
         }
+        if self.save_all.is_some() {
+            if let Some(choice) = dialogs::save_prompt_key(ctx) {
+                self.answer_save_all(ctx, choice);
+            }
+            return;
+        }
         // The other dialogs and prompts are modal too (⌘W closed the file behind Preferences,
         // #870).
         if self.modal_open() {
@@ -2823,6 +2835,8 @@ impl eframe::App for PdfCraftApp {
             }
             self.poll_pending_opens();
         }
+        self.poll_reopening();
+        self.poll_save_all();
         // Chinese wants its own faces before the Japanese ones (one baseline per line).
         let cjk = theme::CjkPreference::for_language(lang.code());
         if !self.styled {

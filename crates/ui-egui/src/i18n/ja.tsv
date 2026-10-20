@@ -2354,3 +2354,15 @@ animation effects	Off	オフ
 	Saving would invalidate a signature	保存すると署名が無効になります
 	Save a copy…	コピーを保存…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	別のファイルを選択してください: 署名された元のファイルにこれらの変更を上書き保存すると、その署名が無効になります。
+	Save changes to these documents before closing?	閉じる前にこれらの文書への変更を保存しますか？
+	Save all	すべて保存
+	Saving…	保存中…
+	Save failed	保存できませんでした
+	No closed document to reopen.	再度開ける閉じた文書はありません。
+	This field is locked by the signature of {name}.	このフィールドは {name} の署名によってロックされています。
+	This document is certified and allows only form filling and signing.	この文書は証明済みで、フォームへの入力と署名のみ許可されています。
+	This document is certified and allows only form filling, comments and signing.	この文書は証明済みで、フォームへの入力、注釈、署名のみ許可されています。
+	Certified by {by}. Only form filling and signing are allowed.	証明者: {by}。フォームへの入力と署名のみ許可されています。
+	Certified by {by}. Only form filling, comments and signing are allowed.	証明者: {by}。フォームへの入力、注釈、署名のみ許可されています。
+	Saved	保存済み
+	Save “{name}”	「{name}」を保存

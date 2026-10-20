@@ -171,6 +171,8 @@ const HELP_NATIVE: Option<&str> = if cfg!(target_arch = "wasm32") { None } else 
 pub const COMMANDS: &[CommandSpec] = &[
     c("file.open", "Open…", FILE, Some(Shortcut::cmd("O")), Nothing, "folder-open"),
     c("file.open_recent", "Open Recent", FILE, None, Nothing, "clock"),
+    // Browsers' key. The frontend enables it while it holds a document closed in this session.
+    c("file.reopen_closed", "Reopen Closed Tab", FILE, Some(Shortcut::cmd_shift("T")), Nothing, "rotate-ccw"),
     // Shown at the foot of File ▸ Open Recent and on Home, not as its own File menu item.
     c("file.clear_recent", "Clear Recent Files", None, None, Nothing, "trash-2"),
     c("file.pin_folder", "Pin folder to Home…", FILE, None, Nothing, "folder-plus"),

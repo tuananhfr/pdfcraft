@@ -2267,3 +2267,15 @@ animation effects	Off	Выкл
 	Saving would invalidate a signature	Сохранение сделает подпись недействительной
 	Save a copy…	Сохранить копию…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Выберите другой файл: сохранение этих изменений поверх подписанного оригинала сделает его подпись недействительной.
+	Save changes to these documents before closing?	Сохранить изменения в этих документах перед закрытием?
+	Save all	Сохранить все
+	Saving…	Сохранение…
+	Save failed	Не удалось сохранить
+	No closed document to reopen.	Нет закрытого документа, который можно открыть снова.
+	This field is locked by the signature of {name}.	Это поле заблокировано подписью {name}.
+	This document is certified and allows only form filling and signing.	Этот документ сертифицирован и допускает только заполнение форм и подписание.
+	This document is certified and allows only form filling, comments and signing.	Этот документ сертифицирован и допускает только заполнение форм, комментарии и подписание.
+	Certified by {by}. Only form filling and signing are allowed.	Сертифицировано: {by}. Разрешены только заполнение форм и подписание.
+	Certified by {by}. Only form filling, comments and signing are allowed.	Сертифицировано: {by}. Разрешены только заполнение форм, комментарии и подписание.
+	Saved	Сохранено
+	Save “{name}”	Сохранить «{name}»

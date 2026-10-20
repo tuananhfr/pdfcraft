@@ -2376,3 +2376,15 @@ animation effects	Off	Вимкнено
 	Saving would invalidate a signature	Збереження зробить підпис недійсним
 	Save a copy…	Зберегти копію…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Виберіть інший файл: збереження цих змін поверх підписаного оригіналу зробить його підпис недійсним.
+	Save changes to these documents before closing?	Зберегти зміни в цих документах перед закриттям?
+	Save all	Зберегти все
+	Saving…	Збереження…
+	Save failed	Не вдалося зберегти
+	No closed document to reopen.	Немає закритого документа, який можна відкрити знову.
+	This field is locked by the signature of {name}.	Це поле заблоковано підписом {name}.
+	This document is certified and allows only form filling and signing.	Цей документ засвідчено, і він дозволяє лише заповнення форм і підписання.
+	This document is certified and allows only form filling, comments and signing.	Цей документ засвідчено, і він дозволяє лише заповнення форм, коментарі та підписання.
+	Certified by {by}. Only form filling and signing are allowed.	Засвідчено: {by}. Дозволено лише заповнення форм і підписання.
+	Certified by {by}. Only form filling, comments and signing are allowed.	Засвідчено: {by}. Дозволено лише заповнення форм, коментарі та підписання.
+	Saved	Збережено
+	Save “{name}”	Зберегти «{name}»

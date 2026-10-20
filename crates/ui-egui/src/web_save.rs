@@ -88,16 +88,23 @@ pub struct WebSaves {
     next_token: u64,
     destinations: HashMap<DocId, Destination>,
     pub(crate) prompt: Option<NamePrompt>,
+    /// Save all without a picker: download under the document's name instead of asking for one.
+    download_unnamed: bool,
 }
 
 impl WebSaves {
     pub fn new(browser: Box<dyn BrowserSave>) -> Self {
-        Self { browser, pending: vec![], results: Rc::default(), next_token: 0, destinations: HashMap::new(), prompt: None }
+        Self { browser, pending: vec![], results: Rc::default(), next_token: 0, destinations: HashMap::new(), prompt: None, download_unnamed: false }
     }
 
     /// The fallback prompt is asking for a file name.
     pub fn prompt(&self) -> Option<&NamePrompt> {
         self.prompt.as_ref()
+    }
+
+    /// The browser shows its own save picker.
+    pub fn has_picker(&self) -> bool {
+        self.browser.has_picker()
     }
 
     /// A save of `doc` is waiting for the browser.
@@ -133,12 +140,20 @@ impl PdfCraftApp {
             Some(Destination::Downloaded) => self.start_web_save(id, name, Write::Download, after),
             Some(Destination::Picked(file)) => self.start_web_save(id, name, Write::To(file), after),
             None if has_picker => self.start_web_save(id, name, Write::Pick, after),
+            None if saves.download_unnamed => self.start_web_save(id, name, Write::Download, after),
             None => {
                 if let Some(saves) = self.web_save.as_mut() {
                     saves.prompt = Some(NamePrompt { doc: id, name, focus: true, after });
                 }
                 false
             }
+        }
+    }
+
+    /// While set, a document never saved downloads under its name rather than asking for one.
+    pub(crate) fn set_download_unnamed(&mut self, on: bool) {
+        if let Some(saves) = self.web_save.as_mut() {
+            saves.download_unnamed = on;
         }
     }
 
@@ -166,7 +181,7 @@ impl PdfCraftApp {
         let bytes = match self.session.save_bytes(id) {
             Ok(b) => b,
             Err(e) => {
-                self.notify_fmt("Couldn't save {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
+                self.save_failed(id, "Couldn't save {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
                 return false;
             }
         };
@@ -220,9 +235,9 @@ impl PdfCraftApp {
                 }
                 SaveOutcome::Cancelled => {}
                 SaveOutcome::Failed(e) if p.download => {
-                    self.notify_fmt("Couldn't download {name}: {e}", &[("name", &p.name), ("e", &e)]);
+                    self.save_failed(p.doc, "Couldn't download {name}: {e}", &[("name", &p.name), ("e", &e)]);
                 }
-                SaveOutcome::Failed(e) => self.notify_fmt("Couldn't save {name}: {e}", &[("name", &p.name), ("e", &e)]),
+                SaveOutcome::Failed(e) => self.save_failed(p.doc, "Couldn't save {name}: {e}", &[("name", &p.name), ("e", &e)]),
             }
         }
         written
@@ -235,7 +250,7 @@ impl PdfCraftApp {
         let name = if name.trim().is_empty() { p.name } else { name };
         let unchanged = doc.edit_generation() == p.generation;
         if unchanged && let Err(e) = self.session.mark_saved(p.doc, p.bytes, None) {
-            self.notify_fmt("Saved, but reopening failed: {e}", &[("e", &e.to_string())]);
+            self.save_failed(p.doc, "Saved, but reopening failed: {e}", &[("e", &e.to_string())]);
             return;
         }
         let _ = self.session.rename(p.doc, name.clone());
@@ -417,6 +432,141 @@ mod tests {
         fake.answer(SaveOutcome::Saved { name: "Report.pdf".into(), file: Some(1) });
         app.settle_web_saves();
         assert!(app.views.is_empty());
+    }
+
+    #[test]
+    fn the_tab_says_saving_while_the_picker_shows_then_failed_until_the_next_edit() {
+        let (mut app, fake, id) = app(true);
+        edit(&mut app, "Ada");
+        assert_eq!(app.save_state(id), None);
+        app.save_active(SaveTarget::InPlace);
+        assert_eq!(app.save_state(id), Some(crate::SaveState::Saving));
+        fake.answer(SaveOutcome::Failed("NotAllowedError: disk full".into()));
+        app.settle_web_saves();
+        let Some(crate::SaveState::Failed(why)) = app.save_state(id) else { panic!("{:?}", app.save_state(id)) };
+        assert!(why.contains("disk full"), "the reason stays reachable: {why}");
+        // Another Save shows Saving again; the failure is over once the document changes.
+        app.save_active(SaveTarget::InPlace);
+        assert_eq!(app.save_state(id), Some(crate::SaveState::Saving));
+        fake.answer(SaveOutcome::Cancelled);
+        app.settle_web_saves();
+        assert!(matches!(app.save_state(id), Some(crate::SaveState::Failed(_))), "a cancelled retry is no success");
+        edit(&mut app, "Grace");
+        assert_eq!(app.save_state(id), None);
+    }
+
+    #[test]
+    fn a_successful_save_ends_the_failed_state() {
+        let (mut app, fake, id) = app(true);
+        edit(&mut app, "Ada");
+        app.save_active(SaveTarget::InPlace);
+        fake.answer(SaveOutcome::Failed("NotAllowedError".into()));
+        app.settle_web_saves();
+        assert!(matches!(app.save_state(id), Some(crate::SaveState::Failed(_))));
+        app.save_active(SaveTarget::InPlace);
+        fake.answer(SaveOutcome::Saved { name: "Report.pdf".into(), file: Some(2) });
+        app.settle_web_saves();
+        assert_eq!(app.save_state(id), None);
+        assert!(!dirty(&app, id));
+    }
+
+    /// Three edited documents, `Report.pdf`, `Second.pdf` and `Third.pdf`, with Close all asking.
+    fn three_unsaved(picker: bool) -> (PdfCraftApp, Fake) {
+        let (mut app, fake, _) = app(picker);
+        edit(&mut app, "Ada");
+        for name in ["Second.pdf", "Third.pdf"] {
+            app.open_bytes(name, None, FORM.to_vec()).unwrap();
+            edit(&mut app, "Grace");
+        }
+        app.close_all();
+        assert_eq!(app.unsaved_tabs(), [0, 1, 2]);
+        (app, fake)
+    }
+
+    fn rows(app: &PdfCraftApp) -> Vec<(String, crate::save_all::Row)> {
+        app.save_all.as_ref().map(|r| r.rows()).unwrap_or_default()
+    }
+
+    /// Save all on the web: the click on Save all opens the first picker; each later picker waits
+    /// for its own click on "Save “<next>”", since the browser refuses one opened without a click.
+    #[test]
+    fn save_all_takes_a_click_for_each_picker() {
+        use crate::save_all::Row::{Saved, Saving, Unsaved};
+        let (mut app, fake) = three_unsaved(true);
+        let ctx = egui::Context::default();
+        app.resolve_close(&ctx, Some(true));
+        assert_eq!(fake.calls(), r#"[Pick("Report.pdf")]"#, "only the first picker shows");
+        assert_eq!(rows(&app).iter().map(|r| r.1).collect::<Vec<_>>(), [Saving, Unsaved, Unsaved]);
+        assert!(app.modal_open());
+        fake.answer(SaveOutcome::Saved { name: "Report.pdf".into(), file: Some(1) });
+        app.settle_web_saves();
+        app.poll_save_all();
+        assert_eq!(app.views.len(), 2, "the first is written and closed");
+        assert_eq!(fake.calls(), r#"[Pick("Report.pdf")]"#, "the next picker waits for a click");
+        assert_eq!(rows(&app).iter().map(|r| r.1).collect::<Vec<_>>(), [Saved, Unsaved, Unsaved]);
+        assert_eq!(app.save_all_next().as_deref(), Some("Second.pdf"));
+        // While a picker is open the prompt takes no answer.
+        app.answer_save_all(&ctx, Some(true));
+        app.answer_save_all(&ctx, None);
+        assert_eq!(fake.calls(), r#"[Pick("Report.pdf"), Pick("Second.pdf")]"#);
+        assert!(app.save_all.is_some(), "Cancel waits for the open picker");
+        fake.answer(SaveOutcome::Saved { name: "Second.pdf".into(), file: Some(2) });
+        app.settle_web_saves();
+        app.answer_save_all(&ctx, Some(true));
+        fake.answer(SaveOutcome::Saved { name: "Third.pdf".into(), file: Some(3) });
+        app.settle_web_saves();
+        app.poll_save_all();
+        assert!(app.views.is_empty());
+        assert!(app.save_all.is_none(), "done");
+        assert!(!app.modal_open());
+    }
+
+    /// A cancelled picker, or a failed write, stops Save all: what is still unsaved stays open.
+    #[test]
+    fn a_cancelled_or_failed_picker_stops_save_all_and_closes_nothing_unsaved() {
+        for outcome in [SaveOutcome::Cancelled, SaveOutcome::Failed("NotAllowedError".into())] {
+            let (mut app, fake) = three_unsaved(true);
+            let ctx = egui::Context::default();
+            app.resolve_close(&ctx, Some(true));
+            fake.answer(SaveOutcome::Saved { name: "Report.pdf".into(), file: Some(1) });
+            app.settle_web_saves();
+            app.answer_save_all(&ctx, Some(true));
+            fake.answer(outcome.clone());
+            app.settle_web_saves();
+            app.poll_save_all();
+            assert!(app.save_all.is_none(), "{outcome:?} ends the run");
+            assert_eq!(fake.calls(), r#"[Pick("Report.pdf"), Pick("Second.pdf")]"#, "Third.pdf is not asked about");
+            assert_eq!(app.views.len(), 2);
+            assert_eq!(app.unsaved_tabs(), [0, 1], "nothing still unsaved was closed");
+        }
+    }
+
+    /// Don't save in the middle of Save all closes the rest unsaved; they can be reopened.
+    #[test]
+    fn dont_save_in_the_middle_of_save_all_closes_the_rest() {
+        let (mut app, fake) = three_unsaved(true);
+        let ctx = egui::Context::default();
+        app.resolve_close(&ctx, Some(true));
+        fake.answer(SaveOutcome::Saved { name: "Report.pdf".into(), file: Some(1) });
+        app.settle_web_saves();
+        app.answer_save_all(&ctx, Some(false));
+        assert!(app.views.is_empty() && app.save_all.is_none());
+        assert!(app.can_reopen_closed());
+    }
+
+    /// Without a picker, Save all downloads every document under its name on the one click.
+    #[test]
+    fn without_a_picker_save_all_downloads_them_all_at_once() {
+        let (mut app, fake) = three_unsaved(false);
+        app.resolve_close(&egui::Context::default(), Some(true));
+        assert_eq!(fake.calls(), r#"[Download("Report.pdf"), Download("Second.pdf"), Download("Third.pdf")]"#);
+        assert!(app.views.is_empty());
+        assert!(app.web_save.as_ref().unwrap().prompt().is_none(), "no name is asked for");
+        // A later Save of a new document asks for its name again.
+        app.open_bytes("Fourth.pdf", None, FORM.to_vec()).unwrap();
+        edit(&mut app, "Ada");
+        app.save_active(SaveTarget::InPlace);
+        assert!(app.web_save.as_ref().unwrap().prompt().is_some());
     }
 
     #[test]

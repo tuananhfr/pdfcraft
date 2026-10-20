@@ -2375,3 +2375,15 @@ animation effects	Off	معطّلة
 	Saving would invalidate a signature	سيؤدي الحفظ إلى إبطال توقيع
 	Save a copy…	حفظ نسخة…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	اختر ملفًا آخر: حفظ هذه التغييرات فوق الأصل الموقَّع سيُبطل توقيعه.
+	Save changes to these documents before closing?	هل تريد حفظ التغييرات في هذه المستندات قبل الإغلاق؟
+	Save all	حفظ الكل
+	Saving…	جارٍ الحفظ…
+	Save failed	تعذّر الحفظ
+	No closed document to reopen.	لا يوجد مستند مغلق لإعادة فتحه.
+	This field is locked by the signature of {name}.	هذا الحقل مقفل بتوقيع {name}.
+	This document is certified and allows only form filling and signing.	هذا المستند مصدَّق ولا يسمح إلا بتعبئة النماذج والتوقيع.
+	This document is certified and allows only form filling, comments and signing.	هذا المستند مصدَّق ولا يسمح إلا بتعبئة النماذج والتعليقات والتوقيع.
+	Certified by {by}. Only form filling and signing are allowed.	مصدَّق من {by}. لا يُسمح إلا بتعبئة النماذج والتوقيع.
+	Certified by {by}. Only form filling, comments and signing are allowed.	مصدَّق من {by}. لا يُسمح إلا بتعبئة النماذج والتعليقات والتوقيع.
+	Saved	تم الحفظ
+	Save “{name}”	حفظ «{name}»

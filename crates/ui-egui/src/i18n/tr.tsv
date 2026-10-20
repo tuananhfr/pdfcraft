@@ -2350,3 +2350,15 @@ animation effects	Off	Kapalı
 	Saving would invalidate a signature	Kaydetmek bir imzayı geçersiz kılar
 	Save a copy…	Kopyasını kaydet…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Başka bir dosya seçin: bu değişiklikleri imzalı orijinalin üzerine kaydetmek imzasını geçersiz kılar.
+	Save changes to these documents before closing?	Kapatmadan önce bu belgelerdeki değişiklikler kaydedilsin mi?
+	Save all	Tümünü kaydet
+	Saving…	Kaydediliyor…
+	Save failed	Kaydedilemedi
+	No closed document to reopen.	Yeniden açılacak kapatılmış belge yok.
+	This field is locked by the signature of {name}.	Bu alan {name} imzasıyla kilitlendi.
+	This document is certified and allows only form filling and signing.	Bu belge onaylanmıştır ve yalnızca form doldurmaya ve imzalamaya izin verir.
+	This document is certified and allows only form filling, comments and signing.	Bu belge onaylanmıştır ve yalnızca form doldurmaya, yorumlara ve imzalamaya izin verir.
+	Certified by {by}. Only form filling and signing are allowed.	{by} tarafından onaylandı. Yalnızca form doldurma ve imzalamaya izin verilir.
+	Certified by {by}. Only form filling, comments and signing are allowed.	{by} tarafından onaylandı. Yalnızca form doldurma, yorumlar ve imzalamaya izin verilir.
+	Saved	Kaydedildi
+	Save “{name}”	“{name}” dosyasını kaydet

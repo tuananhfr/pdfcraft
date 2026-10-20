@@ -72,11 +72,11 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                 let mut natural: Vec<f32> = Vec::with_capacity(app.views.len() + 1);
                 for v in &app.views {
                     if let Some(doc) = app.session.get(v.id) {
-                        natural.push(tab_natural_width(ui, &t, &doc.display_name()));
+                        natural.push(tab_natural_width(ui, &t, &doc.display_name(), app.save_state(v.id).as_ref()));
                     }
                 }
                 if app.combine_tab.open {
-                    natural.push(tab_natural_width(ui, &t, tl!("Combine files")));
+                    natural.push(tab_natural_width(ui, &t, tl!("Combine files"), None));
                 }
                 // Open stays in sight after the tabs: its icon, text and padding, and the gaps around it.
                 let open_full = ui.fonts_mut(|f| f.layout_no_wrap(tl!("Open").into(), theme::medium(13.0), t.text).size().x) + 38.0 + 12.0;
@@ -132,6 +132,7 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                                 let (name, dirty) = (doc.display_name(), doc.dirty);
                                 // A tab showing the document's title names its file on hover.
                                 let file = (name != doc.name).then_some(doc.name.as_str());
+                                let saving = app.save_state(app.views[i].id);
                                 let response = tab(
                                     ui,
                                     ui.id().with(("document-tab", app.views[i].id)),
@@ -140,6 +141,7 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                                     &name,
                                     file,
                                     dirty,
+                                    saving.as_ref(),
                                     app.active == Some(i),
                                     &mut close,
                                     i,
@@ -161,7 +163,7 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                                         action = Some(crate::tab_context::Action::Close(id));
                                         ui.close();
                                     }
-                                    if ui.add_enabled(!app.closed_tabs.is_empty(), egui::Button::new(tl!("Reopen Closed Tab"))).clicked() {
+                                    if ui.add_enabled(app.can_reopen_closed(), egui::Button::new(tl!("Reopen Closed Tab"))).clicked() {
                                         action = Some(crate::tab_context::Action::Reopen);
                                         ui.close();
                                     }
@@ -213,6 +215,7 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                                     tl!("Combine files"),
                                     None,
                                     false,
+                                    None,
                                     app.combine_showing(),
                                     &mut close,
                                     usize::MAX,
@@ -379,9 +382,23 @@ fn tab_name(name: &str) -> String {
 }
 
 /// The width a tab takes when nothing has to shrink.
-fn tab_natural_width(ui: &egui::Ui, t: &Tokens, name: &str) -> f32 {
+fn tab_natural_width(ui: &egui::Ui, t: &Tokens, name: &str, saving: Option<&crate::SaveState>) -> f32 {
     let label = crate::bidi::visual(&tab_name(name)).into_owned();
-    ui.fonts_mut(|f| f.layout_no_wrap(label, theme::regular(13.0), t.text).size().x) + TAB_CHROME
+    let name_w = ui.fonts_mut(|f| f.layout_no_wrap(label, theme::regular(13.0), t.text).size().x);
+    name_w + TAB_CHROME + saving.map_or(0.0, |s| save_chip_width(ui, s))
+}
+
+/// The width of a save state's words on a tab, with the gap before them.
+fn save_chip_width(ui: &egui::Ui, saving: &crate::SaveState) -> f32 {
+    ui.fonts_mut(|f| f.layout_no_wrap(crate::save_status::label(saving).to_string(), theme::medium(11.5), Color32::WHITE).size().x) + 8.0
+}
+
+/// Failures take the colour of an invalid signature.
+fn save_chip_color(t: &Tokens, saving: &crate::SaveState) -> Color32 {
+    match saving {
+        crate::SaveState::Saving => t.text_muted,
+        crate::SaveState::Failed(_) => Color32::from_rgb(0xD7, 0x37, 0x3F),
+    }
 }
 
 /// The widest any tab may be so that tabs of `natural` widths, `gap` apart, fit in `budget`:
@@ -417,6 +434,7 @@ fn tab(
     name: &str,
     file: Option<&str>,
     dirty: bool,
+    saving: Option<&crate::SaveState>,
     active: bool,
     close: &mut Option<usize>,
     index: usize,
@@ -426,9 +444,11 @@ fn tab(
 ) -> egui::Response {
     let font = theme::regular(13.0);
     let mut label = tab_name(name);
+    // The save state keeps its words; the name gives way to them.
+    let chip = saving.map_or(0.0, |s| save_chip_width(ui, s));
     // A shrunk tab shows as much of its name as fits (the tooltip has all of it).
     if let Some(cap) = cap {
-        let room = (cap - TAB_CHROME).max(0.0);
+        let room = (cap - TAB_CHROME - chip).max(0.0);
         label = ui.fonts_mut(|f| {
             crate::panels::ellipsized_prefix(&label, |s| f.layout_no_wrap(crate::bidi::visual(s).into_owned(), font.clone(), t.text).size().x <= room)
         });
@@ -436,11 +456,14 @@ fn tab(
     // Painted text only: the accessibility name below keeps the logical order.
     let label = crate::bidi::visual(&label).into_owned();
     let text_w = ui.fonts_mut(|f| f.layout_no_wrap(label.clone(), font.clone(), t.text).size().x);
-    let width = cap.map_or(text_w + TAB_CHROME, |cap| (text_w + TAB_CHROME).min(cap));
+    let width = cap.map_or(text_w + TAB_CHROME + chip, |cap| (text_w + TAB_CHROME + chip).min(cap));
     // Full strip height so the active tab sits on the mode bar instead of floating in the title bar.
     let height = ui.available_height().max(height);
     let (rect, _) = ui.allocate_exact_size(vec2(width, height), Sense::hover());
-    let a11y = if dirty { format!("{name} (edited)") } else { name.to_string() };
+    let mut a11y = if dirty { format!("{name} (edited)") } else { name.to_string() };
+    if let Some(s) = saving {
+        a11y = format!("{a11y}, {}", crate::save_status::label(s));
+    }
     let sense = if draggable { Sense::click_and_drag() } else { Sense::click() };
     let resp = craft_ui::tabs::Tab::new(id, &a11y, active).sense(sense).focus_stroke(Stroke::new(1.0, t.accent)).show_at(ui, rect, |ui, resp| {
         let press = theme::Press::track(ui, resp);
@@ -460,6 +483,10 @@ fn tab(
             if active { t.accent } else { t.text_muted },
         );
         ui.painter().text(rect.min + vec2(28.0, rect.height() / 2.0), Align2::LEFT_CENTER, label, font, if active { t.text } else { t.text_muted });
+        if let Some(s) = saving {
+            let at = egui::pos2(rect.right() - 30.0, rect.center().y);
+            ui.painter().text(at, Align2::RIGHT_CENTER, crate::save_status::label(s), theme::medium(11.5), save_chip_color(t, s));
+        }
     });
     let x_rect = Rect::from_center_size(rect.right_center() - vec2(16.0, 0.0), vec2(20.0, 20.0));
     let x = ui.interact(x_rect, id.with("close"), Sense::click());
@@ -478,11 +505,14 @@ fn tab(
         Some(file) => std::borrow::Cow::Owned(format!("{}\n{}", crate::bidi::visual(name), crate::bidi::visual(file))),
         None => crate::bidi::visual(name),
     };
-    theme::hand(resp).on_hover_text(if dirty {
-        crate::i18n::fmt(tl!("{name} — unsaved changes"), &[("name", shown.as_ref())])
-    } else {
-        shown.into_owned()
-    })
+    let mut tip = if dirty { crate::i18n::fmt(tl!("{name} — unsaved changes"), &[("name", shown.as_ref())]) } else { shown.into_owned() };
+    // Why a save failed stays reachable here until the next save or edit.
+    match saving {
+        Some(crate::SaveState::Failed(why)) => tip = format!("{tip}\n{why}"),
+        Some(crate::SaveState::Saving) => tip = format!("{tip}\n{}", tl!("Saving…")),
+        None => {}
+    }
+    theme::hand(resp).on_hover_ui(|ui| crate::widgets::fitted_tip(ui, &tip))
 }
 
 pub fn mode_bar(app: &mut PdfCraftApp, ui: &mut egui::Ui) {

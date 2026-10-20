@@ -2353,3 +2353,15 @@ animation effects	Off	Ki
 	Saving would invalidate a signature	A mentés érvénytelenítene egy aláírást
 	Save a copy…	Másolat mentése…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Válasszon másik fájlt: ha a módosításokat az aláírt eredetire menti, az aláírása érvénytelenné válik.
+	Save changes to these documents before closing?	Mented a dokumentumok módosításait bezárás előtt?
+	Save all	Összes mentése
+	Saving…	Mentés…
+	Save failed	A mentés nem sikerült
+	No closed document to reopen.	Nincs bezárt dokumentum, amelyet újra meg lehetne nyitni.
+	This field is locked by the signature of {name}.	Ezt a mezőt {name} aláírása zárolja.
+	This document is certified and allows only form filling and signing.	Ez a dokumentum hitelesített, és csak űrlapkitöltést és aláírást engedélyez.
+	This document is certified and allows only form filling, comments and signing.	Ez a dokumentum hitelesített, és csak űrlapkitöltést, megjegyzéseket és aláírást engedélyez.
+	Certified by {by}. Only form filling and signing are allowed.	Hitelesítette: {by}. Csak űrlapkitöltés és aláírás engedélyezett.
+	Certified by {by}. Only form filling, comments and signing are allowed.	Hitelesítette: {by}. Csak űrlapkitöltés, megjegyzések és aláírás engedélyezett.
+	Saved	Mentve
+	Save “{name}”	„{name}” mentése

@@ -2359,3 +2359,15 @@ animation effects	Off	Izklopljeni
 	Saving would invalidate a signature	Shranjevanje bi razveljavilo podpis
 	Save a copy…	Shrani kopijo…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Izberite drugo datoteko: če te spremembe shranite čez podpisani izvirnik, njegov podpis ne bo več veljaven.
+	Save changes to these documents before closing?	Ali želite pred zapiranjem shraniti spremembe v teh dokumentih?
+	Save all	Shrani vse
+	Saving…	Shranjevanje …
+	Save failed	Shranjevanje ni uspelo
+	No closed document to reopen.	Ni zaprtega dokumenta, ki bi ga lahko znova odprli.
+	This field is locked by the signature of {name}.	To polje je zaklenjeno s podpisom: {name}.
+	This document is certified and allows only form filling and signing.	Ta dokument je overjen in dovoljuje le izpolnjevanje obrazcev in podpisovanje.
+	This document is certified and allows only form filling, comments and signing.	Ta dokument je overjen in dovoljuje le izpolnjevanje obrazcev, komentarje in podpisovanje.
+	Certified by {by}. Only form filling and signing are allowed.	Overil: {by}. Dovoljeno je le izpolnjevanje obrazcev in podpisovanje.
+	Certified by {by}. Only form filling, comments and signing are allowed.	Overil: {by}. Dovoljeni so le izpolnjevanje obrazcev, komentarji in podpisovanje.
+	Saved	Shranjeno
+	Save “{name}”	Shrani „{name}“

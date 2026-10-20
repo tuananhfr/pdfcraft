@@ -2355,3 +2355,15 @@ animation effects	Off	Aus
 	Saving would invalidate a signature	Speichern würde eine Signatur ungültig machen
 	Save a copy…	Kopie speichern…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Wählen Sie eine andere Datei: Wenn Sie diese Änderungen über das signierte Original speichern, wird dessen Signatur ungültig.
+	Save changes to these documents before closing?	Änderungen an diesen Dokumenten vor dem Schließen speichern?
+	Save all	Alle speichern
+	Saving…	Wird gespeichert…
+	Save failed	Speichern fehlgeschlagen
+	No closed document to reopen.	Kein geschlossenes Dokument zum Wiederöffnen.
+	This field is locked by the signature of {name}.	Dieses Feld ist durch die Signatur von {name} gesperrt.
+	This document is certified and allows only form filling and signing.	Dieses Dokument ist zertifiziert und erlaubt nur das Ausfüllen von Formularen und das Signieren.
+	This document is certified and allows only form filling, comments and signing.	Dieses Dokument ist zertifiziert und erlaubt nur das Ausfüllen von Formularen, Kommentare und das Signieren.
+	Certified by {by}. Only form filling and signing are allowed.	Zertifiziert von {by}. Nur Ausfüllen von Formularen und Signieren sind erlaubt.
+	Certified by {by}. Only form filling, comments and signing are allowed.	Zertifiziert von {by}. Nur Ausfüllen von Formularen, Kommentare und Signieren sind erlaubt.
+	Saved	Gespeichert
+	Save “{name}”	„{name}“ speichern

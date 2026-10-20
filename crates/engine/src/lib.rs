@@ -585,9 +585,27 @@ impl Document {
         certification::no_changes_certification(&self.signatures)
     }
 
+    /// The certification signature that allows only some changes (DocMDP level 2: form filling and
+    /// signing; level 3: comments too), while it holds.
+    pub fn restricting_certification(&self) -> Option<&SignatureInfo> {
+        certification::restricting_certification(&self.signatures)
+    }
+
+    /// The signature that locks form field `name` (FieldMDP), while it holds: changing the field
+    /// would invalidate it.
+    pub fn field_locked_by(&self, name: &str) -> Option<&SignatureInfo> {
+        certification::locking_signature(&self.signatures, name)
+    }
+
     /// Editing is open: a document with an editor that no level-1 certification forbids changing.
     fn changeable(&self) -> bool {
         self.editable() && self.no_changes_certification().is_none()
+    }
+
+    /// A level-2 or level-3 certification permits changes of `what` (a word of
+    /// [`pdfcraft_sign::pdf::kind`]); without one, everything is.
+    fn certification_permits(&self, what: &str) -> bool {
+        self.restricting_certification().is_none_or(|s| pdfcraft_sign::mdp::permits(s.certify, what))
     }
 
     /// Whether comments are hidden (Comments ▸ Hide all comments).
@@ -641,7 +659,7 @@ impl Document {
 
     /// Page changes (insert, delete, rotate, move, extract) are allowed.
     pub fn allows_assembly(&self) -> bool {
-        self.changeable() && self.permissions().is_none_or(|p| p.assemble())
+        self.changeable() && self.permissions().is_none_or(|p| p.assemble()) && self.certification_permits(pdfcraft_sign::pdf::kind::PAGES)
     }
 
     /// Redaction marks waiting to be applied.
@@ -651,7 +669,7 @@ impl Document {
 
     /// Changes to content and document information are allowed.
     pub fn allows_modification(&self) -> bool {
-        self.changeable() && self.permissions().is_none_or(|p| p.modify())
+        self.changeable() && self.permissions().is_none_or(|p| p.modify()) && self.certification_permits(pdfcraft_sign::pdf::kind::PAGE_CONTENT)
     }
 
     /// Filling in form fields is allowed (Table 22, bits 6 and 9).
@@ -661,7 +679,7 @@ impl Document {
 
     /// Adding and changing comments is allowed (Table 22, bit 6).
     pub fn allows_annotation(&self) -> bool {
-        self.changeable() && self.permissions().is_none_or(|p| p.annotate())
+        self.changeable() && self.permissions().is_none_or(|p| p.annotate()) && self.certification_permits(pdfcraft_sign::pdf::kind::COMMENTS)
     }
 
     /// The document's security may be changed (Protect, Remove security): it is editable and,
@@ -4351,6 +4369,17 @@ impl Session {
             d.dirty = true;
             d.generation += 1;
             d.snapshot_generation = d.generation; // its bytes are already in the recovery store
+        }
+    }
+
+    /// Mark a document reopened from the bytes it had when it was closed with unsaved changes:
+    /// unsaved again and belonging at `path`. Unlike [`Self::mark_recovered`] it is due for an
+    /// autosave, since closing it dropped its recovery snapshot.
+    pub fn mark_reopened(&mut self, id: DocId, path: Option<String>) {
+        if let Some(d) = self.docs.iter_mut().find(|d| d.id == id) {
+            d.path = path;
+            d.dirty = true;
+            d.generation += 1;
         }
     }
 

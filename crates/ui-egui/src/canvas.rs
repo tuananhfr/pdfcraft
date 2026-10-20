@@ -2364,6 +2364,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     let allowed = doc.allows_annotation();
     let comments_hidden = doc.comments_hidden();
     let form = doc.form.clone();
+    view.forms.locked = crate::forms_ui::locked_fields(doc);
     let can_fill = doc.allows_form_filling();
     let can_crop = doc.allows_assembly();
     let mut open_boxes = false;
@@ -2388,6 +2389,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     // windows, so a comment under the pointer would otherwise float over the dialog.
     let page_covered = app.dialog.is_some()
         || app.close_request.is_some()
+        || app.save_all.is_some()
         || app.palette_open
         || app.password_prompt.is_some()
         || app.pending_link.is_some()
@@ -3536,6 +3538,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
             crate::forms_ui::FormNotice::Security => app.notify_tr("The document's security settings don't allow filling in form fields"),
             crate::forms_ui::FormNotice::ReadOnly(name) => app.notify_fmt("{name} is read-only", &[("name", &name)]),
             crate::forms_ui::FormNotice::NoAction(name) => app.notify_fmt("{name} has no action", &[("name", &name)]),
+            crate::forms_ui::FormNotice::Locked(signer) => app.notify(crate::forms_ui::locked_notice(&signer)),
         }
     }
     if let Some((name, action)) = app.views[index].forms.button.take() {
@@ -4021,6 +4024,12 @@ fn notice_bar(ui: &mut egui::Ui, t: &Tokens, icon: &str, icon_color: Color32, te
 /// The floating quick-action bar at the left edge of the document area.
 fn quick_bar(app: &mut PdfCraftApp, area: Rect, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
+    // A level-2 certification greys the comment and Fill & Sign tools, saying why.
+    let annotate_refusal = app.certification_refusal(pdfcraft_engine::commands::Needs::Annotate);
+    let refusable = |resp: egui::Response| match annotate_refusal {
+        Some(why) => resp.on_disabled_hover_ui(|ui| crate::widgets::fitted_tip(ui, why)),
+        None => resp,
+    };
     let pos = area.left_top() + vec2(14.0, 14.0);
     egui::Area::new(egui::Id::new("quick-bar")).order(egui::Order::Middle).fixed_pos(pos).show(ui.ctx(), |ui| {
         egui::Frame::NONE
@@ -4043,7 +4052,10 @@ fn quick_bar(app: &mut PdfCraftApp, area: Rect, ui: &mut egui::Ui) {
                     for g in 0..comments::GROUPS.len() {
                         let current = app.comment_prefs.group_tool[g];
                         let active = matches!(app.quick_tool, QuickTool::Comment(t) if t.group() == g);
-                        let resp = icons::button(ui, current.icon(), 32.0, active, tl!(current.label()));
+                        let resp = refusable(
+                            ui.add_enabled_ui(annotate_refusal.is_none(), |ui| icons::button(ui, current.icon(), 32.0, active, tl!(current.label())))
+                                .inner,
+                        );
                         // A small corner triangle marks the flyout.
                         let r = resp.rect;
                         let tri = [r.right_bottom() + vec2(-4.0, -4.0), r.right_bottom() + vec2(-9.0, -4.0), r.right_bottom() + vec2(-4.0, -9.0)];
@@ -4098,12 +4110,17 @@ fn quick_bar(app: &mut PdfCraftApp, area: Rect, ui: &mut egui::Ui) {
                         _ => None,
                     };
                     let shown = current_fill.unwrap_or(crate::fill_sign::FillTool::Text);
-                    let resp = icons::button(
-                        ui,
-                        if current_fill.is_some() { shown.icon() } else { "pen-line" },
-                        32.0,
-                        current_fill.is_some(),
-                        tl!("Fill & Sign"),
+                    let resp = refusable(
+                        ui.add_enabled_ui(annotate_refusal.is_none(), |ui| {
+                            icons::button(
+                                ui,
+                                if current_fill.is_some() { shown.icon() } else { "pen-line" },
+                                32.0,
+                                current_fill.is_some(),
+                                tl!("Fill & Sign"),
+                            )
+                        })
+                        .inner,
                     );
                     let r = resp.rect;
                     let tri = [r.right_bottom() + vec2(-4.0, -4.0), r.right_bottom() + vec2(-9.0, -4.0), r.right_bottom() + vec2(-4.0, -9.0)];

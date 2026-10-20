@@ -2428,3 +2428,15 @@ animation effects	Off	Vypnuto
 	Saving would invalidate a signature	Uložení by zneplatnilo podpis
 	Save a copy…	Uložit kopii…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Zvolte jiný soubor: uložením těchto změn přes podepsaný originál by se jeho podpis stal neplatným.
+	Save changes to these documents before closing?	Uložit změny v těchto dokumentech před zavřením?
+	Save all	Uložit vše
+	Saving…	Ukládání…
+	Save failed	Uložení se nezdařilo
+	No closed document to reopen.	Žádný zavřený dokument k opětovnému otevření.
+	This field is locked by the signature of {name}.	Toto pole je uzamčeno podpisem: {name}.
+	This document is certified and allows only form filling and signing.	Tento dokument je certifikovaný a povoluje jen vyplňování formulářů a podepisování.
+	This document is certified and allows only form filling, comments and signing.	Tento dokument je certifikovaný a povoluje jen vyplňování formulářů, komentáře a podepisování.
+	Certified by {by}. Only form filling and signing are allowed.	Certifikováno: {by}. Povoleno je jen vyplňování formulářů a podepisování.
+	Certified by {by}. Only form filling, comments and signing are allowed.	Certifikováno: {by}. Povoleno je jen vyplňování formulářů, komentáře a podepisování.
+	Saved	Uloženo
+	Save “{name}”	Uložit „{name}“

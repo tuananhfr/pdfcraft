@@ -2318,3 +2318,15 @@ animation effects	Off	关
 	Saving would invalidate a signature	保存将使签名失效
 	Save a copy…	保存副本…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	请选择其他文件：将这些更改保存到已签名的原始文件上会使其签名失效。
+	Save changes to these documents before closing?	关闭前是否保存对这些文档的更改？
+	Save all	全部保存
+	Saving…	正在保存…
+	Save failed	保存失败
+	No closed document to reopen.	没有可重新打开的已关闭文档。
+	This field is locked by the signature of {name}.	此字段已被 {name} 的签名锁定。
+	This document is certified and allows only form filling and signing.	此文档已认证，仅允许填写表单和签名。
+	This document is certified and allows only form filling, comments and signing.	此文档已认证，仅允许填写表单、注释和签名。
+	Certified by {by}. Only form filling and signing are allowed.	认证方{by}。仅允许填写表单和签名。
+	Certified by {by}. Only form filling, comments and signing are allowed.	认证方{by}。仅允许填写表单、注释和签名。
+	Saved	已保存
+	Save “{name}”	保存“{name}”

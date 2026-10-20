@@ -2,6 +2,7 @@
 
 use egui::{Align, Layout};
 
+use crate::save_all::Row;
 use crate::theme::{self, Tokens};
 use pdfcraft_engine::Edit;
 
@@ -1393,12 +1394,19 @@ pub(crate) fn save_prompt_key(ctx: &egui::Context) -> Option<Option<bool>> {
 
 /// "Save changes?" when closing a tab or quitting with unsaved edits.
 fn save_prompt(app: &mut PdfCraftApp, ctx: &egui::Context) {
+    if app.close_request.is_none() && app.save_all.is_some() {
+        return save_all_prompt(app, ctx);
+    }
     let Some(req) = app.close_request else { return };
-    let index = match req {
-        CloseRequest::Tab(id) => app.views.iter().position(|v| v.id == id),
-        CloseRequest::Quit | CloseRequest::All => app.first_dirty(),
+    let indices = match req {
+        CloseRequest::Tab(id) => app.views.iter().position(|v| v.id == id).into_iter().collect(),
+        CloseRequest::Quit | CloseRequest::All => app.unsaved_tabs(),
     };
-    let Some(name) = index.and_then(|i| app.views.get(i)).and_then(|v| app.session.get(v.id)).map(|d| d.name.clone()) else {
+    let names: Vec<String> = indices.iter().filter_map(|&i| app.views.get(i)).filter_map(|v| app.session.get(v.id)).map(|d| d.name.clone()).collect();
+    if names.len() > 1 {
+        return save_several_prompt(app, ctx, &names);
+    }
+    let Some(name) = names.into_iter().next() else {
         // Nothing left to ask about (tab already gone or no dirty documents).
         app.resolve_close(ctx, Some(false));
         return;
@@ -1445,6 +1453,91 @@ fn save_prompt(app: &mut PdfCraftApp, ctx: &egui::Context) {
     if let Some(c) = choice {
         app.resolve_close(ctx, c);
     }
+}
+
+/// Quit or Close all with several unsaved documents: one prompt lists them all and answers for
+/// all of them (Save all saves them one after another).
+fn save_several_prompt(app: &mut PdfCraftApp, ctx: &egui::Context, names: &[String]) {
+    let rows: Vec<(String, Row)> = names.iter().map(|n| (n.clone(), Row::Unsaved)).collect();
+    if let Some(choice) = several_prompt(ctx, &rows, tl!("Save all"), false) {
+        app.resolve_close(ctx, choice);
+    }
+}
+
+/// The same prompt while a web Save all runs: each saved document says so, the one whose picker
+/// is open says it is saving, and the button saves the next one (a picker needs its own click).
+fn save_all_prompt(app: &mut PdfCraftApp, ctx: &egui::Context) {
+    let Some(run) = app.save_all.as_ref() else { return };
+    let (rows, busy) = (run.rows(), run.busy());
+    let next = app.save_all_next().unwrap_or_default();
+    // On a phone the three buttons share one row: the name gives way.
+    let primary = crate::i18n::fmt(tl!("Save “{name}”"), &[("name", &shorten_middle(&next, if narrow(ctx) { 12 } else { 40 }))]);
+    if let Some(choice) = several_prompt(ctx, &rows, &primary, busy) {
+        app.answer_save_all(ctx, choice);
+    }
+}
+
+fn narrow(ctx: &egui::Context) -> bool {
+    ctx.content_rect().width() < 480.0
+}
+
+/// The prompt listing several documents; `busy` while a save picker is open, when it takes no
+/// answer. Returns `Some(true)` for the primary button, `Some(false)` Don't save, `None` Cancel.
+fn several_prompt(ctx: &egui::Context, rows: &[(String, Row)], primary: &str, busy: bool) -> Option<Option<bool>> {
+    let t = Tokens::get(ctx);
+    let mut choice: Option<Option<bool>> = None;
+    let modal = widgets::show_modal(ctx, "save_prompt", |ui| {
+        // A phone keeps the card inside the screen.
+        ui.set_width(420.0_f32.min(ctx.content_rect().width() - 64.0).max(200.0));
+        ui.horizontal_top(|ui| {
+            ui.add(crate::icons::image("save", 22.0, t.accent));
+            ui.add(egui::Label::new(egui::RichText::new(tl!("Save changes to these documents before closing?")).font(theme::semibold(16.0))).wrap());
+        });
+        ui.add_space(6.0);
+        // Ten documents fit; more scroll rather than push the buttons off a short window.
+        egui::ScrollArea::vertical().max_height(220.0).auto_shrink([false, true]).show(ui, |ui| {
+            for (name, row) in rows {
+                let shown = shorten_middle(name, 80);
+                let line = ui.horizontal_wrapped(|ui| {
+                    let icon = if *row == Row::Saved { "check" } else { "file-text" };
+                    ui.add(crate::icons::image(icon, 15.0, t.text_muted));
+                    ui.add(egui::Label::new(egui::RichText::new(&shown).color(t.text)).wrap());
+                    let state = match row {
+                        Row::Unsaved => None,
+                        Row::Saving => Some(tl!("Saving…")),
+                        Row::Saved => Some(tl!("Saved")),
+                    };
+                    if let Some(state) = state {
+                        ui.label(egui::RichText::new(format!("— {state}")).color(t.text_muted));
+                    }
+                });
+                if shown != *name {
+                    line.response.on_hover_text(name);
+                }
+            }
+        });
+        ui.add_space(6.0);
+        ui.label(egui::RichText::new(tl!("Your changes will be lost if you don't save them.")).color(t.text_muted));
+        ui.add_space(14.0);
+        ui.add_enabled_ui(!busy, |ui| {
+            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                if widgets::pill_button(ui, primary, true).clicked() {
+                    choice = Some(Some(true));
+                }
+                if widgets::pill_button(ui, tl!("Cancel"), false).clicked() {
+                    choice = Some(None);
+                }
+                ui.add_space(if narrow(ctx) { 8.0 } else { 24.0 });
+                if widgets::pill_button(ui, tl!("Don't save"), false).clicked() {
+                    choice = Some(Some(false));
+                }
+            });
+        });
+    });
+    if choice.is_none() && modal.should_close() && !busy {
+        choice = Some(None);
+    }
+    choice
 }
 
 /// `name` cut to at most `max` characters by replacing its middle with "…", keeping the start and

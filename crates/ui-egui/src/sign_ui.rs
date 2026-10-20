@@ -1008,6 +1008,15 @@ pub(crate) fn banner(sigs: &[SignatureInfo]) -> Option<(&'static str, Color32, &
     if pdfcraft_engine::certification::no_changes_certification(sigs).is_some() {
         return Some(("lock", Color32::from_rgb(0x14, 0x73, 0xE6), "This document is certified and does not allow changes.", String::new()));
     }
+    if let Some(c) = pdfcraft_engine::certification::restricting_certification(sigs) {
+        let who = c.certificate.as_ref().map(Certificate::display_name).or_else(|| c.signer.clone()).unwrap_or_else(|| c.field.clone());
+        let template = match c.certify {
+            Some(3) => "Certified by {by}. Only form filling, comments and signing are allowed.",
+            _ => "Certified by {by}. Only form filling and signing are allowed.",
+        };
+        let icon = if c.status == SignatureStatus::Valid { "badge-check" } else { "lock" };
+        return Some((icon, Color32::from_rgb(0x14, 0x73, 0xE6), template, who));
+    }
     if let Some(c) = signed.iter().find(|s| s.certify.is_some())
         && c.status == SignatureStatus::Valid
     {

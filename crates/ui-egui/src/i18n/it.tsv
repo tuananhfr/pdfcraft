@@ -2363,3 +2363,15 @@ animation effects	Off	Disattivati
 	Saving would invalidate a signature	Il salvataggio invaliderebbe una firma
 	Save a copy…	Salva una copia…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Scegli un altro file: salvare queste modifiche sull'originale firmato ne invaliderebbe la firma.
+	Save changes to these documents before closing?	Salvare le modifiche a questi documenti prima di chiudere?
+	Save all	Salva tutto
+	Saving…	Salvataggio…
+	Save failed	Salvataggio non riuscito
+	No closed document to reopen.	Nessun documento chiuso da riaprire.
+	This field is locked by the signature of {name}.	Questo campo è bloccato dalla firma di {name}.
+	This document is certified and allows only form filling and signing.	Questo documento è certificato e consente solo la compilazione dei moduli e la firma.
+	This document is certified and allows only form filling, comments and signing.	Questo documento è certificato e consente solo la compilazione dei moduli, i commenti e la firma.
+	Certified by {by}. Only form filling and signing are allowed.	Certificato da {by}. Sono consentite solo la compilazione dei moduli e la firma.
+	Certified by {by}. Only form filling, comments and signing are allowed.	Certificato da {by}. Sono consentiti solo la compilazione dei moduli, i commenti e la firma.
+	Saved	Salvato
+	Save “{name}”	Salva “{name}”

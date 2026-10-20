@@ -592,11 +592,12 @@ fn clean_tabs_close_without_asking() {
 }
 
 #[test]
-fn quitting_with_unsaved_changes_asks_for_each_document() {
+fn quitting_with_unsaved_changes_asks_once_for_every_document() {
     let mut h = harness(2, |app| {
         app.open_bytes("second.pdf", None, fixture(1)).unwrap();
+        app.open_bytes("third.pdf", None, fixture(1)).unwrap();
     });
-    // Edit both documents.
+    // Edit the first two documents; the third stays saved.
     for tab in 0..2 {
         h.state_mut().active = Some(tab);
         h.state_mut().views[tab].select_pages(&[0]);
@@ -604,14 +605,76 @@ fn quitting_with_unsaved_changes_asks_for_each_document() {
     }
     h.state_mut().close_request = Some(CloseRequest::Quit);
     h.run_steps(3);
-    h.get_by_label_contains("Save changes to “doc.pdf”");
+    h.get_by_label("Save changes to these documents before closing?");
+    // The dialog's list (tabs are named "… (edited)").
+    let listed = |name: &str| h.query_all_by_label(name).filter(|n| n.accesskit_node().role() == Role::Label).count();
+    assert_eq!([listed("doc.pdf"), listed("second.pdf"), listed("third.pdf")], [1, 1, 0], "only unsaved documents are listed");
+    h.get_by_label("Save all");
+
+    // Cancel closes nothing and keeps every change.
+    h.get_by_label("Cancel").click();
+    h.run_steps(3);
+    assert_eq!(h.state().views.len(), 3);
+    assert!(h.state().close_request.is_none());
+    assert_eq!(h.state().unsaved_tabs(), [0, 1]);
+
+    // Don't save closes every unsaved one after one answer; the saved one stays for the session.
+    h.state_mut().close_request = Some(CloseRequest::Quit);
+    h.run_steps(3);
     h.get_by_label("Don't save").click();
     h.run_steps(3);
+    let app = h.state();
+    let open: Vec<&str> = app.views.iter().map(|v| app.session.get(v.id).unwrap().name.as_str()).collect();
+    assert_eq!(open, ["third.pdf"]);
+    assert!(app.close_request.is_none());
+}
+
+/// Close All with one unsaved document keeps the single-document prompt.
+#[test]
+fn close_all_with_one_unsaved_document_names_it() {
+    let mut h = harness(2, |app| {
+        app.open_bytes("second.pdf", None, fixture(1)).unwrap();
+    });
+    h.state_mut().active = Some(1);
+    h.state_mut().apply_edit(pdfcraft_engine::Edit::RotatePages { pages: vec![0], degrees: 90 });
+    h.state_mut().close_all();
+    h.run_steps(3);
     h.get_by_label_contains("Save changes to “second.pdf”");
+    assert!(h.query_by_label("Save changes to these documents before closing?").is_none());
     h.get_by_label("Don't save").click();
     h.run_steps(3);
     assert!(h.state().views.is_empty());
-    assert!(h.state().close_request.is_none());
+}
+
+/// The one prompt for several documents, as a Vietnamese user sees it (`PDFCRAFT_SHOTS=<dir>`
+/// writes it at desktop and phone width).
+#[test]
+fn vietnamese_prompt_for_several_unsaved_documents() {
+    let mut h = Harness::builder().with_size(egui::vec2(1366.0, 768.0)).build_eframe(|_cc| {
+        let mut app = PdfCraftApp::new();
+        app.set_option("language", "vi").unwrap();
+        for name in ["Hop dong thi cong.pdf", "Bien ban nghiem thu.pdf", "Bang khoi luong - dot 3 - ban sua cuoi cung.pdf"] {
+            app.open_bytes(name, None, fixture(1)).unwrap();
+            app.apply_edit(pdfcraft_engine::Edit::RotatePages { pages: vec![0], degrees: 90 });
+        }
+        app
+    });
+    h.run_steps(4);
+    h.state_mut().close_all();
+    h.run_steps(3);
+    h.get_by_label("Lưu thay đổi của các tài liệu này trước khi đóng?");
+    h.get_by_label("Lưu tất cả");
+    h.get_by_label("Không Lưu");
+    if let Ok(dir) = std::env::var("PDFCRAFT_SHOTS") {
+        for (w, hgt) in [(1366.0, 768.0), (390.0, 844.0)] {
+            h.set_size(egui::vec2(w, hgt));
+            h.run_steps(8);
+            h.render().unwrap().save(format!("{dir}/multi-close-{}-vi.png", w as u32)).unwrap();
+        }
+    }
+    h.get_by_label("Hủy").click();
+    h.run_steps(3);
+    assert_eq!(h.state().views.len(), 3, "Cancel closes nothing");
 }
 
 /// PDFs written to a fresh temp folder, removed when the test ends.
@@ -691,11 +754,9 @@ fn quitting_with_unsaved_changes_still_remembers_every_file() {
     h.state_mut().active = Some(1);
     h.state_mut().close_request = Some(CloseRequest::Quit);
     h.run_steps(3);
-    // Each unsaved tab closes as it is answered, before PdfCraft quits.
-    for _ in 0..2 {
-        h.get_by_label("Don't save").click();
-        h.run_steps(3);
-    }
+    // One answer covers every unsaved tab; they close before PdfCraft quits.
+    h.get_by_label("Don't save").click();
+    h.run_steps(3);
     assert!(h.state().views.is_empty());
     let mut app = PdfCraftApp::new();
     app.restore(&h.state().persist());

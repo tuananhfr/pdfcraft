@@ -41,6 +41,12 @@ pub fn show_modal<R>(ctx: &egui::Context, id: &str, content: impl FnOnce(&mut eg
     })
 }
 
+/// A tooltip's text, wrapped within a phone's width (egui's own width runs off a narrow screen).
+pub fn fitted_tip(ui: &mut egui::Ui, text: &str) {
+    ui.set_max_width((ui.ctx().content_rect().width() - 24.0).min(ui.spacing().tooltip_width));
+    ui.label(text);
+}
+
 /// Outlined controls at a shared 30-point height, with a focus stroke and 4-point corners.
 ///
 /// Dialog fills match the theme's field colour, so radio buttons, check boxes, combo boxes

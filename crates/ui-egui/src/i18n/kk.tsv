@@ -2352,3 +2352,15 @@ animation effects	Off	Өшірулі
 	Saving would invalidate a signature	Сақтау қолтаңбаны жарамсыз етеді
 	Save a copy…	Көшірмесін сақтау…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Басқа файлды таңдаңыз: бұл өзгерістерді қол қойылған түпнұсқаның үстіне сақтау оның қолтаңбасын жарамсыз етеді.
+	Save changes to these documents before closing?	Жабу алдында осы құжаттардағы өзгерістерді сақтау керек пе?
+	Save all	Барлығын сақтау
+	Saving…	Сақталуда…
+	Save failed	Сақталмады
+	No closed document to reopen.	Қайта ашатын жабылған құжат жоқ.
+	This field is locked by the signature of {name}.	Бұл өрісті {name} қолтаңбасы құлыптаған.
+	This document is certified and allows only form filling and signing.	Бұл құжат куәландырылған және тек пішіндерді толтыруға және қол қоюға рұқсат береді.
+	This document is certified and allows only form filling, comments and signing.	Бұл құжат куәландырылған және тек пішіндерді толтыруға, түсініктемелерге және қол қоюға рұқсат береді.
+	Certified by {by}. Only form filling and signing are allowed.	Куәландырған: {by}. Тек пішіндерді толтыруға және қол қоюға рұқсат етілген.
+	Certified by {by}. Only form filling, comments and signing are allowed.	Куәландырған: {by}. Тек пішіндерді толтыруға, түсініктемелерге және қол қоюға рұқсат етілген.
+	Saved	Сақталды
+	Save “{name}”	«{name}» сақтау

@@ -70,6 +70,16 @@ pub fn no_changes_certification(sigs: &[SignatureInfo]) -> Option<&SignatureInfo
     sigs.iter().find(|s| s.certify == Some(1) && holds(s))
 }
 
+/// The certification signature that permits some changes (DocMDP level 2 or 3), while it holds.
+pub fn restricting_certification(sigs: &[SignatureInfo]) -> Option<&SignatureInfo> {
+    sigs.iter().find(|s| matches!(s.certify, Some(2 | 3)) && holds(s))
+}
+
+/// The signature that locks the form field named `field` (FieldMDP), while it holds.
+pub fn locking_signature<'a>(sigs: &'a [SignatureInfo], field: &str) -> Option<&'a SignatureInfo> {
+    sigs.iter().find(|s| holds(s) && s.field_lock.as_ref().is_some_and(|lock| lock.locks(field)))
+}
+
 /// The signatures that saving `cos`'s unsaved edits over its file would invalidate. `reopen` is
 /// the password the file is opened with again.
 pub(crate) fn conflicts(cos: &Cos, reopen: Option<&str>, trust: &TrustStore, cache: &DigestCache) -> Vec<Conflict> {

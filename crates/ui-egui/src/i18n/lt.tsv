@@ -2598,3 +2598,15 @@ key	Space	Tarpas
 	Saving would invalidate a signature	Įrašius parašas taps negaliojantis
 	Save a copy…	Įrašyti kopiją…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Pasirinkite kitą failą: įrašius šiuos pakeitimus ant pasirašyto originalo, jo parašas taps negaliojantis.
+	Save changes to these documents before closing?	Prieš užveriant įrašyti šių dokumentų pakeitimus?
+	Save all	Įrašyti visus
+	Saving…	Įrašoma…
+	Save failed	Įrašyti nepavyko
+	No closed document to reopen.	Nėra užverto dokumento, kurį būtų galima vėl atverti.
+	This field is locked by the signature of {name}.	Šį lauką užrakino {name} parašas.
+	This document is certified and allows only form filling and signing.	Šis dokumentas patvirtintas, jame leidžiama tik pildyti formas ir pasirašyti.
+	This document is certified and allows only form filling, comments and signing.	Šis dokumentas patvirtintas, jame leidžiama tik pildyti formas, komentuoti ir pasirašyti.
+	Certified by {by}. Only form filling and signing are allowed.	Patvirtino {by}. Leidžiama tik pildyti formas ir pasirašyti.
+	Certified by {by}. Only form filling, comments and signing are allowed.	Patvirtino {by}. Leidžiama tik pildyti formas, komentuoti ir pasirašyti.
+	Saved	Įrašyta
+	Save “{name}”	Įrašyti „{name}“

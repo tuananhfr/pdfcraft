@@ -196,7 +196,9 @@ fn certifying_without_a_visible_signature() {
     let doc = s.session.get(s.views[0].id).unwrap();
     let sig = doc.signatures.iter().find(|x| x.signed).unwrap();
     assert_eq!((sig.certify, sig.visible), (Some(2), false));
-    h.get_by_label_contains("Certified by Test Signer EC");
+    h.get_by_label("Rev. 1: Certified by Test Signer EC");
+    // The bar names the signer and what the certification still allows.
+    h.get_by_label("Certified by Test Signer EC. Only form filling and signing are allowed.");
 }
 
 /// The fixture with an empty signature field across the bottom of the page.

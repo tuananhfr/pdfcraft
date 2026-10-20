@@ -642,7 +642,7 @@ impl PdfCraftApp {
             let bytes = match self.session.save_bytes(id) {
                 Ok(b) => b,
                 Err(e) => {
-                    self.notify_fmt("Couldn't save {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
+                    self.save_failed(id, "Couldn't save {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
                     return false;
                 }
             };
@@ -669,11 +669,11 @@ impl PdfCraftApp {
                     true
                 }
                 Err(e) if to_host => {
-                    self.notify_fmt("Couldn't save {name}: {e}", &[("name", &name), ("e", &e)]);
+                    self.save_failed(id, "Couldn't save {name}: {e}", &[("name", &name), ("e", &e)]);
                     false
                 }
                 Err(e) => {
-                    self.notify_fmt("Couldn't download {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
+                    self.save_failed(id, "Couldn't download {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
                     false
                 }
             }
@@ -700,12 +700,12 @@ impl PdfCraftApp {
         let bytes = match self.session.save_bytes(id).and_then(|b| self.session.check_save(id, &b).map(|()| b)) {
             Ok(b) => b,
             Err(e) => {
-                self.notify_fmt("Couldn't save {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
+                self.save_failed(id, "Couldn't save {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
                 return false;
             }
         };
         if let Err(e) = write_atomically(dest, &bytes) {
-            self.notify_fmt("Couldn't save {name}: {e}", &[("name", dest), ("e", &e.to_string())]);
+            self.save_failed(id, "Couldn't save {name}: {e}", &[("name", dest), ("e", &e.to_string())]);
             return false;
         }
         // Our own write is not a change on disk to reload (#431).
@@ -724,7 +724,7 @@ impl PdfCraftApp {
                 true
             }
             Err(e) => {
-                self.notify_fmt("Saved, but reopening failed: {e}", &[("e", &e.to_string())]);
+                self.save_failed(id, "Saved, but reopening failed: {e}", &[("e", &e.to_string())]);
                 false
             }
         }
@@ -742,7 +742,7 @@ impl PdfCraftApp {
         }
     }
 
-    /// File ▸ Close all: clean documents close at once; each one with unsaved changes asks.
+    /// File ▸ Close all: clean documents close at once; one prompt asks about the unsaved ones.
     pub fn close_all(&mut self) {
         for i in (0..self.views.len()).rev() {
             if !self.has_unsaved_work(i) {
@@ -782,64 +782,93 @@ impl PdfCraftApp {
         (0..self.views.len()).find(|&i| self.has_unsaved_work(i))
     }
 
-    /// Answer the save prompt: `Some(true)` save, `Some(false)` discard, `None` cancel.
+    /// The tabs with unsaved work, in tab order: what a Quit or Close all prompt lists.
+    pub fn unsaved_tabs(&self) -> Vec<usize> {
+        (0..self.views.len()).filter(|&i| self.has_unsaved_work(i)).collect()
+    }
+
+    /// Answer the save prompt: `Some(true)` save, `Some(false)` discard, `None` cancel. For Quit
+    /// and Close all the answer covers every unsaved document.
     pub fn resolve_close(&mut self, ctx: &egui::Context, choice: Option<bool>) {
         let Some(req) = self.close_request.take() else { return };
-        let index = match req {
-            CloseRequest::Tab(id) => match self.views.iter().position(|v| v.id == id) {
-                Some(i) => i,
-                None => return, // already closed
-            },
-            CloseRequest::Quit | CloseRequest::All => match self.first_dirty() {
-                Some(i) => i,
-                None => {
+        let CloseRequest::Tab(id) = req else {
+            if self.first_dirty().is_none() {
+                if req == CloseRequest::Quit {
+                    self.quit(ctx);
+                }
+                return;
+            }
+            // Quitting closes the unsaved tabs (and brings each forward to save it): remember
+            // what was open, and which tab was active, before the first one goes (#442).
+            if req == CloseRequest::Quit {
+                match choice {
+                    Some(_) => self.note_quit_session(),
+                    None => self.forget_quit_session(),
+                }
+            }
+            match choice {
+                None => {}
+                Some(false) => {
+                    for i in self.unsaved_tabs().into_iter().rev() {
+                        self.close_tab(i);
+                    }
                     if req == CloseRequest::Quit {
                         self.quit(ctx);
                     }
-                    return;
                 }
-            },
-        };
-        // Quitting closes the unsaved tabs one by one (and brings each forward to save it):
-        // remember what was open, and which tab was active, before the first one goes (#442).
-        if req == CloseRequest::Quit {
-            match choice {
-                Some(_) => self.note_quit_session(),
-                None => self.forget_quit_session(),
+                // Browsers allow a save picker only in answer to a click.
+                Some(true) if self.saves_one_click_each() => self.begin_save_all(ctx, req),
+                Some(true) if self.downloads_all() => {
+                    self.set_download_unnamed(true);
+                    self.save_unsaved_then_close(ctx, req);
+                    self.set_download_unnamed(false);
+                }
+                Some(true) => self.save_unsaved_then_close(ctx, req),
             }
-        }
+            return;
+        };
+        let Some(index) = self.views.iter().position(|v| v.id == id) else { return }; // already closed
         match choice {
             None => {} // cancelled: nothing closes
-            Some(false) => self.close_and_continue(ctx, index, req),
+            Some(false) => self.close_tab(index),
             Some(true) => {
-                let Some(id) = self.views.get(index).map(|v| v.id) else { return };
                 // Bring the document forward: what's typed in its form is committed and saved
                 // with it, and a field that rejects the value is shown where the user can fix it.
                 self.active = Some(index);
                 // Close only once the save has actually been written, which may be on a later
                 // frame when the user has to choose where. A failed or cancelled save keeps the
                 // document open.
-                let ctx = ctx.clone();
                 self.save_then(index, SaveTarget::InPlace, move |app| {
                     if let Some(i) = app.views.iter().position(|v| v.id == id) {
-                        app.close_and_continue(&ctx, i, req);
+                        app.close_tab(i);
                     }
                 });
             }
         }
     }
 
-    /// Close tab `index` for a close request, then ask about the next dirty document, or quit.
-    fn close_and_continue(&mut self, ctx: &egui::Context, index: usize, req: CloseRequest) {
-        self.close_tab(index);
-        // A newer prompt wins: the user may have started another close while a save was pending.
-        if (req == CloseRequest::Quit || req == CloseRequest::All) && self.close_request.is_none() {
-            match self.first_dirty() {
-                Some(_) => self.close_request = Some(req),
-                None if req == CloseRequest::Quit => self.quit(ctx),
-                None => {}
+    /// Save all: save the first unsaved document and close it once written, then the next, one
+    /// save (and picker) at a time; quit after the last for Quit. A save that is cancelled, fails
+    /// or is held stops the rest, which stay open with their changes.
+    fn save_unsaved_then_close(&mut self, ctx: &egui::Context, req: CloseRequest) {
+        let Some(index) = self.first_dirty() else {
+            if req == CloseRequest::Quit {
+                self.quit(ctx);
             }
-        }
+            return;
+        };
+        let Some(id) = self.views.get(index).map(|v| v.id) else { return };
+        self.active = Some(index);
+        let ctx = ctx.clone();
+        self.save_then(index, SaveTarget::InPlace, move |app| {
+            if let Some(i) = app.views.iter().position(|v| v.id == id) {
+                app.close_tab(i);
+            }
+            // A close the user started while a picker was open wins.
+            if app.close_request.is_none() {
+                app.save_unsaved_then_close(&ctx, req);
+            }
+        });
     }
 
     /// Request a normal application exit, preserving every unsaved document until answered.
@@ -856,7 +885,7 @@ impl PdfCraftApp {
         }
     }
 
-    fn quit(&mut self, ctx: &egui::Context) {
+    pub(crate) fn quit(&mut self, ctx: &egui::Context) {
         self.allow_quit = true;
         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
     }

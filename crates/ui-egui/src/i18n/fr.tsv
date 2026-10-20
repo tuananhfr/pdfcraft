@@ -2354,3 +2354,15 @@ animation effects	Off	Désactivés
 	Saving would invalidate a signature	L'enregistrement invaliderait une signature
 	Save a copy…	Enregistrer une copie…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Choisissez un autre fichier : enregistrer ces modifications sur l'original signé invaliderait sa signature.
+	Save changes to these documents before closing?	Enregistrer les modifications de ces documents avant de fermer ?
+	Save all	Tout enregistrer
+	Saving…	Enregistrement…
+	Save failed	Échec de l'enregistrement
+	No closed document to reopen.	Aucun document fermé à rouvrir.
+	This field is locked by the signature of {name}.	Ce champ est verrouillé par la signature de {name}.
+	This document is certified and allows only form filling and signing.	Ce document est certifié et n'autorise que le remplissage de formulaires et la signature.
+	This document is certified and allows only form filling, comments and signing.	Ce document est certifié et n'autorise que le remplissage de formulaires, les commentaires et la signature.
+	Certified by {by}. Only form filling and signing are allowed.	Certifié par {by}. Seuls le remplissage de formulaires et la signature sont autorisés.
+	Certified by {by}. Only form filling, comments and signing are allowed.	Certifié par {by}. Seuls le remplissage de formulaires, les commentaires et la signature sont autorisés.
+	Saved	Enregistré
+	Save “{name}”	Enregistrer «{name}»

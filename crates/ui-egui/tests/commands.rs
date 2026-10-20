@@ -144,6 +144,11 @@ fn every_registered_command_is_implemented() {
             let p = pdfcraft_engine::Protection { open_password: Some("pw".into()), ..Default::default() };
             app.apply_edit(pdfcraft_engine::Edit::Protect(p));
         }
+        // Reopen needs a document closed first.
+        if spec.id == "file.reopen_closed" {
+            app.open_bytes("closed.pdf", None, fixture(1)).unwrap();
+            app.close_tab(1);
+        }
         // The cover toggle needs two-page view first (it is disabled elsewhere).
         if spec.id == "view.layout.cover" {
             app.set_option("layout", "two-up").unwrap();

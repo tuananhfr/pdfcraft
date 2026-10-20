@@ -1,17 +1,19 @@
 //! Signed files in the real shell: a save its certification (DocMDP) or a field lock (FieldMDP)
 //! does not permit is held and offered as a copy, the original's bytes untouched; a level-1
-//! certification refuses editing tools when they are picked; an approval signature never blocks.
+//! certification refuses editing tools when they are picked, levels 2 and 3 grey the tools they
+//! forbid; a locked field takes no input; an approval signature never blocks.
 //!
-//! `PDFCRAFT_SHOTS=<dir>` also writes the guard dialog and the level-1 bar, in Vietnamese.
+//! `PDFCRAFT_SHOTS=<dir>` also writes the guard dialog, the level-1 bar, a locked field's tooltip
+//! and the tools a level-2 certification greys, in Vietnamese.
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use egui_kittest::Harness;
-use egui_kittest::kittest::Queryable;
+use egui_kittest::kittest::{NodeT, Queryable};
 use pdfcraft_engine::sign::pkcs12;
 use pdfcraft_engine::{Edit, FieldValue, NewAnnotation, NoteIcon, Session, Shape, SignOptions, SignatureStatus, Style};
-use pdfcraft_ui_egui::{PdfCraftApp, QuickTool, RightPanel, SaveTarget};
+use pdfcraft_ui_egui::{LeftPanel, PdfCraftApp, QuickTool, RightPanel, SaveTarget};
 
 /// One page with the text fields "Amount" and "Notes" and an empty signature field "Approval"
 /// carrying the `/Lock` entries `lock`.
@@ -262,4 +264,192 @@ fn vietnamese_guard_and_no_changes_bar() {
     h.run_steps(2);
     assert_eq!(h.state().quick_tool, QuickTool::Select);
     shot(&mut h, "no-changes-bar-vi");
+}
+
+fn settle(h: &mut Harness<'static, PdfCraftApp>) {
+    for _ in 0..60 {
+        h.run_steps(2);
+        if !h.state().render_pending() {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(5));
+    }
+}
+
+fn field_centre(h: &Harness<'static, PdfCraftApp>, name: &str) -> egui::Pos2 {
+    let s = h.state();
+    let doc = s.session.get(s.views[0].id).unwrap();
+    let f = doc.form.iter().find(|f| f.name == name).unwrap();
+    pdfcraft_ui_egui::forms_ui::field_screen_rect(&s.views[0], &doc.info, f, 0).expect("on screen").center()
+}
+
+fn click_field(h: &mut Harness<'static, PdfCraftApp>, name: &str) {
+    let p = field_centre(h, name);
+    h.hover_at(p);
+    h.run_steps(1);
+    h.drag_at(p);
+    h.run_steps(1);
+    h.drop_at(p);
+    h.run_steps(3);
+}
+
+fn focused(h: &Harness<'static, PdfCraftApp>) -> Option<String> {
+    h.state().views[0].forms.focus.as_ref().map(|f| f.name.clone())
+}
+
+fn toast(h: &Harness<'static, PdfCraftApp>) -> String {
+    h.state().toast.as_ref().map(|t| t.0.clone()).unwrap_or_default()
+}
+
+fn enabled(h: &Harness<'static, PdfCraftApp>, id: &str) -> bool {
+    let s = h.state();
+    pdfcraft_engine::commands::is_enabled(pdfcraft_engine::commands::command(id).unwrap(), &s.session, Some(s.views[0].id))
+}
+
+fn value(h: &Harness<'static, PdfCraftApp>, name: &str) -> Vec<String> {
+    let s = h.state();
+    s.session.get(s.views[0].id).unwrap().form.iter().find(|f| f.name == name).unwrap().value.clone()
+}
+
+#[test]
+fn a_locked_field_refuses_input_and_an_unlocked_one_accepts_it() {
+    let dir = dir();
+    let signed = signed(None, Some("/Action /Include /Fields [(Amount)]"));
+    let mut h = harness(&dir, &signed, "en");
+    settle(&mut h);
+    click_field(&mut h, "Amount");
+    assert_eq!(focused(&h), None, "no editor opens on the locked field");
+    assert!(toast(&h).starts_with("This field is locked by the signature of "), "{}", toast(&h));
+    assert!(!h.state().session.get(h.state().views[0].id).unwrap().dirty);
+
+    click_field(&mut h, "Notes");
+    assert_eq!(focused(&h).as_deref(), Some("Notes"));
+    h.event(egui::Event::Text("Delivered".into()));
+    h.run_steps(2);
+    // Tab skips the locked field: Notes is the only one left to fill.
+    h.key_press(egui::Key::Tab);
+    h.run_steps(4);
+    assert_eq!(value(&h, "Notes"), ["Delivered"]);
+    assert_eq!(focused(&h).as_deref(), Some("Notes"));
+    assert!(value(&h, "Amount").is_empty());
+}
+
+#[test]
+fn all_and_exclude_locks_refuse_the_fields_they_cover() {
+    let dir = dir();
+    let mut h = harness(&dir, &signed(None, Some("/Action /All")), "en");
+    settle(&mut h);
+    for name in ["Amount", "Notes"] {
+        click_field(&mut h, name);
+        assert_eq!(focused(&h), None, "{name} is locked");
+    }
+    let dir = self::dir();
+    let mut h = harness(&dir, &signed(None, Some("/Action /Exclude /Fields [(Notes)]")), "en");
+    settle(&mut h);
+    click_field(&mut h, "Notes");
+    assert_eq!(focused(&h).as_deref(), Some("Notes"), "Exclude leaves Notes open");
+    h.key_press(egui::Key::Escape);
+    h.run_steps(2);
+    click_field(&mut h, "Amount");
+    assert_eq!(focused(&h), None, "and locks the rest");
+}
+
+#[test]
+fn a_form_fill_certification_greys_comment_and_page_tools_but_keeps_filling_and_signing() {
+    let dir = dir();
+    let certified = signed(Some(2), None);
+    let mut h = harness(&dir, &certified, "en");
+    settle(&mut h);
+    h.get_by_label_contains("Only form filling and signing are allowed.");
+    for id in ["comment.note", "comment.highlight", "sign.fill.text", "page.rotate", "page.delete", "edit.edit_text", "redact.mark"] {
+        assert!(!enabled(&h, id), "{id} is greyed");
+    }
+    for id in ["form.clear", "sign.digital", "file.save_as"] {
+        assert!(enabled(&h, id), "{id} still works");
+    }
+    let refusal = "This document is certified and allows only form filling and signing.";
+    assert!(!h.state_mut().execute("page.rotate"));
+    assert_eq!(toast(&h), refusal);
+    // A comment tool reached another way drops back to Select, saying why.
+    h.state_mut().toast = None;
+    h.state_mut().quick_tool = QuickTool::Comment(pdfcraft_ui_egui::comments::CommentTool::Note);
+    h.run_steps(2);
+    assert_eq!(h.state().quick_tool, QuickTool::Select);
+    assert_eq!(toast(&h), refusal);
+    // The tool pane greys the same tools.
+    h.state_mut().left = LeftPanel::Tool("comment");
+    h.state_mut().left_open = true;
+    h.run_steps(3);
+    assert!(h.get_by_label("Sticky note").accesskit_node().is_disabled());
+    h.state_mut().left = LeftPanel::Tool("organize");
+    h.run_steps(3);
+    assert!(h.get_by_label("Rotate").accesskit_node().is_disabled());
+    // Filling a field still works.
+    click_field(&mut h, "Amount");
+    assert_eq!(focused(&h).as_deref(), Some("Amount"));
+}
+
+#[test]
+fn a_comments_certification_keeps_comment_tools() {
+    let dir = dir();
+    let certified = signed(Some(3), None);
+    let mut h = harness(&dir, &certified, "en");
+    h.get_by_label_contains("Only form filling, comments and signing are allowed.");
+    assert!(enabled(&h, "comment.note") && enabled(&h, "comment.highlight"));
+    assert!(!enabled(&h, "page.rotate") && !enabled(&h, "edit.edit_text"));
+    let note = QuickTool::Comment(pdfcraft_ui_egui::comments::CommentTool::Note);
+    h.state_mut().quick_tool = note;
+    h.run_steps(2);
+    assert_eq!(h.state().quick_tool, note, "kept");
+    h.state_mut().quick_tool = QuickTool::Crop;
+    h.run_steps(2);
+    assert_eq!(h.state().quick_tool, QuickTool::Select, "page changes are still refused");
+    assert_eq!(toast(&h), "This document is certified and allows only form filling, comments and signing.");
+}
+
+/// A locked field's tooltip and the tools a level-2 certification greys, as a Vietnamese user
+/// sees them, at desktop and phone width.
+#[test]
+fn vietnamese_locked_field_and_greyed_tools() {
+    let dir = dir();
+    let mut h = harness(&dir, &signed(None, Some("/Action /Include /Fields [(Amount)]")), "vi");
+    settle(&mut h);
+    click_field(&mut h, "Amount");
+    assert!(toast(&h).starts_with("Trường này đã bị khóa bởi chữ ký của "), "{}", toast(&h));
+    if let Ok(out) = std::env::var("PDFCRAFT_SHOTS") {
+        for (w, hgt) in [(1366.0, 768.0), (390.0, 844.0)] {
+            h.state_mut().toast = None;
+            h.set_size(egui::vec2(w, hgt));
+            settle(&mut h);
+            let p = field_centre(&h, "Amount");
+            h.hover_at(p);
+            for _ in 0..60 {
+                h.step();
+            }
+            h.render().unwrap().save(format!("{out}/locked-field-{}-vi.png", w as u32)).unwrap();
+        }
+    }
+
+    let dir = self::dir();
+    let mut h = harness(&dir, &signed(Some(2), None), "vi");
+    h.get_by_label_contains("Chỉ cho phép điền biểu mẫu và ký.");
+    h.state_mut().left = LeftPanel::Tool("comment");
+    h.state_mut().left_open = true;
+    settle(&mut h);
+    let sticky = "Ghi chú Dán";
+    assert!(h.get_by_label(sticky).accesskit_node().is_disabled());
+    if let Ok(out) = std::env::var("PDFCRAFT_SHOTS") {
+        for (w, hgt) in [(1366.0, 768.0), (390.0, 844.0)] {
+            h.set_size(egui::vec2(w, hgt));
+            settle(&mut h);
+            // The tool pane at desktop width; the quick bar's comment button on a phone.
+            if let Some(node) = h.query_by_label(sticky).or_else(|| h.query_by_label("Thêm Ghi chú Dán")) {
+                node.hover();
+            }
+            for _ in 0..60 {
+                h.step();
+            }
+            h.render().unwrap().save(format!("{out}/p2-greyed-{}-vi.png", w as u32)).unwrap();
+        }
+    }
 }

@@ -3,11 +3,12 @@
 //! Text fields open an in-place editor over the widget (Enter or clicking away commits, Escape
 //! cancels, Tab moves to the next field). Check boxes and radio buttons toggle on click. Combo
 //! and list boxes open a list of their options. Every change is one undoable engine edit.
+//! A field a signature locks (FieldMDP) refuses all of that and says who locked it.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use egui::{Color32, CornerRadius, Rect, Stroke, vec2};
-use pdfcraft_engine::{Edit, FieldValue, FormField, FormFieldKind, FormWidget, field_flags};
+use pdfcraft_engine::{Document, Edit, FieldValue, FormField, FormFieldKind, FormWidget, field_flags};
 use pdfcraft_render::DocInfo;
 
 use crate::canvas::{DocView, PageXform};
@@ -49,6 +50,8 @@ pub struct FormView {
     pub notice: Option<FormNotice>,
     /// A push button was clicked: (its field name, what it does).
     pub button: Option<(String, pdfcraft_engine::form_scripts::ButtonAction)>,
+    /// Fields a signature locks, with who signed it (refreshed every frame).
+    pub(crate) locked: HashMap<String, String>,
 }
 
 /// A form message for the app to show, with document data kept separate so the visible
@@ -61,6 +64,25 @@ pub enum FormNotice {
     ReadOnly(String),
     /// A push button with no action was clicked (its name).
     NoAction(String),
+    /// A field a signature locks was clicked (who signed it).
+    Locked(String),
+}
+
+/// The fields of `doc` that a signature locks, each with the signer's name (or, unnamed, the
+/// signature field's).
+pub(crate) fn locked_fields(doc: &Document) -> HashMap<String, String> {
+    if !doc.signatures.iter().any(|s| s.field_lock.is_some()) {
+        return HashMap::new();
+    }
+    doc.form
+        .iter()
+        .filter_map(|f| doc.field_locked_by(&f.name).map(|s| (f.name.clone(), s.signer.clone().unwrap_or_else(|| s.field.clone()))))
+        .collect()
+}
+
+/// Why a locked field refuses changes, in the UI language.
+pub(crate) fn locked_notice(signer: &str) -> String {
+    crate::i18n::fmt(tl!("This field is locked by the signature of {name}."), &[("name", signer)])
 }
 
 fn widget_rect(xf: &PageXform, info: &DocInfo, page: usize, r: [f64; 4]) -> Rect {
@@ -109,17 +131,26 @@ pub(crate) fn page_input(
     // Empty signature fields are signed by clicking them (Use a certificate); push buttons run
     // their action.
     let pressable = f.kind == FormFieldKind::PushButton && !f.read_only() && f.button.is_some();
-    let usable = allowed && (fillable(f) || pressable || f.kind == FormFieldKind::Signature);
+    let locked_by = view.forms.locked.get(&f.name).cloned();
+    let usable = allowed && locked_by.is_none() && (fillable(f) || pressable || f.kind == FormFieldKind::Signature);
     ui.ctx().set_cursor_icon(match (usable, f.kind) {
         (false, _) => egui::CursorIcon::NotAllowed,
         (true, FormFieldKind::Text) => egui::CursorIcon::Text,
         _ => egui::CursorIcon::PointingHand,
     });
+    if let Some(by) = locked_by.as_deref().filter(|_| allowed) {
+        // The page is the widget here: keep the tip at the field, not at the page's edge.
+        resp.clone().on_hover_text_at_pointer(locked_notice(by));
+    }
     if !resp.clicked() {
         return resp.is_pointer_button_down_on();
     }
     if !allowed {
         view.forms.notice = Some(FormNotice::Security);
+        return true;
+    }
+    if let Some(by) = locked_by {
+        view.forms.notice = Some(FormNotice::Locked(by));
         return true;
     }
     match f.kind {
@@ -334,7 +365,8 @@ fn paint_unbaked_widget(painter: &egui::Painter, xf: &PageXform, f: &FormField, 
 /// The in-place editor or option list for the focused field. Returns an edit to apply.
 pub(crate) fn overlay(ctx: &egui::Context, view: &mut DocView, info: &DocInfo, form: &[FormField], today: (i64, u32, u32)) -> Option<Edit> {
     let focus = view.forms.focus.clone()?;
-    let Some(f) = form.iter().find(|f| f.name == focus.name) else {
+    // A field locked while it was being typed in (by signing) takes no more typing.
+    let Some(f) = form.iter().find(|f| f.name == focus.name).filter(|f| !view.forms.locked.contains_key(&f.name)) else {
         view.forms.focus = None;
         return None;
     };
@@ -468,7 +500,11 @@ pub(crate) fn overlay(ctx: &egui::Context, view: &mut DocView, info: &DocInfo, f
         // page's /Tabs: rows, columns or structure), wrapping.
         let mut order: Vec<(usize, &FormField, usize)> = form
             .iter()
-            .filter(|x| fillable(x) && matches!(x.kind, FormFieldKind::Text | FormFieldKind::Combo | FormFieldKind::List))
+            .filter(|x| {
+                fillable(x)
+                    && !view.forms.locked.contains_key(&x.name)
+                    && matches!(x.kind, FormFieldKind::Text | FormFieldKind::Combo | FormFieldKind::List)
+            })
             .flat_map(|x| x.widgets.iter().enumerate().filter(|(_, w)| w.page.is_some() && !w.hidden).map(move |(wi, w)| (w.tab, x, wi)))
             .collect();
         order.sort_by_key(|o| o.0);

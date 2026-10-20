@@ -2321,7 +2321,7 @@ animation effects	Off	Tắt
 	No signature was found in the frame. Move the frame over the signature or raise the ink sensitivity.	Không tìm thấy chữ ký trong khung. Hãy di chuyển khung lên chữ ký hoặc tăng độ nhạy mực.
 	Couldn't use the photo: {e}	Không thể dùng ảnh: {e}
 	Close Tab	Đóng Thẻ
-	Reopen Closed Tab	Mở lại Thẻ đã Đóng
+	Reopen Closed Tab	Mở lại tài liệu vừa đóng
 	Reveal in Finder	Hiện trong Finder
 	Reveal in File Explorer	Hiện trong File Explorer
 	Other colour…	Màu Khác…
@@ -2601,3 +2601,15 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	Saving would invalidate a signature	Lưu sẽ làm chữ ký mất hiệu lực
 	Save a copy…	Lưu Bản sao…
 	Choose another file: saving these changes over the signed original would invalidate its signature.	Hãy chọn tệp khác: lưu các thay đổi này đè lên tệp gốc đã ký sẽ làm chữ ký của tệp mất hiệu lực.
+	Save changes to these documents before closing?	Lưu thay đổi của các tài liệu này trước khi đóng?
+	Save all	Lưu tất cả
+	Saving…	Đang lưu…
+	Save failed	Lưu không thành công
+	No closed document to reopen.	Không có tài liệu vừa đóng nào để mở lại.
+	This field is locked by the signature of {name}.	Trường này đã bị khóa bởi chữ ký của {name}.
+	This document is certified and allows only form filling and signing.	Tài liệu đã được chứng nhận và chỉ cho phép điền biểu mẫu và ký.
+	This document is certified and allows only form filling, comments and signing.	Tài liệu đã được chứng nhận và chỉ cho phép điền biểu mẫu, chú thích và ký.
+	Certified by {by}. Only form filling and signing are allowed.	Được chứng nhận bởi {by}. Chỉ cho phép điền biểu mẫu và ký.
+	Certified by {by}. Only form filling, comments and signing are allowed.	Được chứng nhận bởi {by}. Chỉ cho phép điền biểu mẫu, chú thích và ký.
+	Saved	Đã lưu
+	Save “{name}”	Lưu “{name}”
