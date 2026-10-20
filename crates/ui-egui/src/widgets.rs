@@ -103,12 +103,40 @@ pub(crate) fn paint_left(ui: &egui::Ui, pos: egui::Pos2, text: &str, font: egui:
     ui.painter().with_clip_rect(clip).text(pos, Align2::LEFT_CENTER, shown, font, color);
 }
 
+/// The chevron after a [`mode_picker`]'s label.
+const MODE_CHEVRON: f32 = 16.0;
+
+fn mode_tab_font(active: bool) -> egui::FontId {
+    if active { theme::semibold(13.5) } else { theme::medium(13.5) }
+}
+
+/// The width a [`mode_tab`] (or, with `chevron`, a [`mode_picker`]) takes.
+pub fn mode_tab_width(ui: &egui::Ui, label: &str, active: bool, chevron: bool) -> f32 {
+    let t = Tokens::get(ui.ctx());
+    let w = ui.fonts_mut(|f| f.layout_no_wrap(label.to_owned(), mode_tab_font(active), t.text).size().x);
+    w + 22.0 + if chevron { MODE_CHEVRON } else { 0.0 }
+}
+
 /// A mode-bar tab: text with an underline when active.
 pub fn mode_tab(ui: &mut egui::Ui, label: &str, active: bool) -> Response {
+    mode_tab_with(ui, label, active, false)
+}
+
+/// The current mode as one active tab with a chevron, for a bar too narrow for every mode;
+/// the label ends in "…" past `max_width` (the menu it opens names the mode in full).
+pub fn mode_picker(ui: &mut egui::Ui, label: &str, max_width: f32) -> Response {
+    let shown = if mode_tab_width(ui, label, true, true) > max_width {
+        crate::panels::ellipsized_prefix(label, |s| mode_tab_width(ui, s, true, true) <= max_width)
+    } else {
+        label.to_owned()
+    };
+    mode_tab_with(ui, &shown, true, true)
+}
+
+fn mode_tab_with(ui: &mut egui::Ui, label: &str, active: bool, chevron: bool) -> Response {
     let t = Tokens::get(ui.ctx());
-    let font = if active { theme::semibold(13.5) } else { theme::medium(13.5) };
-    let w = ui.fonts_mut(|f| f.layout_no_wrap(label.to_owned(), font.clone(), t.text).size().x);
-    let (rect, resp) = ui.allocate_exact_size(vec2(w + 22.0, 48.0), Sense::click());
+    let font = mode_tab_font(active);
+    let (rect, resp) = ui.allocate_exact_size(vec2(mode_tab_width(ui, label, active, chevron), 48.0), Sense::click());
     resp.widget_info(|| egui::WidgetInfo::selected(egui::WidgetType::Button, ui.is_enabled(), active, label));
     let press = theme::Press::track(ui, &resp);
     let well = rect.shrink2(vec2(2.0, 9.0));
@@ -120,7 +148,15 @@ pub fn mode_tab(ui: &mut egui::Ui, label: &str, active: bool) -> Response {
         press.wash(ui, well, 6, false);
     }
     let body = rect.translate(press.offset());
-    ui.painter().text(body.center(), Align2::CENTER_CENTER, label, font, if active { t.text } else { t.text_muted });
+    let color = if active { t.text } else { t.text_muted };
+    if chevron {
+        let text = body.with_max_x(body.right() - MODE_CHEVRON);
+        ui.painter().text(text.center(), Align2::CENTER_CENTER, label, font, color);
+        let icon = Rect::from_center_size(egui::pos2(text.right() + 2.0, body.center().y), vec2(14.0, 14.0));
+        icons::paint(ui, icon, "chevron-down", 13.0, t.text_muted);
+    } else {
+        ui.painter().text(body.center(), Align2::CENTER_CENTER, label, font, color);
+    }
     if active {
         let r = Rect::from_min_max(rect.left_bottom() + vec2(10.0, -2.0), rect.right_bottom() - vec2(10.0, 0.0));
         ui.painter().rect_filled(r, CornerRadius { nw: 1, ne: 1, sw: 0, se: 0 }, t.accent);

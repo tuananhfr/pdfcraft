@@ -70,6 +70,7 @@ pub use link_ui::LinkDraft;
 pub use optimize_ui::{OptimizeDraft, OptimizeTab};
 pub use sign_ui::{DigitalIdEntry, SignDraft, SignGraphic, SignStep};
 mod autoscroll;
+mod bar_fit;
 mod bidi;
 pub mod bulk_fields;
 mod dialogs;
@@ -87,6 +88,7 @@ mod icon_data;
 pub mod icons;
 pub mod last_session;
 pub mod motion;
+pub mod narrow;
 mod page_selection_ui;
 mod pageboxes;
 mod palette;
@@ -133,6 +135,7 @@ pub mod scroll_speed;
 mod system_fonts;
 mod tab_context;
 pub mod theme;
+mod touch_page;
 pub mod ui_scale;
 pub mod updates;
 mod wheel_pager;
@@ -507,6 +510,8 @@ pub struct PdfCraftApp {
     /// The user closed the Comments panel, so picking a comment tool leaves it closed until they
     /// open it again (#225). Remembered across restarts.
     pub comments_panel_closed: bool,
+    /// Phone-width compaction of the side panels (edge-triggered; see [`narrow`]).
+    pub(crate) narrow: narrow::NarrowLayout,
     /// The user closed the right panel, so opening a document leaves it closed instead of
     /// showing its comments or bookmarks (#1590). Remembered across restarts.
     pub right_panel_closed: bool,
@@ -892,6 +897,7 @@ impl PdfCraftApp {
             right: None,
             right_before_read: None,
             comments_panel_closed: false,
+            narrow: Default::default(),
             right_panel_closed: false,
             quick_tool: QuickTool::Select,
             space_hand: None,
@@ -1306,7 +1312,8 @@ impl PdfCraftApp {
         // Read mode opens with the panes closed; the rail still opens them (#932). A right panel
         // the user closed stays closed (#1590).
         let opening_mode = self.mode_override.unwrap_or(self.default_mode);
-        if activate && self.right.is_none() && !self.right_panel_closed && opening_mode != Mode::Read {
+        // At phone width the page keeps the window; the rail still opens the panel.
+        if activate && self.right.is_none() && !self.right_panel_closed && opening_mode != Mode::Read && !self.narrow.is_narrow() {
             self.right = if !doc.info.annotations.is_empty() {
                 Some(RightPanel::Comments)
             } else if !doc.info.outline.is_empty() {
@@ -2132,10 +2139,11 @@ impl PdfCraftApp {
     /// Serialize the user's persistent state (recent files, theme). Local only.
     pub fn persist(&self) -> String {
         let trusted: Vec<String> = self.session.trusted_certificates().iter().map(pdfcraft_engine::sign::x509::to_pem).collect();
+        let panels = self.narrow.wide_choice(narrow::Panels { left_open: self.left_open, right: self.right });
         serde_json::json!({
             "docking": self.docking,
-            "docking_left_open": self.left_open,
-            "docking_right": self.right,
+            "docking_left_open": panels.left_open,
+            "docking_right": panels.right,
             "recent": self.recent,
             "reopen_last_session": self.reopen_last_session,
             // Kept only while the preference is on.
@@ -2350,6 +2358,11 @@ impl PdfCraftApp {
     /// `true` while any open document still waits for page renders (used by headless capture).
     pub fn render_pending(&self) -> bool {
         self.views.iter().any(|v| v.render_pending())
+    }
+
+    /// Whether the window is below [`narrow::NARROW_WIDTH`] (phone layout).
+    pub fn is_narrow(&self) -> bool {
+        self.narrow.is_narrow()
     }
 
     /// Apply a named view option (`--page 3`, `--panel bookmarks`, `--theme dark`, …).
@@ -2963,6 +2976,9 @@ impl eframe::App for PdfCraftApp {
             ctx.request_repaint();
             return;
         }
+        let mut panels = narrow::Panels { left_open: self.left_open, right: self.right };
+        self.narrow.update(ctx.content_rect().width(), &mut panels);
+        (self.left_open, self.right) = (panels.left_open, panels.right);
         for view in &mut self.views {
             view.begin_render_frame();
         }

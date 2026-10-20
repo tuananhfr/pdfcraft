@@ -13,6 +13,7 @@ use pdfcraft_engine::{DocId, Edit};
 use pdfcraft_render::{DestView, DocInfo, LayerOp, LinkTarget, PRINT_TAG, PageText, RenderPool, RenderRequest, RequestKind, Tile, device_pixels};
 
 use crate::theme::{self, Tokens};
+use crate::touch_page::TouchInput;
 use crate::{PdfCraftApp, QuickTool, RightPanel, comments, icons, widgets};
 
 /// Logical pixels per PDF point at 100% (96 dpi, like browsers).
@@ -357,6 +358,8 @@ pub struct DocView {
     /// The drag in progress started a text selection: the wheel scrolls the page during it
     /// (#721), which egui's scroll area refuses while anything is dragged.
     selection_drag: bool,
+    /// The finger gesture on the page, for touch-only behaviour of the Select tool.
+    touch: crate::touch_page::TouchGesture,
     /// Clicks in the current run on the text layer: two select a word, three the line, four the page.
     clicks: u32,
     last_press_time: f64,
@@ -617,6 +620,7 @@ impl DocView {
             find: None,
             selection: None,
             selection_drag: false,
+            touch: Default::default(),
             clicks: 0,
             last_press_time: 0.0,
             last_press_pos: None,
@@ -2186,9 +2190,8 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     };
     let middle_gesture = view.auto_scroll.blocks_input();
     // Not scrolling: when the whole page or spread fits, the wheel would do nothing, so it turns
-    // pages instead; zoomed in far enough to pan, it pans. Touch drags are untouched: with
-    // nothing to pan, touch users turn pages with the rail buttons, the page box and the arrow
-    // keys. Runs before `visible_pages` so the frame that turns the page draws it.
+    // pages instead; zoomed in far enough to pan, it pans. Touch turns pages with a swipe (see
+    // `touch_page`). Runs before `visible_pages` so the frame that turns the page draws it.
     let mut single_paging = false;
     if !view.continuous {
         // The row's bounding box on screen (one page, or a two-page spread).
@@ -2308,8 +2311,18 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     }
     let sharp_held = now_scale < view.sharp_hold_until;
     view.current_scale_tag = tag;
-    let hand = app.quick_tool == QuickTool::Hand;
-    let tool = app.quick_tool;
+    // Touch with the Select tool: a moving finger pans as the Hand tool does, and text selection
+    // waits for a long press. Tools that draw, place or edit keep their drag.
+    let max_click_dist = ui.ctx().options(|o| o.input_options.max_click_dist);
+    view.touch.update(ui.input(|i| TouchInput::read(i, max_click_dist)));
+    let touch_pan = app.quick_tool == QuickTool::Select
+        && !preparing
+        && !editing_content
+        && view.touch.pan_origin().is_some_and(|origin| navigation_rect.contains(origin));
+    let hand = app.quick_tool == QuickTool::Hand || touch_pan;
+    let tool = if touch_pan { QuickTool::Hand } else { app.quick_tool };
+    // A long press that selected a word: the selection's own actions replace the page menu.
+    let mut touch_selected = false;
     // Text selection runs for the Select tool and for the markup tools (highlight…).
     let selects_text = match tool {
         QuickTool::Comment(t) => t.markup().is_some() || t == comments::CommentTool::ReplaceText,
@@ -2421,9 +2434,13 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
         if !resp.dragged_by(egui::PointerButton::Primary) {
             view.selection_drag = false;
         }
+        if resp.long_touched() {
+            view.touch.long_pressed(None);
+        }
         // The Hand tool pans: the content widget takes every drag, so scroll by its delta.
         if hand {
-            if resp.dragged() {
+            // While two fingers pinch, the first one's motion zooms; it doesn't also pan.
+            if resp.dragged() && ui.input(|i| i.multi_touch().is_none()) {
                 ui.scroll_with_delta(resp.drag_delta());
                 ui.ctx().set_cursor_icon(egui::CursorIcon::Grabbing);
             } else if resp.hovered() {
@@ -2811,6 +2828,26 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
                     } else if over_text && !over_link {
                         ui.ctx().set_cursor_icon(egui::CursorIcon::Text);
                     }
+                    // Touch: a long press selects the word under the finger, and dragging on
+                    // from there extends the selection.
+                    if resp.long_touched()
+                        && view.touch.is_touch()
+                        && tool == QuickTool::Select
+                        && over_text
+                        && !over_link
+                        && let Some((first, last)) = text.nearest(vx, vy).and_then(|a| text.word_at(a))
+                    {
+                        view.selection = Some(Selection::run(i, first, last));
+                        view.touch.hold_word((i, first, last));
+                        touch_selected = true;
+                    } else if let Some((page, first, last)) = view.touch.held_word()
+                        && page == i
+                        && ui.input(|inp| inp.pointer.primary_down())
+                        && let Some(head) = text.nearest(vx, vy)
+                    {
+                        let (anchor, head) = crate::touch_page::extend_word(first, last, head);
+                        view.selection = Some(Selection::run(i, anchor, head));
+                    }
                     let press_here = ui.input(|inp| inp.pointer.press_origin()).is_some_and(|o| r.contains(o));
                     let pressed = ui.input(|inp| inp.pointer.primary_pressed());
                     if pressed && press_here && !over_link {
@@ -3060,7 +3097,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
                 view.page_input = (current + 1).to_string();
             }
         }
-        resp.context_menu(|ui| {
+        let page_menu = |ui: &mut egui::Ui| {
             // Preparing a form: the selected field's menu.
             if preparing && let Some((name, wi)) = view.prepare.selected.clone() {
                 // Several fields: Align, Center, Distribute, Set Fields to Same Size.
@@ -3158,9 +3195,22 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
                 }
             }
             canvas_action = comments::context_menu(ui, view, info, prefs, allowed).or(copy_image);
-        });
+        };
+        if !touch_selected {
+            resp.context_menu(page_menu);
+        }
         (wanted, visible_now)
     });
+    if touch_pan
+        && !view.continuous
+        && ui.input(|i| i.pointer.any_released())
+        && let Some(delta) = view.touch.pan_delta()
+    {
+        let pans = out.content_size - out.inner_rect.size();
+        if let Some(forward) = crate::touch_page::swipe_turn(delta, out.inner_rect.size(), pans.x > 1.0, pans.y > 1.0) {
+            view.step_page(forward);
+        }
+    }
     view.single_edges = visible_pages.first().copied().filter(|_| !view.continuous).map(|page| {
         // At the top once the page's top edge shows where going to a page puts it (a gap
         // below the window's top). Within a point, as for wheel paging, so layout rounding
@@ -3172,7 +3222,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     view.viewport_screen = out.inner_rect;
     view.auto_scroll.paint(ui, avail);
     if unobstructed && matches!(tool, QuickTool::Select | QuickTool::ColumnSelect) {
-        selection_actions(ui, avail, view, info, prefs, allowed && !comments_hidden);
+        selection_actions(ui, avail, view, info, prefs, allowed && !comments_hidden, app.narrow.is_narrow());
     }
 
     // Collect all main-page demand, including cached surfaces, for byte admission later.
@@ -3461,8 +3511,17 @@ enum SelectionAction {
     Copy,
 }
 
-/// Actions on an existing text selection, next to the selected words.
-fn selection_actions(ui: &mut egui::Ui, viewport: Rect, view: &mut DocView, info: &DocInfo, prefs: &comments::CommentPrefs, can_comment: bool) {
+/// Actions on an existing text selection, next to the selected words. `narrow` (phone width)
+/// wraps them onto more rows so Copy, last in the row, stays on screen.
+fn selection_actions(
+    ui: &mut egui::Ui,
+    viewport: Rect,
+    view: &mut DocView,
+    info: &DocInfo,
+    prefs: &comments::CommentPrefs,
+    can_comment: bool,
+    narrow: bool,
+) {
     if ui.input(|input| input.pointer.is_decidedly_dragging()) {
         return;
     }
@@ -3483,7 +3542,7 @@ fn selection_actions(ui: &mut egui::Ui, viewport: Rect, view: &mut DocView, info
     let mut chosen = None;
     egui::Area::new(egui::Id::new(("text-selection-actions", view.id.0))).order(egui::Order::Foreground).fixed_pos(pos2(x, y)).show(ui.ctx(), |ui| {
         egui::Frame::popup(ui.style()).show(ui, |ui| {
-            ui.horizontal(|ui| {
+            let row = |ui: &mut egui::Ui| {
                 for (label, action) in [
                     (tl!("Add comment"), SelectionAction::Note),
                     (tl!("Highlight"), SelectionAction::Markup(comments::CommentTool::Highlight)),
@@ -3498,7 +3557,13 @@ fn selection_actions(ui: &mut egui::Ui, viewport: Rect, view: &mut DocView, info
                 if ui.button(tl!("Copy")).clicked() {
                     chosen = Some(SelectionAction::Copy);
                 }
-            });
+            };
+            if narrow {
+                ui.set_max_width(viewport.width() - 16.0);
+                ui.horizontal_wrapped(row);
+            } else {
+                ui.horizontal(row);
+            }
         });
     });
     let Some(action) = chosen else { return };
