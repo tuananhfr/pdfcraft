@@ -1168,6 +1168,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Құжат тазартылды. Аяқтау үшін сақтаңыз: сақтау бүкіл файлды қайта жазады.
 	Applied 1 redaction mark. Save to remove the content from the file.	1 жасыру белгісі қолданылды. Мазмұнды файлдан алып тастау үшін сақтаңыз.
 	Applied {n} redaction marks. Save to remove the content from the file.	{n} жасыру белгісі қолданылды. Мазмұнды файлдан алып тастау үшін сақтаңыз.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Тақырып сияқты метадеректерде мәтін әлі де болуы мүмкін: оны жою үшін «Құжаттан құпия деректерді тазарту» әрекетін іске қосыңыз.
 	JavaScript Console	JavaScript консолі
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript өшірулі (Параметрлер > JavaScript).
 	Output appears here.	Шығыс осында пайда болады.

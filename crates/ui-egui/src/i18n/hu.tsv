@@ -1194,6 +1194,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	A dokumentum meg van tisztítva. Ments a befejezéshez: a mentés újraírja az egész fájlt.
 	Applied 1 redaction mark. Save to remove the content from the file.	1 kitakarásjelölést alkalmaztunk. Ments, hogy a tartalom kikerüljön a fájlból.
 	Applied {n} redaction marks. Save to remove the content from the file.	{n} kitakarásjelölést alkalmaztunk. Ments, hogy a tartalom kikerüljön a fájlból.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	A metaadatok, például a cím, még tartalmazhatják a szöveget: futtasd a Dokumentum megtisztítása parancsot az eltávolításukhoz.
 	JavaScript Console	JavaScript-konzol
 	JavaScript is turned off (Preferences ▸ JavaScript).	A JavaScript ki van kapcsolva (Beállítások > JavaScript).
 	Output appears here.	A kimenet itt jelenik meg.

@@ -1207,6 +1207,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Dokument oczyszczony. Zapisz, aby zakończyć: zapis tworzy cały plik na nowo.
 	Applied 1 redaction mark. Save to remove the content from the file.	Zastosowano 1 oznaczenie do utajnienia. Zapisz, aby usunąć zawartość z pliku.
 	Applied {n} redaction marks. Save to remove the content from the file.	Zastosowano oznaczenia do utajnienia w liczbie {n}. Zapisz, aby usunąć zawartość z pliku.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Metadane, takie jak tytuł, mogą nadal zawierać ten tekst: uruchom Oczyść dokument, aby go usunąć.
 	JavaScript Console	Konsola JavaScript
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript jest wyłączony (Preferencje ▸ JavaScript).
 	Output appears here.	Tutaj pojawią się wyniki.

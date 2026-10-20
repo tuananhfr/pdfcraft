@@ -1291,6 +1291,7 @@ key	Space	Mezerník
 	Document sanitized. Save to finish: saving rewrites the whole file.	Dokument byl vyčištěn. Dokončete to uložením: uložení přepíše celý soubor.
 	Applied 1 redaction mark. Save to remove the content from the file.	Použita 1 značka začernění. Uložením odstraníte obsah ze souboru.
 	Applied {n} redaction marks. Save to remove the content from the file.	Použito značek začernění: {n}. Uložením odstraníte obsah ze souboru.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Metadata, například název, mohou text stále obsahovat: odstraníte je příkazem Vyčistit dokument.
 	JavaScript Console	Konzole JavaScriptu
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript je vypnutý („Předvolby > JavaScript“).
 	Output appears here.	Zde se zobrazí výstup.

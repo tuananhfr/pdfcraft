@@ -1847,6 +1847,7 @@ comment menu	Edit	Redaguoti
 	Application	Programa
 	Applied 1 redaction mark. Save to remove the content from the file.	Pritaikyta 1 konfidencialios informacijos šalinimo žyma. Įrašykite, kad turinys būtų pašalintas iš failo.
 	Applied {n} redaction marks. Save to remove the content from the file.	Pritaikyta konfidencialios informacijos šalinimo žymų: {n}. Įrašykite, kad turinys būtų pašalintas iš failo.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Metaduomenyse, pavyzdžiui, pavadinime, tekstas vis dar gali likti: kad jį pašalintumėte, paleiskite „Pašalinti dokumento paslėptą informaciją“.
 	Appropriate nesting	Tinkamas įdėjimas
 	Arbitrary Mask	Pasirinktinė kaukė
 	Associated with content	Susieta su turiniu

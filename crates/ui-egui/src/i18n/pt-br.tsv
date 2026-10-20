@@ -857,6 +857,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Documento sanitizado. Salve para concluir: salvar regrava todo o arquivo.
 	Applied 1 redaction mark. Save to remove the content from the file.	1 marca de ocultação aplicada. Salve para remover o conteúdo do arquivo.
 	Applied {n} redaction marks. Save to remove the content from the file.	{n} marcas de ocultação aplicadas. Salve para remover o conteúdo do arquivo.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Metadados como o título ainda podem conter o texto: execute Sanitizar documento para removê-lo.
 	JavaScript Console	Console JavaScript
 	JavaScript is turned off (Preferences ▸ JavaScript).	O JavaScript está desativado (Preferências > JavaScript).
 	Output appears here.	A saída aparece aqui.

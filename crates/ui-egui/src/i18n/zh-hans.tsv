@@ -918,6 +918,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	文档已清理。保存以完成：保存将重写整个文件。
 	Applied 1 redaction mark. Save to remove the content from the file.	已应用 1 个密文标记。保存以从文件中删除内容。
 	Applied {n} redaction marks. Save to remove the content from the file.	已应用 {n} 个密文标记。保存以从文件中删除内容。
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	标题等元数据可能仍包含该文本：请运行“清理文档”将其删除。
 	JavaScript Console	JavaScript 控制台
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript 已关闭（首选项 ▸ JavaScript）。
 	Output appears here.	输出显示在此处。

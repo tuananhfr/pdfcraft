@@ -911,6 +911,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Документът е почистен. Запишете, за да завършите: записването пренаписва целия файл.
 	Applied 1 redaction mark. Save to remove the content from the file.	Приложена е 1 маркировка за заличаване. Запишете, за да премахнете съдържанието от файла.
 	Applied {n} redaction marks. Save to remove the content from the file.	Приложени са {n} маркировки за заличаване. Запишете, за да премахнете съдържанието от файла.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Метаданните, например заглавието, може все още да съдържат текста: изпълнете „Почисти документа“, за да ги премахнете.
 	JavaScript Console	Конзола за JavaScript
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript е изключен (Настройки > JavaScript).
 	Output appears here.	Резултатът се показва тук.

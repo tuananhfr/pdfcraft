@@ -1204,6 +1204,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Document assaini. Enregistrez pour terminer : l'enregistrement réécrit tout le fichier.
 	Applied 1 redaction mark. Save to remove the content from the file.	1 marque de biffure appliquée. Enregistrez pour supprimer le contenu du fichier.
 	Applied {n} redaction marks. Save to remove the content from the file.	{n} marques de biffure appliquées. Enregistrez pour supprimer le contenu du fichier.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Les métadonnées, comme le titre, peuvent encore contenir le texte : lancez Assainir le document pour les supprimer.
 	JavaScript Console	Console JavaScript
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript est désactivé (Préférences > JavaScript).
 	Output appears here.	La sortie apparaît ici.

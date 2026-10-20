@@ -1221,6 +1221,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Документ очищено. Збережіть для завершення: збереження перезаписує весь файл.
 	Applied 1 redaction mark. Save to remove the content from the file.	Застосовано 1 позначку вилучення. Збережіть, щоб видалити вміст із файлу.
 	Applied {n} redaction marks. Save to remove the content from the file.	Застосовано позначок вилучення: {n}. Збережіть, щоб видалити вміст із файлу.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Метадані, як-от заголовок, можуть усе ще містити цей текст: виконайте «Очистити документ від конфіденційних даних», щоб видалити його.
 	JavaScript Console	Консоль JavaScript
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript вимкнено («Налаштування > JavaScript»).
 	Output appears here.	Тут з’являється вивід.

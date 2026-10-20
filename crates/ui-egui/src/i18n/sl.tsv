@@ -216,6 +216,7 @@
 	Application	Program
 	Applied 1 redaction mark. Save to remove the content from the file.	Uveljavljena je 1 oznaka za počrnitev. Shranite, da se vsebina odstrani iz datoteke.
 	Applied {n} redaction marks. Save to remove the content from the file.	Uveljavljenih oznak za počrnitev: {n}. Shranite, da se vsebina odstrani iz datoteke.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Metapodatki, na primer naslov, morda še vedno vsebujejo besedilo: zaženite Očisti dokument, da ga odstranite.
 	Applies to 1 page	Velja za 1 stran
 	Applies to {n} pages	Velja za strani: {n}
 	Apply	Uporabi

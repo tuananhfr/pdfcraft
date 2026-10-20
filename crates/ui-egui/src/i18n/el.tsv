@@ -794,6 +794,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Το έγγραφο εκκαθαρίστηκε. Αποθηκεύστε για ολοκλήρωση: η αποθήκευση επανεγγράφει ολόκληρο το αρχείο.
 	Applied 1 redaction mark. Save to remove the content from the file.	Εφαρμόστηκε 1 επισήμανση απόκρυψης. Αποθηκεύστε για να αφαιρεθεί το περιεχόμενο από το αρχείο.
 	Applied {n} redaction marks. Save to remove the content from the file.	Εφαρμόστηκαν {n} επισημάνσεις απόκρυψης. Αποθηκεύστε για να αφαιρεθεί το περιεχόμενο από το αρχείο.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Τα μεταδεδομένα, όπως ο τίτλος, μπορεί να περιέχουν ακόμη το κείμενο: εκτελέστε «Εκκαθάριση κρυφών δεδομένων εγγράφου» για να αφαιρεθεί.
 	JavaScript Console	Κονσόλα JavaScript
 	JavaScript is turned off (Preferences ▸ JavaScript).	Η JavaScript είναι απενεργοποιημένη (Προτιμήσεις > JavaScript).
 	Output appears here.	Η έξοδος εμφανίζεται εδώ.

@@ -1209,6 +1209,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Dokument bereinigt. Speichere zum Abschließen: Beim Speichern wird die gesamte Datei neu geschrieben.
 	Applied 1 redaction mark. Save to remove the content from the file.	1 Schwärzungsmarkierung angewendet. Speichere, um den Inhalt aus der Datei zu entfernen.
 	Applied {n} redaction marks. Save to remove the content from the file.	{n} Schwärzungsmarkierungen angewendet. Speichere, um den Inhalt aus der Datei zu entfernen.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Metadaten wie der Titel können den Text noch enthalten: Entferne ihn mit „Dokument bereinigen“.
 	JavaScript Console	JavaScript-Konsole
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript ist ausgeschaltet (Einstellungen > JavaScript).
 	Output appears here.	Die Ausgabe erscheint hier.

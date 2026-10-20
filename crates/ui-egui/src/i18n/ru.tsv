@@ -1224,6 +1224,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Документ очищен. Сохраните для завершения: сохранение перезаписывает весь файл.
 	Applied 1 redaction mark. Save to remove the content from the file.	Применена 1 метка сокрытия. Сохраните, чтобы удалить содержимое из файла.
 	Applied {n} redaction marks. Save to remove the content from the file.	Применено {n} меток сокрытия. Сохраните, чтобы удалить содержимое из файла.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Метаданные, например заголовок, могут всё ещё содержать этот текст: выполните «Очистить документ», чтобы удалить его.
 	JavaScript Console	Консоль JavaScript
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript выключен (Настройки > JavaScript).
 	Output appears here.	Вывод появляется здесь.

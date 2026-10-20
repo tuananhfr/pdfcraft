@@ -1224,6 +1224,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	文書の非表示情報を削除しました。完了するには保存してください。保存時にファイル全体を書き直します。
 	Applied 1 redaction mark. Save to remove the content from the file.	墨消しマークを 1 件適用しました。ファイルから内容を除去するには保存してください。
 	Applied {n} redaction marks. Save to remove the content from the file.	墨消しマークを {n} 件適用しました。ファイルから内容を除去するには保存してください。
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	タイトルなどのメタデータにはまだこのテキストが残っている可能性があります。削除するには「文書の機密情報を削除」を実行してください。
 	JavaScript Console	JavaScript コンソール
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript は無効です（環境設定 → JavaScript）。
 	Output appears here.	出力はここに表示されます。

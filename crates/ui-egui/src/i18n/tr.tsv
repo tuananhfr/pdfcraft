@@ -1181,6 +1181,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Belge temizlendi. Bitirmek için kaydedin: kaydetme tüm dosyayı yeniden yazar.
 	Applied 1 redaction mark. Save to remove the content from the file.	1 karartma işareti uygulandı. İçeriği dosyadan kaldırmak için kaydedin.
 	Applied {n} redaction marks. Save to remove the content from the file.	{n} karartma işareti uygulandı. İçeriği dosyadan kaldırmak için kaydedin.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Başlık gibi meta veriler metni hâlâ içerebilir: kaldırmak için Belgeyi temizle komutunu çalıştırın.
 	JavaScript Console	JavaScript Konsolu
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript kapalı (Tercihler > JavaScript).
 	Output appears here.	Çıktı burada görünür.

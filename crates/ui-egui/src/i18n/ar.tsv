@@ -1223,6 +1223,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	تم تنظيف المستند. احفظ للإنهاء: الحفظ يعيد كتابة الملف كله.
 	Applied 1 redaction mark. Save to remove the content from the file.	طُبِّقت علامة حجب واحدة. احفظ لإزالة المحتوى من الملف.
 	Applied {n} redaction marks. Save to remove the content from the file.	طُبِّقت {n} علامات حجب. احفظ لإزالة المحتوى من الملف.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	قد تظل البيانات الوصفية مثل العنوان تحتوي على النص: شغّل «تنظيف المستند» لإزالتها.
 	JavaScript Console	وحدة تحكم JavaScript
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript متوقف (التفضيلات > JavaScript).
 	Output appears here.	يظهر الناتج هنا.

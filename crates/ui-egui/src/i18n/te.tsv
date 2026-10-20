@@ -1194,6 +1194,7 @@ comment menu	Edit	సవరించు
 	Document sanitized. Save to finish: saving rewrites the whole file.	పత్రం శుభ్రపరచబడింది. పూర్తి చేయడానికి సేవ్ చేయండి: సేవ్ చేసినప్పుడు ఫైల్ మొత్తం మళ్లీ రాయబడుతుంది.
 	Applied 1 redaction mark. Save to remove the content from the file.	1 రెడాక్షన్ గుర్తు వర్తింపజేయబడింది. కంటెంట్‌ను ఫైల్ నుండి తీసివేయడానికి సేవ్ చేయండి.
 	Applied {n} redaction marks. Save to remove the content from the file.	{n} రెడాక్షన్ గుర్తులు వర్తింపజేయబడ్డాయి. కంటెంట్‌ను ఫైల్ నుండి తీసివేయడానికి సేవ్ చేయండి.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	శీర్షిక వంటి మెటాడేటాలో ఇంకా ఆ వచనం ఉండవచ్చు: దాన్ని తీసివేయడానికి పత్రాన్ని శుభ్రపరచు ను అమలు చేయండి.
 	JavaScript Console	JavaScript కన్సోల్
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript ఆఫ్ చేయబడింది (ప్రాధాన్యతలు > JavaScript).
 	Output appears here.	అవుట్‌పుట్ ఇక్కడ కనిపిస్తుంది.

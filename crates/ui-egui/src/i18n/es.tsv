@@ -1218,6 +1218,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Documento saneado. Guarda para terminar: al guardar se reescribe todo el archivo.
 	Applied 1 redaction mark. Save to remove the content from the file.	Se ha aplicado 1 marca de censura. Guarda para eliminar el contenido del archivo.
 	Applied {n} redaction marks. Save to remove the content from the file.	Se han aplicado {n} marcas de censura. Guarda para eliminar el contenido del archivo.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Los metadatos, como el título, pueden seguir conteniendo el texto: ejecuta Sanear documento para eliminarlo.
 	JavaScript Console	Consola de JavaScript
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript está desactivado (Preferencias > JavaScript).
 	Output appears here.	La salida aparece aquí.
