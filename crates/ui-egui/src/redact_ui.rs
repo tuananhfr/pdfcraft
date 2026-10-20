@@ -449,8 +449,24 @@ pub(crate) fn apply_body(ui: &mut egui::Ui, marks: usize, t: &Tokens) -> (bool, 
             .small()
             .color(t.text_muted),
     );
+    ui.label(egui::RichText::new(sanitize_hint()).small().color(t.text_muted));
     ui.add_space(12.0);
     buttons(ui, "Apply", true)
+}
+
+/// Redaction removes page content only, never the document's metadata.
+fn sanitize_hint() -> &'static str {
+    tl!("Metadata such as the title may still contain the text: run Sanitize document to remove it.")
+}
+
+/// The notice once `marks` redaction marks are applied.
+pub(crate) fn applied_notice(marks: usize) -> String {
+    let applied = if marks == 1 {
+        tl!("Applied 1 redaction mark. Save to remove the content from the file.").to_string()
+    } else {
+        crate::i18n::fmt(tl!("Applied {n} redaction marks. Save to remove the content from the file."), &[("n", &marks.to_string())])
+    };
+    format!("{applied} {}", sanitize_hint())
 }
 
 fn buttons(ui: &mut egui::Ui, ok: &str, primary: bool) -> (bool, bool) {

@@ -78,6 +78,8 @@ fn marking_applying_and_clearing() {
     let doc = s.session.get(s.views[0].id).unwrap();
     assert_eq!((doc.redaction_marks(), doc.can_undo()), (0, Some("Apply redactions")));
     assert!(doc.form.is_empty(), "the whole page was redacted, fields included");
+    let toast = s.toast.as_ref().map(|t| t.0.as_str()).unwrap_or_default();
+    assert!(toast.starts_with("Applied 2 redaction marks.") && toast.contains("run Sanitize document"), "{toast:?}");
 }
 
 #[test]

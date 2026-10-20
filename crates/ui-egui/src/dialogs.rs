@@ -1253,11 +1253,7 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
         Some(Dialog::RedactApply) => {
             let marks = app.active_ids().and_then(|(_, id)| app.session.get(id)).map_or(0, |d| d.redaction_marks());
             if app.apply_edit(Edit::ApplyRedactions { pages: None }) {
-                if marks == 1 {
-                    app.notify_tr("Applied 1 redaction mark. Save to remove the content from the file.");
-                } else {
-                    app.notify_fmt("Applied {n} redaction marks. Save to remove the content from the file.", &[("n", &marks.to_string())]);
-                }
+                app.notify(crate::redact_ui::applied_notice(marks));
             }
         }
         _ => {}

@@ -1209,6 +1209,7 @@
 	Document sanitized. Save to finish: saving rewrites the whole file.	Đã làm sạch tài liệu. Hãy lưu để hoàn tất: thao tác lưu sẽ ghi lại toàn bộ tệp.
 	Applied 1 redaction mark. Save to remove the content from the file.	Đã áp dụng 1 vùng che. Hãy lưu để xóa nội dung khỏi tệp.
 	Applied {n} redaction marks. Save to remove the content from the file.	Đã áp dụng {n} vùng che. Hãy lưu để xóa nội dung khỏi tệp.
+	Metadata such as the title may still contain the text: run Sanitize document to remove it.	Siêu dữ liệu như tiêu đề vẫn có thể chứa nội dung này: hãy chạy Làm sạch Tài liệu để xóa.
 	JavaScript Console	Bảng điều khiển JavaScript
 	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript đang tắt (Tùy chọn ▸ JavaScript).
 	Output appears here.	Kết quả hiển thị ở đây.
