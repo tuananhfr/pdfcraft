@@ -148,7 +148,7 @@ pub(crate) fn subset(source: &[u8], mappings: &[(char, u16)]) -> Result<Vec<u8>,
         put(&mut out, entry + 8, &u32::try_from(offset).map_err(|_| "subset offset limit")?.to_be_bytes())?;
         put(&mut out, entry + 12, &u32::try_from(data.len()).map_err(|_| "subset length limit")?.to_be_bytes())?;
         out.extend(data);
-        while out.len() % 4 != 0 {
+        while !out.len().is_multiple_of(4) {
             out.push(0);
         }
     }
