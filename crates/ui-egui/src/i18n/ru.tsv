@@ -2280,3 +2280,4 @@ animation effects	Off	Выкл
 	Certified by {by}. Only form filling, comments and signing are allowed.	Сертифицировано: {by}. Разрешены только заполнение форм, комментарии и подписание.
 	Saved	Сохранено
 	Save “{name}”	Сохранить «{name}»
+	The browser won't allow reading the clipboard — use Ctrl+V	Браузер не разрешает чтение буфера обмена — используйте Ctrl+V

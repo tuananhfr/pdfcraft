@@ -2367,3 +2367,4 @@ animation effects	Off	オフ
 	Certified by {by}. Only form filling, comments and signing are allowed.	証明者: {by}。フォームへの入力、注釈、署名のみ許可されています。
 	Saved	保存済み
 	Save “{name}”	「{name}」を保存
+	The browser won't allow reading the clipboard — use Ctrl+V	ブラウザーがクリップボードの読み取りを許可していません — Ctrl+V を使用してください
