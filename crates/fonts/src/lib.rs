@@ -1,22 +1,26 @@
 //! pdfcraft-fonts — font metrics and encodings for generated appearances (L2).
 //!
 //! Standard-14 advance widths are exact (`Std14`, ISO 32000-2 Annex D). What remains approximate
-//! is everything that needs a font *program*: this crate reads font dictionaries, never embedded
-//! programs, so it has no glyph outlines for document fonts and cannot subset or re-embed. That
-//! is phase F 4.2 in docs/plan/execution-plan.md.
+//! is coverage beyond the available font programs. Generated Latin Unicode text can embed a
+//! subset of bundled Inter through [`cid_embed`]; document-font metrics live in [`pdf`].
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
+pub mod cid_embed;
+#[cfg(test)]
+mod cid_embed_tests;
 mod craft;
 pub mod embedding;
 mod encodings;
 pub mod fallback;
+pub mod font_resources;
 pub mod pdf;
 mod script;
 mod shaping;
 pub mod source_shaping;
 mod std14;
 mod std14_metrics;
+mod truetype_subset;
 pub use craft::{
     CRAFT_FONTS, CraftFont, SHIPPORI_MINCHO, document_arabic_font, document_hebrew_font, document_japanese_font, document_japanese_font_for_style,
     document_japanese_fonts_for_style, document_thai_font, ui_arabic_fonts, ui_chinese_fonts, ui_cjk_fonts, ui_hebrew_fonts, ui_japanese_fonts,

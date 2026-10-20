@@ -237,6 +237,9 @@ pub fn lines(t: &AddedText) -> Vec<String> {
 /// does).
 fn wrapped(t: &AddedText) -> Vec<(String, bool)> {
     let width = (t.rect[2] - t.rect[0]).max(t.size);
+    if pdfcraft_fonts::cid_embed::needed(&t.text) {
+        return pdfcraft_fonts::wrap_with(&t.text, t.size, width, pdfcraft_fonts::cid_embed::width).into_iter().map(|line| (line, false)).collect();
+    }
     let mut out = Vec::new();
     for para in t.text.split('\n') {
         let arabic = para.chars().any(is_arabic);
@@ -317,12 +320,19 @@ fn is_arabic(c: char) -> bool {
 /// with the craft-fonts Arabic face (#125), or Arabic that the face can't draw (or that has no
 /// face to draw it). Page-content tools refuse such text; the Add-text editor keeps it open.
 pub fn first_undrawable(t: &AddedText) -> Option<char> {
+    if pdfcraft_fonts::cid_embed::needed(&t.text) {
+        return None;
+    }
+    first_undrawable_standard(t)
+}
+
+fn first_undrawable_standard(t: &AddedText) -> Option<char> {
     if t.text.chars().any(is_thai) {
         if let Some(c) = t.text.chars().find(|c| is_thai(*c) && !pdfcraft_fonts::thai_has(*c)) {
             return Some(c);
         }
         let rest = AddedText { text: t.text.chars().filter(|c| !is_thai(*c)).collect(), ..t.clone() };
-        return first_undrawable(&rest);
+        return first_undrawable_standard(&rest);
     }
     // Arabic that nothing can draw: there's no face, or the face lacks it.
     if let Some(c) = t.text.chars().find(|c| shaped_arabic(*c) && !pdfcraft_fonts::arabic_has(*c)) {
@@ -704,6 +714,11 @@ fn draw(doc: &mut Document, c: &Content, view: [f64; 6], taken: &Dict, existing:
     let mut out = format!("q {} {} {} {} {} {} cm\n", n(view[0]), n(view[1]), n(view[2]), n(view[3]), n(view[4]), n(view[5])).into_bytes();
     match c {
         Content::Text(t) => {
+            if pdfcraft_fonts::cid_embed::needed(&t.text) {
+                let resources = crate::added_inter::draw(doc, t, taken, &mut out)?;
+                out.extend_from_slice(b"Q\n");
+                return Ok((out, resources));
+            }
             let base = t.family.base_font(t.bold, t.italic);
             let name = font_name(base);
             let mut font = Dict::new();
@@ -1073,12 +1088,15 @@ pub fn delete_content(doc: &mut Document, page: usize, index: usize) -> Result<(
     Ok(())
 }
 
-/// The Type 3 fonts an Arabic item's stream shows text with. Each item has its own (`draw_shaped`
-/// names them so), so they go when the item is replaced or deleted.
+/// The generated shaped/Inter fonts an item's stream uses, removed with that item's content.
 fn own_fonts(doc: &Document, obj: ObjRef) -> Vec<Vec<u8>> {
     let Object::Stream(s) = &*doc.get(obj) else { return Vec::new() };
     let Ok(data) = s.decoded() else { return Vec::new() };
-    data.split(u8::is_ascii_whitespace).filter_map(|w| w.strip_prefix(b"/")).filter(|w| w.starts_with(b"PCAr")).map(<[u8]>::to_vec).collect()
+    data.split(u8::is_ascii_whitespace)
+        .filter_map(|w| w.strip_prefix(b"/"))
+        .filter(|w| w.starts_with(b"PCAr") || w.starts_with(b"PCInter"))
+        .map(<[u8]>::to_vec)
+        .collect()
 }
 
 fn drop_fonts(doc: &Document, res: &mut Dict, names: &[Vec<u8>]) {
@@ -1094,3 +1112,5 @@ fn drop_fonts(doc: &Document, res: &mut Dict, names: &[Vec<u8>]) {
 
 #[cfg(test)]
 mod arabic_tests;
+#[cfg(test)]
+mod inter_tests;

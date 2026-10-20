@@ -7,14 +7,23 @@
 //! endings, indirect geometry), so callers never replace an appearance with a worse one.
 //!
 //! The note icons are PdfCraft's own drawings (AGENTS.md §1). Text boxes use the standard
-//! Helvetica font with WinAnsi encoding; line breaking uses [`text_width`], an approximation of
-//! Helvetica's proportions by character class (no font program or metrics file is bundled).
+//! Helvetica font with WinAnsi encoding, falling back to an Inter subset for covered Unicode
+//! text; line breaking uses the selected font's advance widths.
 
 use pdfcraft_cos::{Dict, Object, PdfString, Stream};
 use pdfcraft_fonts::{first_undrawable, literal, win_ansi};
-pub use pdfcraft_fonts::{helvetica_width as text_width, wrap};
+pub use pdfcraft_fonts::helvetica_width as text_width;
 
 use crate::{NOTE_SIZE, Rgb, n};
+
+/// Wrap with the same face that draws the complete text box.
+pub fn wrap(text: &str, size: f64, width: f64) -> Vec<String> {
+    if pdfcraft_fonts::cid_embed::needed(text) {
+        pdfcraft_fonts::wrap_with(text, size, width, pdfcraft_fonts::cid_embed::width)
+    } else {
+        pdfcraft_fonts::wrap(text, size, width)
+    }
+}
 
 /// Length of an arrowhead for a line of width `w`.
 pub fn arrow_size(w: f64) -> f64 {
@@ -277,7 +286,13 @@ fn stamp_turn(d: &Dict) -> i64 {
 pub fn undrawable_text(d: &Dict) -> Option<(&'static str, char)> {
     let text = |key: &[u8]| d.get(key).and_then(Object::as_string).map(PdfString::to_text);
     let (what, text) = match d.name(b"Subtype")? {
-        b"FreeText" => ("the comment's text", text(b"Contents")?),
+        b"FreeText" => {
+            let text = text(b"Contents")?;
+            if pdfcraft_fonts::cid_embed::needed(&text) {
+                return None;
+            }
+            ("the comment's text", text)
+        }
         b"Line" | b"PolyLine" | b"Polygon" => ("the measurement label", text(b"PCMeasureValue")?),
         b"Stamp" if matches!(d.get(b"PCStamp"), Some(Object::Bool(true))) => ("the stamp's \"By\" line", text(b"PCByLine")?),
         // Drawn in Helvetica when the redaction is applied: refused when it is marked.
@@ -713,11 +728,17 @@ pub fn build(d: &Dict) -> Option<Stream> {
                 ));
             }
             let text = d.get(b"Contents").and_then(|o| o.as_string()).map(PdfString::to_text).unwrap_or_default();
+            let inter = if pdfcraft_fonts::cid_embed::needed(&text) {
+                Some(pdfcraft_fonts::cid_embed::InterFont::new(&text).ok()?)
+            } else {
+                None
+            };
+            let font_name = if inter.is_some() { "PCInter" } else { "Helv" };
             let pad = 2.0 + bw;
             let width = (rect[2] - rect[0] - 2.0 * pad).max(1.0);
             let q = d.int(b"Q").unwrap_or(0);
             c.push_str(&format!(
-                "{} {} {} {} re W n\nBT\n/Helv {} Tf\n{}",
+                "{} {} {} {} re W n\nBT\n/{font_name} {} Tf\n{}",
                 n(rect[0]),
                 n(rect[1]),
                 n(rect[2] - rect[0]),
@@ -731,14 +752,18 @@ pub fn build(d: &Dict) -> Option<Stream> {
                 if y < rect[1] - size {
                     break;
                 }
-                let lw = text_width(&line, size);
+                let lw = if inter.is_some() { pdfcraft_fonts::cid_embed::width(&line, size) } else { text_width(&line, size) };
                 let x = match q {
                     1 => rect[0] + pad + (width - lw) / 2.0,
                     2 => rect[2] - pad - lw,
                     _ => rect[0] + pad,
                 };
                 out.extend(format!("1 0 0 1 {} {} Tm ", n(x), n(y)).bytes());
-                out.extend(literal(&win_ansi(&line)));
+                let bytes = match &inter {
+                    Some(font) => font.encode(&line).ok()?,
+                    None => win_ansi(&line),
+                };
+                out.extend(literal(&bytes));
                 out.extend_from_slice(b" Tj\n");
                 y -= size * 1.2;
             }
@@ -749,7 +774,7 @@ pub fn build(d: &Dict) -> Option<Stream> {
             font.set(b"BaseFont".to_vec(), Object::name("Helvetica"));
             font.set(b"Encoding".to_vec(), Object::name("WinAnsiEncoding"));
             let mut fonts = Dict::new();
-            fonts.set(b"Helv".to_vec(), Object::Dict(font));
+            fonts.set(font_name.as_bytes().to_vec(), Object::Dict(inter.map_or(font, |f| f.dictionary)));
             res.set(b"Font".to_vec(), Object::Dict(fonts));
             return Some(form(full, &out, res));
         }

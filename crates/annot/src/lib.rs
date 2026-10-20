@@ -17,6 +17,7 @@
 use pdfcraft_cos::{Dict, Document, ObjRef, Object, PdfString, Stream};
 
 pub mod appearance;
+mod embedded_font;
 pub mod links;
 
 #[cfg(test)]
@@ -1338,7 +1339,8 @@ fn build_appearance(doc: &Document, d: &Dict) -> Option<Stream> {
 }
 
 /// Store a built appearance on the annotation: the cheap half of [`set_appearance`].
-fn apply_appearance(doc: &mut Document, r: ObjRef, d: &Dict, stream: Stream) -> Result<(), AnnotError> {
+fn apply_appearance(doc: &mut Document, r: ObjRef, d: &Dict, mut stream: Stream) -> Result<(), AnnotError> {
+    embedded_font::register(doc, &mut stream)?;
     // Characters the standard fonts can't draw came out as `?`: mark the annotation with the first.
     let missing = appearance::undrawable_text(d).map(|(_, c)| c);
     let ap = doc.add(Object::Stream(stream));
@@ -1585,7 +1587,8 @@ fn fitted_box(doc: &Document, r: ObjRef, text: &str) -> Option<[f64; 4]> {
         w
     } else {
         // No usable old width: fall back to the creation-time width (at most 300 pt).
-        let longest = text.lines().map(|l| appearance::text_width(l, size)).fold(0.0, f64::max);
+        let inter = pdfcraft_fonts::cid_embed::needed(text);
+        let longest = text.lines().map(|l| if inter { pdfcraft_fonts::cid_embed::width(l, size) } else { appearance::text_width(l, size) }).fold(0.0, f64::max);
         (longest + 2.0 * pad + 4.0).clamp(40.0, 300.0)
     };
     let lines = appearance::wrap(text, size, (w - 2.0 * pad).max(1.0)).len().max(1) as f64;

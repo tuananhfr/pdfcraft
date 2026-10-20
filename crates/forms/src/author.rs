@@ -680,7 +680,7 @@ pub fn redraw_field(doc: &mut Document, name: &str) -> Result<(), FormError> {
         let mut missing = None;
         let ap = match f.kind {
             FieldKind::Text | FieldKind::Combo | FieldKind::List => {
-                let (s, m) = appearance::field_appearance_drawn(doc, &f, w, &f.value, true);
+                let (s, m) = crate::embedded_font::appearance(doc, &f, w, &f.value, true)?;
                 missing = m;
                 let r = doc.add(Object::Stream(s));
                 let mut d = Dict::new();

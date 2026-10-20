@@ -4735,6 +4735,8 @@ pub fn comment_summary(name: &str, all: &[pdfcraft_render::Annotation], sort: Su
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod unicode_writing_tests;
 
 /// Page filters of Acrobat's Rotate Pages and page selection: even/odd page numbers and
 /// orientation (as displayed).

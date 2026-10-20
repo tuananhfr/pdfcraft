@@ -20,6 +20,7 @@ pub mod af;
 pub mod appearance;
 mod author;
 pub mod detect;
+mod embedded_font;
 mod scripting;
 pub use actions::{FieldAction, Trigger, field_actions, set_field_actions};
 pub use author::{
@@ -1104,8 +1105,8 @@ fn redraw(doc: &mut Document, f: &Field, values: &[String], scripts: &mut dyn Sc
     let mut undrawn = false;
     for w in &f.widgets {
         let (stream, missing) = match &shown {
-            Some(s) => appearance::field_appearance_drawn(doc, f, w, std::slice::from_ref(s), false),
-            None => appearance::field_appearance_drawn(doc, f, w, values, true),
+            Some(s) => embedded_font::appearance(doc, f, w, std::slice::from_ref(s), false)?,
+            None => embedded_font::appearance(doc, f, w, values, true)?,
         };
         undrawn |= missing.is_some();
         let ap = doc.add(Object::Stream(stream));

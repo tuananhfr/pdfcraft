@@ -8,7 +8,8 @@
 //! The `/DA` font is used when the form's `/DR` defines it as a simple font that can encode the
 //! displayed text (using its own encoding and Differences), or as a composite font with a
 //! predefined Unicode CMap such as `UniJIS-UTF16-H`, as Japanese forms use. Otherwise (unsupported
-//! characters, other composite fonts, missing resources) Helvetica is used. Text the chosen font
+//! characters, other composite fonts, missing resources) Helvetica is used. Covered Unicode text
+//! registers an Inter subset in `/DR` before drawing, measured with its real advances. Text the chosen font
 //! can't hold (outside WinAnsi in Helvetica, or beyond U+FFFF in a UCS-2 CMap) is drawn as `?`, as
 //! Acrobat keeps a value its field font can't show: the value itself is stored as typed,
 //! [`field_appearance_drawn`] returns the first such character, and the caller marks the widget
@@ -122,6 +123,7 @@ enum FontText {
     WinAnsi,
     /// A reused simple font's encoding, including indirect dictionaries and Differences.
     Simple(Box<Metrics>),
+    Embedded(Box<Metrics>),
     /// A composite font with a predefined Unicode CMap.
     Unicode(UnicodeCMap),
 }
@@ -131,7 +133,7 @@ impl FontText {
         match self {
             Self::WinAnsi => win_ansi(s),
             // Selection checks every displayed string first; wrapping only removes line breaks.
-            Self::Simple(metrics) => metrics.encode(&s.replace('\t', " ")).unwrap_or_default(),
+            Self::Simple(metrics) | Self::Embedded(metrics) => metrics.encode(&s.replace('\t', " ")).unwrap_or_default(),
             Self::Unicode(cmap) => cmap.encode(s),
         }
     }
@@ -139,6 +141,7 @@ impl FontText {
     fn can_encode(&self, s: &str) -> bool {
         match self {
             Self::Simple(metrics) => metrics.encode(&s.replace('\t', " ")).is_some(),
+            Self::Embedded(metrics) => metrics.encode(&s.replace(['\t', '\n', '\r'], " ")).is_some(),
             _ => true,
         }
     }
@@ -149,7 +152,7 @@ impl FontText {
     fn first_unencodable(&self, s: &str) -> Option<char> {
         match self {
             Self::WinAnsi => pdfcraft_fonts::first_undrawable(s),
-            Self::Simple(metrics) => {
+            Self::Simple(metrics) | Self::Embedded(metrics) => {
                 s.chars().map(|c| if c == '\t' { ' ' } else { c }).find(|c| metrics.encode(c.encode_utf8(&mut [0; 4])).is_none())
             }
             Self::Unicode(cmap) => cmap.first_unencodable(s),
@@ -160,6 +163,7 @@ impl FontText {
         match self {
             Self::WinAnsi | Self::Simple(_) => helvetica_width(s, size),
             Self::Unicode(_) => cjk_width(s, size),
+            Self::Embedded(_) => pdfcraft_fonts::cid_embed::width(s, size),
         }
     }
 }
@@ -175,8 +179,10 @@ fn dr_font(doc: &Document, name: &str) -> Option<(Object, FontText)> {
     match fd.name(b"Subtype") {
         Some(b"Type1" | b"TrueType" | b"MMType1") => {}
         // Japanese, Chinese and Korean forms: a CID font addressed by Unicode (a non-embedded
-        // `/HeiseiMin-W3` with `/UniJIS-UCS2-H`, say). Embedded CMap streams and Identity-H need
-        // the font's own mapping, so those still fall back to Helvetica.
+        // `/HeiseiMin-W3` with `/UniJIS-UCS2-H`, say). Foreign Identity-H subsets still fall back.
+        Some(b"Type0") if matches!(fd.get(b"PCInterSubset"), Some(Object::Bool(true))) => {
+            return Some((entry, FontText::Embedded(Box::new(Metrics::from_dict(doc, fd)))));
+        }
         Some(b"Type0") => return Some((entry, FontText::Unicode(UnicodeCMap::from_name(fd.name(b"Encoding")?)?))),
         _ => return None,
     }

@@ -632,6 +632,7 @@ pub use text::{
     text_lines,
 };
 pub mod added;
+mod added_inter;
 pub use added::{
     Added, AddedImage, AddedText, Align, Content, Family, MarkerScan, add_content, delete_content, first_undrawable, list_added, scan_markers,
     update_content,

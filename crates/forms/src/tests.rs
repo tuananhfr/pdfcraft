@@ -106,6 +106,93 @@ fn appearance_text(doc: &Document, w: &Widget, font_name: &[u8]) -> (Object, Vec
 }
 
 #[test]
+fn vietnamese_field_registers_font_in_da_dr_and_appearance_and_roundtrips() {
+    let text = "Nguyễn Thị Hương – Hà Nội";
+    let mut doc = fixture();
+    set_value(&mut doc, "name", &FieldValue::Text(text.into())).unwrap();
+    let doc = reopen(&doc);
+    let all = fields(&doc);
+    let f = field(&all, "name");
+    assert_eq!(f.value, [text]);
+    let da = appearance::parse_da(&f.da);
+    assert!(da.font.starts_with("PCInter"));
+    let resources = doc.dict(acroform(&doc).unwrap().get(b"DR").unwrap()).unwrap();
+    let fonts = doc.dict(resources.get(b"Font").unwrap()).unwrap();
+    let registered = fonts.get(da.font.as_bytes()).unwrap();
+    let registered_dict = doc.dict(registered).unwrap();
+    assert_eq!(registered_dict.name(b"Encoding"), Some(b"Identity-H".as_slice()));
+    let (font, shown) = appearance_text(&doc, &f.widgets[0], da.font.as_bytes());
+    assert_eq!(font.as_dict().unwrap(), &registered_dict);
+    let metrics = pdfcraft_fonts::pdf::Metrics::from_dict(&doc, font.as_dict().unwrap());
+    assert_eq!(shown.iter().map(|bytes| metrics.decode(bytes)).collect::<String>(), text);
+    assert!(ap(&doc, &f.widgets[0]).contains(&format!("/{} ", da.font)));
+    let field_dict = doc.get(f.obj);
+    let value = field_dict.as_dict().unwrap().get(b"V").unwrap().as_string().unwrap();
+    assert!(value.bytes.starts_with(&[0xfe, 0xff]));
+    assert_eq!(value.to_text(), text);
+    assert_eq!(pdfcraft_fonts::undrawn_mark(doc.get(f.widgets[0].obj).as_dict().unwrap()), None);
+    assert!(!need_appearances(&doc));
+}
+
+#[test]
+fn vietnamese_multiline_and_comb_appearances_use_the_embedded_font() {
+    for (name, text, expected) in [("notes", "Nguyễn\nHương", "NguyễnHương"), ("zip", "HàNội", "HàNội")] {
+        let mut doc = fixture();
+        set_value(&mut doc, name, &FieldValue::Text(text.into())).unwrap();
+        let doc = reopen(&doc);
+        let all = fields(&doc);
+        let f = field(&all, name);
+        let da = appearance::parse_da(&f.da);
+        let (font, shown) = appearance_text(&doc, &f.widgets[0], da.font.as_bytes());
+        let metrics = pdfcraft_fonts::pdf::Metrics::from_dict(&doc, font.as_dict().unwrap());
+        assert_eq!(shown.iter().map(|bytes| metrics.decode(bytes)).collect::<String>(), expected);
+        assert_eq!(f.value, [text]);
+    }
+}
+
+#[test]
+fn inter_field_reuses_its_subset_and_restores_winansi_default_appearance() {
+    let mut doc = fixture();
+    let original = field(&fields(&doc), "name").da.clone();
+    set_value(&mut doc, "name", &FieldValue::Text("Nguyễn Thị Hương – Hà Nội".into())).unwrap();
+    let resources = acroform(&doc).unwrap().get(b"DR").cloned();
+    redraw_field(&mut doc, "name").unwrap();
+    assert_eq!(acroform(&doc).unwrap().get(b"DR"), resources.as_ref());
+    set_value(&mut doc, "name", &FieldValue::Text("Hello".into())).unwrap();
+    let all = fields(&doc);
+    let f = field(&all, "name");
+    assert_eq!(f.da, original);
+    let (font, shown) = appearance_text(&doc, &f.widgets[0], b"Helv");
+    assert_eq!(font.as_dict().unwrap().name(b"BaseFont"), Some(b"Helvetica".as_slice()));
+    assert_eq!(shown, [b"Hello".to_vec()]);
+}
+
+#[test]
+fn winansi_field_appearance_remains_byte_for_byte_and_thai_stays_marked() {
+    for text in ["Hello", "Café — 5€"] {
+        let mut doc = fixture();
+        let all = fields(&doc);
+        let f = field(&all, "name");
+        let before = appearance::field_appearance_drawn(&doc, f, &f.widgets[0], &[text.into()], true).0;
+        let resources = acroform(&doc).unwrap().get(b"DR").cloned();
+        set_value(&mut doc, "name", &FieldValue::Text(text.into())).unwrap();
+        let all = fields(&doc);
+        let widget = doc.get(field(&all, "name").widgets[0].obj);
+        let ap = doc.dict(widget.as_dict().unwrap().get(b"AP").unwrap()).unwrap();
+        let stream = doc.resolve(ap.get(b"N").unwrap());
+        assert_eq!(stream.as_ref(), &Object::Stream(before));
+        assert_eq!(acroform(&doc).unwrap().get(b"DR"), resources.as_ref());
+    }
+    let mut doc = fixture();
+    set_value(&mut doc, "name", &FieldValue::Text("ก".into())).unwrap();
+    let all = fields(&doc);
+    let f = field(&all, "name");
+    assert_eq!(f.value, ["ก"]);
+    assert_eq!(pdfcraft_fonts::undrawn_mark(doc.get(f.widgets[0].obj).as_dict().unwrap()), Some('ก'));
+    assert!(need_appearances(&doc));
+}
+
+#[test]
 fn the_field_tree_is_read_with_inheritance() {
     let doc = fixture();
     assert_combined_matches_legacy(&doc, 0);
