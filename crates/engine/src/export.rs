@@ -8,6 +8,10 @@ use pdfcraft_render::{PageRenderer, RenderRequest, RequestKind};
 
 use crate::Document;
 
+#[path = "export_losses.rs"]
+mod losses;
+pub use losses::{LossItem, export_losses};
+
 /// Renders and extracts pages of one document state.
 pub struct Exporter {
     renderer: PageRenderer,

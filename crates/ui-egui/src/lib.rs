@@ -50,6 +50,7 @@ mod credits;
 mod crop;
 mod drag_pointer;
 mod export_ui;
+mod office_export;
 mod js_ui;
 mod marks_ui;
 mod measure_ui;
@@ -637,6 +638,7 @@ pub struct PdfCraftApp {
     pub close_request: Option<CloseRequest>,
     /// A save held because it would invalidate a signature (see `cert_guard`).
     pub held_save: Option<HeldSave>,
+    pending_word_export: Option<office_export::PendingWordExport>,
     /// Save to this path instead of asking (tests and automation).
     pub save_override: Option<String>,
     /// Document Properties ▸ Description fields being edited: (document, Title/Author/Subject/Keywords).
@@ -979,6 +981,7 @@ impl PdfCraftApp {
             web_save: None,
             close_request: None,
             held_save: None,
+            pending_word_export: None,
             save_override: None,
             props_draft: None,
             view_draft: None,
@@ -1870,6 +1873,7 @@ impl PdfCraftApp {
             || self.close_request.is_some()
             || self.save_all.is_some()
             || self.held_save.is_some()
+            || self.pending_word_export.is_some()
             || self.password_prompt.is_some()
             || self.unlock_prompt.is_some()
             || self.pending_link.is_some()

@@ -2368,3 +2368,10 @@ animation effects	Off	Désactivés
 	Saved	Enregistré
 	Save “{name}”	Enregistrer «{name}»
 	The browser won't allow reading the clipboard — use Ctrl+V	Le navigateur ne permet pas de lire le presse-papiers — utilisez Ctrl+V
+	Exporting to Word will lose some content	L’exportation vers Word entraînera la perte de certains contenus
+	Form fields will not be kept: {n}	Champs de formulaire qui ne seront pas conservés : {n}
+	Annotations and comments will not be kept: {n}	Annotations et commentaires qui ne seront pas conservés : {n}
+	Digital signatures and signature fields will not be kept.	Les signatures numériques et les champs de signature ne seront pas conservés.
+	PDF encryption and permissions will not be kept.	Le chiffrement et les autorisations du PDF ne seront pas conservés.
+	The layout may change.	La mise en page peut changer.
+	Export anyway	Exporter quand même

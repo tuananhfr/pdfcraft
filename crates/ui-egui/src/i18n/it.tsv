@@ -2377,3 +2377,10 @@ animation effects	Off	Disattivati
 	Saved	Salvato
 	Save “{name}”	Salva “{name}”
 	The browser won't allow reading the clipboard — use Ctrl+V	Il browser non consente di leggere gli appunti — usa Ctrl+V
+	Exporting to Word will lose some content	L’esportazione in Word perderà parte del contenuto
+	Form fields will not be kept: {n}	Campi modulo che non verranno mantenuti: {n}
+	Annotations and comments will not be kept: {n}	Annotazioni e commenti che non verranno mantenuti: {n}
+	Digital signatures and signature fields will not be kept.	Le firme digitali e i campi firma non verranno mantenuti.
+	PDF encryption and permissions will not be kept.	La crittografia e le autorizzazioni del PDF non verranno mantenute.
+	The layout may change.	L’impaginazione potrebbe cambiare.
+	Export anyway	Esporta comunque

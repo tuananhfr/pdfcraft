@@ -2367,3 +2367,10 @@ animation effects	Off	Ki
 	Saved	Mentve
 	Save “{name}”	„{name}” mentése
 	The browser won't allow reading the clipboard — use Ctrl+V	A böngésző nem engedélyezi a vágólap olvasását — használja a Ctrl+V billentyűkombinációt
+	Exporting to Word will lose some content	A Word-exportálás során egyes tartalmak elvesznek
+	Form fields will not be kept: {n}	Az űrlapmezők nem maradnak meg: {n}
+	Annotations and comments will not be kept: {n}	A jelölések és megjegyzések nem maradnak meg: {n}
+	Digital signatures and signature fields will not be kept.	A digitális aláírások és aláírásmezők nem maradnak meg.
+	PDF encryption and permissions will not be kept.	A PDF titkosítása és jogosultságai nem maradnak meg.
+	The layout may change.	Az elrendezés megváltozhat.
+	Export anyway	Exportálás mindenképpen

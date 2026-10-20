@@ -2612,3 +2612,10 @@ key	Space	Tarpas
 	Saved	Įrašyta
 	Save “{name}”	Įrašyti „{name}“
 	The browser won't allow reading the clipboard — use Ctrl+V	Naršyklė neleidžia skaityti iš iškarpinės — naudokite Ctrl+V
+	Exporting to Word will lose some content	Eksportuojant į Word bus prarasta dalis turinio
+	Form fields will not be kept: {n}	Formos laukai nebus išsaugoti: {n}
+	Annotations and comments will not be kept: {n}	Anotacijos ir komentarai nebus išsaugoti: {n}
+	Digital signatures and signature fields will not be kept.	Skaitmeniniai parašai ir parašo laukai nebus išsaugoti.
+	PDF encryption and permissions will not be kept.	PDF šifravimas ir leidimai nebus išsaugoti.
+	The layout may change.	Maketas gali pasikeisti.
+	Export anyway	Vis tiek eksportuoti

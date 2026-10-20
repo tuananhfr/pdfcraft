@@ -2373,3 +2373,10 @@ animation effects	Off	Izklopljeni
 	Saved	Shranjeno
 	Save “{name}”	Shrani „{name}“
 	The browser won't allow reading the clipboard — use Ctrl+V	Brskalnik ne dovoli branja odložišča — uporabite Ctrl+V
+	Exporting to Word will lose some content	Pri izvozu v Word bo nekaj vsebine izgubljene
+	Form fields will not be kept: {n}	Polja obrazca ne bodo ohranjena: {n}
+	Annotations and comments will not be kept: {n}	Pripombe in komentarji ne bodo ohranjeni: {n}
+	Digital signatures and signature fields will not be kept.	Digitalni podpisi in podpisna polja ne bodo ohranjeni.
+	PDF encryption and permissions will not be kept.	Šifriranje in dovoljenja PDF ne bodo ohranjena.
+	The layout may change.	Postavitev se lahko spremeni.
+	Export anyway	Vseeno izvozi

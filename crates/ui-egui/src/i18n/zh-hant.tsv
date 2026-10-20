@@ -2223,3 +2223,10 @@ animation effects	Off	關
 	Move tag earlier	將標記前移
 	Move tag later	將標記後移
 	The browser won't allow reading the clipboard — use Ctrl+V	瀏覽器不允許讀取剪貼簿 — 請使用 Ctrl+V
+	Exporting to Word will lose some content	匯出為 Word 將遺失部分內容
+	Form fields will not be kept: {n}	無法保留的表單欄位：{n}
+	Annotations and comments will not be kept: {n}	無法保留的註解和評論：{n}
+	Digital signatures and signature fields will not be kept.	數位簽章和簽章欄位將不會保留。
+	PDF encryption and permissions will not be kept.	PDF 加密和權限將不會保留。
+	The layout may change.	版面配置可能變更。
+	Export anyway	仍要匯出

@@ -2366,3 +2366,10 @@ animation effects	Off	Өшірулі
 	Saved	Сақталды
 	Save “{name}”	«{name}» сақтау
 	The browser won't allow reading the clipboard — use Ctrl+V	Браузер алмасу буферін оқуға рұқсат бермейді — Ctrl+V пернелерін пайдаланыңыз
+	Exporting to Word will lose some content	Word пішіміне экспорттағанда кейбір мазмұн жоғалады
+	Form fields will not be kept: {n}	Сақталмайтын пішін өрістері: {n}
+	Annotations and comments will not be kept: {n}	Сақталмайтын аңдатпалар мен пікірлер: {n}
+	Digital signatures and signature fields will not be kept.	Цифрлық қолтаңбалар мен қолтаңба өрістері сақталмайды.
+	PDF encryption and permissions will not be kept.	PDF шифрлауы мен рұқсаттары сақталмайды.
+	The layout may change.	Бет орналасуы өзгеруі мүмкін.
+	Export anyway	Сонда да экспорттау

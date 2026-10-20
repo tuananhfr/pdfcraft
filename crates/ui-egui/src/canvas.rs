@@ -2390,6 +2390,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     // A dialog, save prompt or palette covers the page. Hover tips are drawn above those
     // windows, so a comment under the pointer would otherwise float over the dialog.
     let page_covered = app.dialog.is_some()
+        || app.pending_word_export.is_some()
         || app.close_request.is_some()
         || app.save_all.is_some()
         || app.palette_open

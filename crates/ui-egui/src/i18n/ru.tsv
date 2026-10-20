@@ -2281,3 +2281,10 @@ animation effects	Off	Выкл
 	Saved	Сохранено
 	Save “{name}”	Сохранить «{name}»
 	The browser won't allow reading the clipboard — use Ctrl+V	Браузер не разрешает чтение буфера обмена — используйте Ctrl+V
+	Exporting to Word will lose some content	При экспорте в Word часть содержимого будет потеряна
+	Form fields will not be kept: {n}	Поля формы не будут сохранены: {n}
+	Annotations and comments will not be kept: {n}	Аннотации и комментарии не будут сохранены: {n}
+	Digital signatures and signature fields will not be kept.	Цифровые подписи и поля подписи не будут сохранены.
+	PDF encryption and permissions will not be kept.	Шифрование и разрешения PDF не будут сохранены.
+	The layout may change.	Макет может измениться.
+	Export anyway	Всё равно экспортировать

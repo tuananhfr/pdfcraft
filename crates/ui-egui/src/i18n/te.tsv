@@ -2262,3 +2262,10 @@ animation effects	Off	ఆఫ్
 	Move tag earlier	ట్యాగ్‌ను ముందుకు తరలించు
 	Move tag later	ట్యాగ్‌ను వెనుకకు తరలించు
 	The browser won't allow reading the clipboard — use Ctrl+V	క్లిప్‌బోర్డ్‌ను చదవడానికి బ్రౌజర్ అనుమతించడం లేదు — Ctrl+V ఉపయోగించండి
+	Exporting to Word will lose some content	Wordకి ఎగుమతి చేస్తే కొంత కంటెంట్ పోతుంది
+	Form fields will not be kept: {n}	ఉంచబడని ఫారమ్ ఫీల్డ్‌లు: {n}
+	Annotations and comments will not be kept: {n}	ఉంచబడని ఉల్లేఖనలు మరియు వ్యాఖ్యలు: {n}
+	Digital signatures and signature fields will not be kept.	డిజిటల్ సంతకాలు మరియు సంతకం ఫీల్డ్‌లు ఉంచబడవు.
+	PDF encryption and permissions will not be kept.	PDF గుప్తీకరణ మరియు అనుమతులు ఉంచబడవు.
+	The layout may change.	లేఅవుట్ మారవచ్చు.
+	Export anyway	అయినా ఎగుమతి చేయి

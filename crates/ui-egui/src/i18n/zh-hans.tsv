@@ -2332,3 +2332,10 @@ animation effects	Off	关
 	Saved	已保存
 	Save “{name}”	保存“{name}”
 	The browser won't allow reading the clipboard — use Ctrl+V	浏览器不允许读取剪贴板 — 请使用 Ctrl+V
+	Exporting to Word will lose some content	导出为 Word 将丢失部分内容
+	Form fields will not be kept: {n}	无法保留的表单字段：{n}
+	Annotations and comments will not be kept: {n}	无法保留的批注和评论：{n}
+	Digital signatures and signature fields will not be kept.	数字签名和签名字段将不会保留。
+	PDF encryption and permissions will not be kept.	PDF 加密和权限将不会保留。
+	The layout may change.	布局可能发生变化。
+	Export anyway	仍然导出

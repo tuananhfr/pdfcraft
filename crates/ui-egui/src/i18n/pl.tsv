@@ -2329,3 +2329,10 @@ animation effects	Off	Wyłączone
 	Move tag earlier	Przenieś znacznik wcześniej
 	Move tag later	Przenieś znacznik później
 	The browser won't allow reading the clipboard — use Ctrl+V	Przeglądarka nie pozwala na odczyt schowka — użyj Ctrl+V
+	Exporting to Word will lose some content	Eksport do Worda spowoduje utratę części zawartości
+	Form fields will not be kept: {n}	Pola formularza nie zostaną zachowane: {n}
+	Annotations and comments will not be kept: {n}	Adnotacje i komentarze nie zostaną zachowane: {n}
+	Digital signatures and signature fields will not be kept.	Podpisy cyfrowe i pola podpisu nie zostaną zachowane.
+	PDF encryption and permissions will not be kept.	Szyfrowanie i uprawnienia PDF nie zostaną zachowane.
+	The layout may change.	Układ może się zmienić.
+	Export anyway	Eksportuj mimo to

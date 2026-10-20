@@ -2369,3 +2369,10 @@ animation effects	Off	Aus
 	Saved	Gespeichert
 	Save “{name}”	„{name}“ speichern
 	The browser won't allow reading the clipboard — use Ctrl+V	Der Browser erlaubt das Lesen der Zwischenablage nicht — verwenden Sie Ctrl+V
+	Exporting to Word will lose some content	Beim Word-Export gehen einige Inhalte verloren
+	Form fields will not be kept: {n}	Formularfelder werden nicht beibehalten: {n}
+	Annotations and comments will not be kept: {n}	Anmerkungen und Kommentare werden nicht beibehalten: {n}
+	Digital signatures and signature fields will not be kept.	Digitale Signaturen und Signaturfelder werden nicht beibehalten.
+	PDF encryption and permissions will not be kept.	PDF-Verschlüsselung und Berechtigungen werden nicht beibehalten.
+	The layout may change.	Das Layout kann sich ändern.
+	Export anyway	Trotzdem exportieren

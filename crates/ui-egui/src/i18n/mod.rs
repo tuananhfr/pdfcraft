@@ -3126,6 +3126,30 @@ en-US"
         assert!(missing.is_empty(), "untranslated Vietnamese UI literals: {missing:#?}");
     }
 
+    #[test]
+    fn word_export_warning_is_translated_in_all_supported_languages() {
+        for language in LANGUAGES.iter().filter(|language| !language.source.is_empty()) {
+            let lang = Lang::from_code(language.code).expect("registered language");
+            for label in [
+                "Exporting to Word will lose some content",
+                "Form fields will not be kept: {n}",
+                "Annotations and comments will not be kept: {n}",
+                "Digital signatures and signature fields will not be kept.",
+                "PDF encryption and permissions will not be kept.",
+                "The layout may change.",
+                "Export anyway",
+                "Cancel",
+            ] {
+                assert!(has(lang, label), "{} lacks Word export warning label: {label}", language.code);
+                assert_ne!(tr(lang, label), label, "{} falls back to English for {label}", language.code);
+            }
+        }
+        let vi = Lang::from_code("vi").expect("vi registered");
+        assert_eq!(tr(vi, "Exporting to Word will lose some content"), "Xuất Word sẽ mất một số nội dung");
+        assert_eq!(tr(vi, "Export anyway"), "Vẫn xuất");
+        assert_eq!(tr(vi, "Cancel"), "Hủy");
+    }
+
     /// Every key any other bundled catalog carries, so dynamic dialog labels can't fall back either.
     #[test]
     fn vietnamese_covers_bundled_catalog_keys() {

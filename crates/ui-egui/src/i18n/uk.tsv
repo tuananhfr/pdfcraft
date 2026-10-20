@@ -2390,3 +2390,10 @@ animation effects	Off	Вимкнено
 	Saved	Збережено
 	Save “{name}”	Зберегти «{name}»
 	The browser won't allow reading the clipboard — use Ctrl+V	Браузер не дозволяє читати буфер обміну — скористайтеся Ctrl+V
+	Exporting to Word will lose some content	Під час експорту у Word частину вмісту буде втрачено
+	Form fields will not be kept: {n}	Поля форми не буде збережено: {n}
+	Annotations and comments will not be kept: {n}	Анотації та коментарі не буде збережено: {n}
+	Digital signatures and signature fields will not be kept.	Цифрові підписи та поля підпису не буде збережено.
+	PDF encryption and permissions will not be kept.	Шифрування та дозволи PDF не буде збережено.
+	The layout may change.	Макет може змінитися.
+	Export anyway	Усе одно експортувати

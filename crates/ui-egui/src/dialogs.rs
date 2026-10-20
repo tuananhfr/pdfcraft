@@ -20,6 +20,7 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
     password(app, ctx);
     save_prompt(app, ctx);
     crate::cert_guard::show(app, ctx);
+    crate::office_export::show(app, ctx);
     crate::web_save_prompt::show(app, ctx);
     link_prompt(app, ctx);
     remote_link_prompt(app, ctx);

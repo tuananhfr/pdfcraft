@@ -2368,3 +2368,10 @@ animation effects	Off	オフ
 	Saved	保存済み
 	Save “{name}”	「{name}」を保存
 	The browser won't allow reading the clipboard — use Ctrl+V	ブラウザーがクリップボードの読み取りを許可していません — Ctrl+V を使用してください
+	Exporting to Word will lose some content	Word に書き出すと一部の内容が失われます
+	Form fields will not be kept: {n}	保持されないフォームフィールド: {n}
+	Annotations and comments will not be kept: {n}	保持されない注釈とコメント: {n}
+	Digital signatures and signature fields will not be kept.	デジタル署名と署名フィールドは保持されません。
+	PDF encryption and permissions will not be kept.	PDF の暗号化と権限は保持されません。
+	The layout may change.	レイアウトが変わる場合があります。
+	Export anyway	このまま書き出す

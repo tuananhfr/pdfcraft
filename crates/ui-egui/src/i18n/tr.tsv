@@ -2364,3 +2364,10 @@ animation effects	Off	Kapalı
 	Saved	Kaydedildi
 	Save “{name}”	“{name}” dosyasını kaydet
 	The browser won't allow reading the clipboard — use Ctrl+V	Tarayıcı panonun okunmasına izin vermiyor — Ctrl+V kullanın
+	Exporting to Word will lose some content	Word'e aktarırken bazı içerikler kaybolacak
+	Form fields will not be kept: {n}	Korunmayacak form alanları: {n}
+	Annotations and comments will not be kept: {n}	Korunmayacak açıklamalar ve yorumlar: {n}
+	Digital signatures and signature fields will not be kept.	Dijital imzalar ve imza alanları korunmayacak.
+	PDF encryption and permissions will not be kept.	PDF şifrelemesi ve izinleri korunmayacak.
+	The layout may change.	Sayfa düzeni değişebilir.
+	Export anyway	Yine de dışa aktar

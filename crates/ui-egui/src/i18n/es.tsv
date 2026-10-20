@@ -2479,3 +2479,10 @@ animation effects	Off	Desactivados
 	Move tag earlier	Mover etiqueta antes
 	Move tag later	Mover etiqueta después
 	The browser won't allow reading the clipboard — use Ctrl+V	El navegador no permite leer el portapapeles — usa Ctrl+V
+	Exporting to Word will lose some content	Al exportar a Word se perderá parte del contenido
+	Form fields will not be kept: {n}	Campos de formulario que no se conservarán: {n}
+	Annotations and comments will not be kept: {n}	Anotaciones y comentarios que no se conservarán: {n}
+	Digital signatures and signature fields will not be kept.	No se conservarán las firmas digitales ni los campos de firma.
+	PDF encryption and permissions will not be kept.	No se conservarán el cifrado ni los permisos del PDF.
+	The layout may change.	El diseño puede cambiar.
+	Export anyway	Exportar de todos modos

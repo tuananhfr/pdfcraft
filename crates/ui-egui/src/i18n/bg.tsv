@@ -2331,3 +2331,10 @@ animation effects	Off	Изключени
 	Saved	Записан
 	Save “{name}”	Запиши „{name}“
 	The browser won't allow reading the clipboard — use Ctrl+V	Браузърът не позволява четене от клипборда — използвайте Ctrl+V
+	Exporting to Word will lose some content	При експортиране в Word част от съдържанието ще се загуби
+	Form fields will not be kept: {n}	Полетата на формуляра няма да се запазят: {n}
+	Annotations and comments will not be kept: {n}	Анотациите и коментарите няма да се запазят: {n}
+	Digital signatures and signature fields will not be kept.	Цифровите подписи и полетата за подпис няма да се запазят.
+	PDF encryption and permissions will not be kept.	Шифроването и разрешенията на PDF няма да се запазят.
+	The layout may change.	Оформлението може да се промени.
+	Export anyway	Експортиране въпреки това

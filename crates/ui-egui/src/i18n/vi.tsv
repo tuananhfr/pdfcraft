@@ -2615,3 +2615,10 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	Certified by {by}. Only form filling, comments and signing are allowed.	Được chứng nhận bởi {by}. Chỉ cho phép điền biểu mẫu, chú thích và ký.
 	Saved	Đã lưu
 	Save “{name}”	Lưu “{name}”
+	Exporting to Word will lose some content	Xuất Word sẽ mất một số nội dung
+	Form fields will not be kept: {n}	Trường biểu mẫu sẽ không được giữ lại: {n}
+	Annotations and comments will not be kept: {n}	Chú thích và nhận xét sẽ không được giữ lại: {n}
+	Digital signatures and signature fields will not be kept.	Chữ ký số và trường chữ ký sẽ không được giữ lại.
+	PDF encryption and permissions will not be kept.	Mã hóa và quyền truy cập của PDF sẽ không được giữ lại.
+	The layout may change.	Bố cục có thể thay đổi.
+	Export anyway	Vẫn xuất

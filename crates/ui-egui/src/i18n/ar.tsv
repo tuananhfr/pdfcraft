@@ -2389,3 +2389,10 @@ animation effects	Off	معطّلة
 	Saved	تم الحفظ
 	Save “{name}”	حفظ «{name}»
 	The browser won't allow reading the clipboard — use Ctrl+V	لا يسمح المتصفح بقراءة الحافظة — استخدم Ctrl+V
+	Exporting to Word will lose some content	سيؤدي التصدير إلى Word إلى فقدان بعض المحتوى
+	Form fields will not be kept: {n}	حقول النموذج التي لن تُحفظ: {n}
+	Annotations and comments will not be kept: {n}	التعليقات التوضيحية والملاحظات التي لن تُحفظ: {n}
+	Digital signatures and signature fields will not be kept.	لن تُحفظ التوقيعات الرقمية وحقول التوقيع.
+	PDF encryption and permissions will not be kept.	لن يُحفظ تشفير PDF وأذوناته.
+	The layout may change.	قد يتغير تخطيط الصفحات.
+	Export anyway	تصدير على أي حال

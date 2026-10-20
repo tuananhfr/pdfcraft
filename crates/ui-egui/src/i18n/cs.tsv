@@ -2442,3 +2442,10 @@ animation effects	Off	Vypnuto
 	Saved	Uloženo
 	Save “{name}”	Uložit „{name}“
 	The browser won't allow reading the clipboard — use Ctrl+V	Prohlížeč neumožňuje čtení ze schránky — použijte Ctrl+V
+	Exporting to Word will lose some content	Při exportu do Wordu se ztratí část obsahu
+	Form fields will not be kept: {n}	Pole formuláře nebudou zachována: {n}
+	Annotations and comments will not be kept: {n}	Anotace a komentáře nebudou zachovány: {n}
+	Digital signatures and signature fields will not be kept.	Digitální podpisy a podpisová pole nebudou zachovány.
+	PDF encryption and permissions will not be kept.	Šifrování a oprávnění PDF nebudou zachována.
+	The layout may change.	Rozvržení se může změnit.
+	Export anyway	Přesto exportovat

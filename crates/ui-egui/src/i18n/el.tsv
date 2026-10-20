@@ -2359,3 +2359,10 @@ animation effects	Off	Ανενεργά
 	Move tag earlier	Μετακίνηση ετικέτας νωρίτερα
 	Move tag later	Μετακίνηση ετικέτας αργότερα
 	The browser won't allow reading the clipboard — use Ctrl+V	Το πρόγραμμα περιήγησης δεν επιτρέπει την ανάγνωση του προχείρου — χρησιμοποιήστε Ctrl+V
+	Exporting to Word will lose some content	Η εξαγωγή σε Word θα χάσει μέρος του περιεχομένου
+	Form fields will not be kept: {n}	Πεδία φόρμας που δεν θα διατηρηθούν: {n}
+	Annotations and comments will not be kept: {n}	Επισημάνσεις και σχόλια που δεν θα διατηρηθούν: {n}
+	Digital signatures and signature fields will not be kept.	Οι ψηφιακές υπογραφές και τα πεδία υπογραφής δεν θα διατηρηθούν.
+	PDF encryption and permissions will not be kept.	Η κρυπτογράφηση και τα δικαιώματα του PDF δεν θα διατηρηθούν.
+	The layout may change.	Η διάταξη ενδέχεται να αλλάξει.
+	Export anyway	Εξαγωγή ούτως ή άλλως
