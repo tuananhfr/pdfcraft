@@ -67,9 +67,17 @@ pub struct OcrRun {
     pub progress: Arc<Mutex<OcrProgress>>,
 }
 
+pub(crate) fn unavailable_message(web: bool) -> &'static str {
+    if web {
+        "OCR is not available on the web. Please use the desktop app."
+    } else {
+        "Text recognition isn't installed: its model files are missing. Reinstall PdfCraft, or set PDFCRAFT_MODELS to the folder that holds them."
+    }
+}
+
 pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> (bool, bool) {
     let pages = app.active_ids().and_then(|(_, id)| app.session.get(id)).map_or(1, |d| d.info.pages.len().max(1));
-    let available = pdfcraft_engine::ocr::available();
+    let available = !cfg!(target_arch = "wasm32") && pdfcraft_engine::ocr::available();
     let d = &mut app.ocr_draft;
     d.to = d.to.clamp(1, pages);
     d.from = d.from.clamp(1, d.to);
@@ -124,11 +132,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> (boo
             .on_hover_text(tl!("Pictures on those pages are recognized too; words already in the page's text are not added again"));
     });
     if !available {
-        ui.label(
-            egui::RichText::new(tl!("Text recognition isn't installed: its model files are missing. Reinstall PdfCraft, or set PDFCRAFT_MODELS to the folder that holds them."))
-                .small()
-                .color(t.text_muted),
-        );
+        ui.label(egui::RichText::new(tl!(unavailable_message(cfg!(target_arch = "wasm32")))).small().color(t.text_muted));
         ui.add_space(6.0);
     }
     ui.add_space(6.0);
@@ -149,6 +153,10 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> (boo
 impl PdfCraftApp {
     /// Recognize text on the pages chosen in the dialog, in the background.
     pub fn start_ocr(&mut self) {
+        if cfg!(target_arch = "wasm32") {
+            self.notify_tr(unavailable_message(true));
+            return;
+        }
         let Some((vi, id)) = self.active_ids() else { return };
         if self.ocr_run.is_some() {
             self.notify_tr("Text recognition is already running");
@@ -196,6 +204,10 @@ impl PdfCraftApp {
     /// Recognize text in each file, writing the searchable copies into a folder the user picks
     /// (the export folder override in tests), under the same names.
     pub fn ocr_files(&mut self, files: Vec<(String, Vec<u8>)>) {
+        if cfg!(target_arch = "wasm32") {
+            self.notify_tr(unavailable_message(true));
+            return;
+        }
         if self.ocr_batch.is_some() {
             self.notify_tr("Text recognition is already running");
             return;
@@ -365,5 +377,30 @@ impl PdfCraftApp {
             }
             Err(e) => self.notify_error(e),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::unavailable_message;
+
+    #[test]
+    fn web_ocr_notice_is_localized_and_does_not_mention_models() {
+        let message = unavailable_message(true);
+        let vi = crate::i18n::Lang::from_code("vi").expect("Vietnamese catalog");
+        assert_eq!(crate::i18n::tr(vi, message), "OCR chưa có trên bản web. Hãy dùng bản máy tính.");
+        assert!(!message.contains("PDFCRAFT_MODELS"));
+        for language in crate::i18n::LANGUAGES.iter().filter(|language| !language.source.is_empty()) {
+            let lang = crate::i18n::Lang::from_code(language.code).expect("registered language");
+            assert_ne!(crate::i18n::tr(lang, message), message, "{} lacks the web OCR notice", language.code);
+        }
+    }
+
+    #[test]
+    fn desktop_ocr_notice_keeps_model_installation_guidance() {
+        assert_eq!(
+            unavailable_message(false),
+            "Text recognition isn't installed: its model files are missing. Reinstall PdfCraft, or set PDFCRAFT_MODELS to the folder that holds them."
+        );
     }
 }

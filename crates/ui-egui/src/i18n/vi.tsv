@@ -2622,3 +2622,4 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	PDF encryption and permissions will not be kept.	Mã hóa và quyền truy cập của PDF sẽ không được giữ lại.
 	The layout may change.	Bố cục có thể thay đổi.
 	Export anyway	Vẫn xuất
+	OCR is not available on the web. Please use the desktop app.	OCR chưa có trên bản web. Hãy dùng bản máy tính.

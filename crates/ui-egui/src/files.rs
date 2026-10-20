@@ -259,6 +259,10 @@ impl PdfCraftApp {
 
     /// Scan & OCR ▸ Recognize text ▸ In multiple files: ask for the PDFs.
     pub fn ocr_files_dialog(&mut self) {
+        if cfg!(target_arch = "wasm32") {
+            self.notify_tr(crate::ocr_ui::unavailable_message(true));
+            return;
+        }
         self.pick_files(FilePurpose::Ocr, true);
     }
 

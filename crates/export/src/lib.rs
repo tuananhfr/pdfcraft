@@ -9,7 +9,10 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 mod pptx;
+mod word_run;
 mod zip;
+
+use word_run::run_xml;
 
 pub use pptx::pptx;
 pub use zip::Zip;
@@ -18,6 +21,10 @@ pub use zip::Zip;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Block {
     pub text: String,
+    /// Visual rows from the existing PDF grouping, used by Word instead of reflowed text.
+    pub visual_text: Option<String>,
+    /// Source PDF font name, including any subset prefix or PostScript style suffix.
+    pub font: Option<String>,
     /// [x0, y0, x1, y1] on the displayed page in points (y up).
     pub rect: [f64; 4],
     /// Font size in points.
@@ -56,6 +63,10 @@ pub struct Page {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Cell {
     pub text: String,
+    /// Visual rows from the existing PDF grouping, used by Word instead of reflowed text.
+    pub visual_text: Option<String>,
+    /// Source PDF font name, including any subset prefix or PostScript style suffix.
+    pub font: Option<String>,
     pub size: f64,
     pub bold: bool,
     pub italic: bool,
@@ -212,9 +223,23 @@ pub(crate) fn tables(blocks: &[Block]) -> (Vec<Table>, Vec<bool>) {
                 let b = &blocks[bi];
                 let Some(slot) = edges.iter().position(|e| (*e - b.rect[0]).abs() <= COL_TOL) else { continue };
                 let span = edges[slot + 1..].iter().filter(|e| **e > b.rect[0] + COL_TOL && **e < b.rect[2] - COL_TOL).count() + 1;
-                let cell = Cell { text: b.text.trim().to_string(), size: b.size, bold: b.bold, italic: b.italic, color: b.color, span };
+                let cell = Cell {
+                    text: b.text.trim().to_string(),
+                    visual_text: b.visual_text.as_ref().map(|text| text.trim().to_string()),
+                    font: b.font.clone(),
+                    size: b.size,
+                    bold: b.bold,
+                    italic: b.italic,
+                    color: b.color,
+                    span,
+                };
                 match &mut slots[slot] {
                     Some(c) => {
+                        if c.visual_text.is_some() || cell.visual_text.is_some() {
+                            let text = c.visual_text.get_or_insert_with(|| c.text.clone());
+                            text.push(' ');
+                            text.push_str(cell.visual_text.as_deref().unwrap_or(&cell.text));
+                        }
                         c.text.push(' ');
                         c.text.push_str(&cell.text);
                     }
@@ -233,7 +258,16 @@ pub(crate) fn tables(blocks: &[Block]) -> (Vec<Table>, Vec<bool>) {
                     }
                     None => {
                         column += 1;
-                        materialized.push(Cell { text: String::new(), size: 11.0, bold: false, italic: false, color: [0.0; 3], span: 1 });
+                        materialized.push(Cell {
+                            text: String::new(),
+                            visual_text: None,
+                            font: None,
+                            size: 11.0,
+                            bold: false,
+                            italic: false,
+                            color: [0.0; 3],
+                            span: 1,
+                        });
                     }
                 }
             }
@@ -423,23 +457,6 @@ pub(crate) fn hex(c: [f64; 3]) -> Option<String> {
     (r | g | b != 0).then(|| format!("{r:02X}{g:02X}{b:02X}"))
 }
 
-/// A formatted text run (shared by paragraphs and table cells).
-fn run_xml(text: &str, size: f64, bold: bool, italic: bool, color: [f64; 3]) -> String {
-    let mut rpr = String::new();
-    if bold {
-        rpr.push_str("<w:b/>");
-    }
-    if italic {
-        rpr.push_str("<w:i/>");
-    }
-    if let Some(h) = hex(color) {
-        rpr.push_str(&format!("<w:color w:val=\"{h}\"/>"));
-    }
-    let half_points = if size.is_finite() { (size * 2.0).round().clamp(2.0, 3276.0) as i64 } else { 24 };
-    rpr.push_str(&format!("<w:sz w:val=\"{half_points}\"/>"));
-    format!("<w:r><w:rPr>{rpr}</w:rPr><w:t xml:space=\"preserve\">{}</w:t></w:r>", esc(text))
-}
-
 /// One Word table: explicit absent borders (alignment alone cannot prove PDF rules), a grid sized
 /// from the detected column edges, `gridSpan` for spanning cells, empty cells for holes.
 fn docx_table(t: &Table) -> String {
@@ -462,7 +479,7 @@ fn docx_table(t: &Table) -> String {
             let w: i64 = widths.iter().take(c.span.min(widths.len())).sum();
             s.push_str(&format!(
                 "<w:tc><w:tcPr><w:tcW w:w=\"{w}\" w:type=\"dxa\"/>{span}</w:tcPr><w:p>{}</w:p></w:tc>",
-                run_xml(&c.text, c.size, c.bold, c.italic, c.color)
+                run_xml(c.visual_text.as_deref().unwrap_or(&c.text), c.size, c.bold, c.italic, c.color, c.font.as_deref())
             ));
         }
         // Pad the grid so every row covers all columns (Word rejects short rows).
@@ -548,7 +565,7 @@ fn positioned_page<'a>(page: &'a Page, media: &mut Vec<(String, &'a Image)>, sha
         );
         s.push_str(&format!(
             "<w:r><w:pict><v:rect id=\"Text{}\" style=\"{style}\" filled=\"f\" stroked=\"f\"><v:textbox inset=\"0,0,0,0\" style=\"mso-fit-shape-to-text:t\"><w:txbxContent><w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"0\"/></w:pPr>{}</w:p></w:txbxContent></v:textbox><w10:wrap type=\"none\"/></v:rect></w:pict></w:r>",
-            shape_id, run_xml(&b.text, b.size, b.bold, b.italic, b.color)
+            shape_id, run_xml(b.visual_text.as_deref().unwrap_or(&b.text), b.size, b.bold, b.italic, b.color, b.font.as_deref())
         ));
     }
     for im in &page.images {
@@ -586,7 +603,7 @@ pub fn docx(pages: &[Page], title: &str) -> Vec<u8> {
     let mut media: Vec<(String, &Image)> = Vec::new();
     // Word needs a paragraph between adjacent tables and after the last one in the body.
     let mut after_table = false;
-    let run = |b: &Block| run_xml(&b.text, b.size, b.bold, b.italic, b.color);
+    let run = |b: &Block| run_xml(b.visual_text.as_deref().unwrap_or(&b.text), b.size, b.bold, b.italic, b.color, b.font.as_deref());
     let mut shape_id = 0usize;
     for (page_index, page) in pages.iter().enumerate() {
         let (pw, _) = word_page_size(page);
@@ -809,6 +826,8 @@ mod tests {
     fn page() -> Page {
         let b = |t: &str, y: f64, size: f64, bold: bool| Block {
             text: t.into(),
+            visual_text: None,
+            font: None,
             rect: [72.0, y, 500.0, y + size],
             size,
             bold,
@@ -890,6 +909,8 @@ mod tests {
         let mut p = table_page();
         p.blocks.push(Block {
             text: "DRAFT".into(),
+            visual_text: None,
+            font: None,
             rect: [100.0, 200.0, 500.0, 700.0],
             size: 100.0,
             bold: false,
@@ -951,6 +972,8 @@ mod tests {
         p.height = 2400.0;
         p.blocks.push(Block {
             text: "Total\u{0}\u{3}\u{c} 4.50\u{FFFF}\tGBP".into(),
+            visual_text: None,
+            font: None,
             rect: [72.0, 100.0, 300.0, 110.0],
             size: f64::NAN,
             bold: false,
@@ -1004,6 +1027,8 @@ mod tests {
         let mut p = page();
         p.blocks.push(Block {
             text: "Café {x}".into(),
+            visual_text: None,
+            font: None,
             rect: [72.0, 100.0, 200.0, 110.0],
             size: 10.0,
             bold: false,
@@ -1021,6 +1046,8 @@ mod tests {
     fn table_page() -> Page {
         let cell = |t: &str, x: f64, y: f64, w: f64| Block {
             text: t.into(),
+            visual_text: None,
+            font: None,
             rect: [x, y, x + w, y + 12.0],
             size: 11.0,
             bold: false,
@@ -1044,6 +1071,8 @@ mod tests {
                 cell("Totals", 72.0, 530.0, 240.0),
                 Block {
                     text: "Notes follow the table and are long enough to be the body text size of the page here.".into(),
+                    visual_text: None,
+                    font: None,
                     rect: [72.0, 460.0, 500.0, 471.0],
                     size: 11.0,
                     bold: false,
@@ -1101,7 +1130,17 @@ mod tests {
             .map(|i| {
                 let (row, col) = (i / 2, i / 2 + i % 2);
                 let (x, y) = (10.0 + col as f64 * 20.0, 10_000.0 - row as f64 * 14.0);
-                Block { text: "x".into(), rect: [x, y, x + 8.0, y + 12.0], size: 11.0, bold: false, italic: false, color: [0.0; 3], rotation: 0.0 }
+                Block {
+                    text: "x".into(),
+                    visual_text: None,
+                    font: None,
+                    rect: [x, y, x + 8.0, y + 12.0],
+                    size: 11.0,
+                    bold: false,
+                    italic: false,
+                    color: [0.0; 3],
+                    rotation: 0.0,
+                }
             })
             .collect();
         let started = std::time::Instant::now();
@@ -1122,6 +1161,8 @@ mod tests {
                         let (x, y) = (20.0 + col as f64 * 22.0, 700.0 - row as f64 * 14.0);
                         Block {
                             text: (col + 1).to_string(),
+                            visual_text: None,
+                            font: None,
                             rect: [x, y, x + 8.0, y + 8.0],
                             size: 8.0,
                             bold: false,
@@ -1144,6 +1185,8 @@ mod tests {
     fn two_column_body_text_is_not_mistaken_for_a_table() {
         let para = |t: &str, x: f64, y: f64| Block {
             text: t.into(),
+            visual_text: None,
+            font: None,
             rect: [x, y, x + 200.0, y + 90.0], // nine lines tall: body text, not a cell
             size: 11.0,
             bold: false,

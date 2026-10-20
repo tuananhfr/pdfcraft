@@ -179,6 +179,8 @@ impl crate::Document {
                         let f = b.base_font.to_ascii_lowercase();
                         pdfcraft_export::Block {
                             text: b.text,
+                            visual_text: Some(b.editor_text),
+                            font: Some(b.base_font),
                             rect: visible_rect(b.rect),
                             size: b.size * unit,
                             bold: f.contains("bold") || f.contains("black") || f.contains("heavy"),

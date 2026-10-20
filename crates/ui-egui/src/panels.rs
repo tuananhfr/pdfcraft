@@ -201,6 +201,9 @@ fn tool_detail(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &Tokens, g: &'static
         for s in g.sections {
             widgets::section_title(ui, tl!(s.title));
             for item in s.items {
+                if pdfcraft_engine::commands::command(item.command).is_some_and(|spec| !pdfcraft_engine::commands::available(spec)) {
+                    continue;
+                }
                 if g.id == "fill_sign" && (item.command.starts_with("sign.fill.signature") || item.command.starts_with("sign.fill.initials")) {
                     continue;
                 }

@@ -394,7 +394,7 @@ pub fn bindings() -> impl Iterator<Item = (&'static CommandSpec, Shortcut)> {
 
 /// Commands that make no sense in a browser. Every listing and the executor consult
 /// [`available`], so hiding one from the menu alone cannot leave it in the palette or automation.
-const NATIVE_ONLY: &[&str] = &["help.check_updates"];
+const NATIVE_ONLY: &[&str] = &["help.check_updates", "ocr.recognize", "ocr.recognize_batch"];
 
 /// Whether `spec` exists on a platform; `web` is a parameter so both branches are testable natively.
 pub fn available_on(spec: &CommandSpec, web: bool) -> bool {
@@ -466,6 +466,17 @@ mod tests {
         assert!(!super::available_on(spec, true));
         let open = super::command("file.open").unwrap();
         assert!(super::available_on(open, true) && super::available_on(open, false));
+    }
+
+    #[test]
+    fn ocr_recognition_commands_are_listed_on_native_only() {
+        for id in ["ocr.recognize", "ocr.recognize_batch"] {
+            let spec = super::command(id).unwrap();
+            assert!(super::available_on(spec, false), "{id}");
+            assert!(!super::available_on(spec, true), "{id}");
+        }
+        let camera = super::command("ocr.enhance_camera").unwrap();
+        assert!(super::available_on(camera, true) && super::available_on(camera, false));
     }
 
     use super::*;

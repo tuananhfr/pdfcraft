@@ -363,6 +363,8 @@ mod tests {
             blocks: vec![
                 Block {
                     text: "Q3 Business Update".into(),
+                    visual_text: None,
+                    font: None,
                     rect: [72.0, 460.0, 500.0, 500.0],
                     size: 28.0,
                     bold: true,
@@ -372,6 +374,8 @@ mod tests {
                 },
                 Block {
                     text: "Revenue grew 25% year over year across all regions.".into(),
+                    visual_text: None,
+                    font: None,
                     rect: [72.0, 380.0, 500.0, 410.0],
                     size: 14.0,
                     bold: false,
@@ -381,6 +385,8 @@ mod tests {
                 },
                 Block {
                     text: "Operational expenses remained flat.".into(),
+                    visual_text: None,
+                    font: None,
                     rect: [72.0, 340.0, 500.0, 370.0],
                     size: 14.0,
                     bold: false,
@@ -503,6 +509,8 @@ mod tests {
     fn pptx_package_parts_are_complete_and_consistent() {
         let cell = |t: &str, x: f64, y: f64| Block {
             text: t.into(),
+            visual_text: None,
+            font: None,
             rect: [x, y, x + 100.0, y + 14.0],
             size: 12.0,
             bold: false,
@@ -603,6 +611,8 @@ mod tests {
     fn hostile_sizes_do_not_overflow_the_slide_position() {
         let huge = |text: &str, size: f64, y: f64| Block {
             text: text.into(),
+            visual_text: None,
+            font: None,
             rect: [72.0, y, 500.0, y + 10.0],
             size,
             bold: false,
@@ -668,6 +678,8 @@ mod tests {
     fn pptx_table_cell_with_largest_font_stays_in_table_and_not_in_title() {
         let cell = |t: &str, x: f64, y: f64, w: f64, sz: f64| Block {
             text: t.into(),
+            visual_text: None,
+            font: None,
             rect: [x, y, x + w, y + 14.0],
             size: sz,
             bold: false,
@@ -682,6 +694,8 @@ mod tests {
                 // Heading outside the table (short width, does not span table columns)
                 Block {
                     text: "Monthly Summary".into(),
+                    visual_text: None,
+                    font: None,
                     rect: [50.0, 480.0, 150.0, 500.0],
                     size: 20.0,
                     bold: true,

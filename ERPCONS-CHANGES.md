@@ -2,6 +2,8 @@
 
 This branch (`erpcons`) is the ERPCons Văn phòng fork of [PdfCraft](https://github.com/storytold/pdfcraft), based on PdfCraft by the ArtCraft team, licensed MIT OR Apache-2.0 (see `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`). Changes from upstream `main` (Apache-2.0 §4b):
 
+- (both) Export to Word preserves visual line breaks within the existing paragraph groups and writes known PDF font families, including subset/PostScript name normalization, into Word text runs without embedding fonts.
+- (web) OCR recognition commands are hidden through the existing platform availability filter; direct OCR entry points explain that OCR is unavailable on the web and suggest the desktop app, while desktop behaviour is unchanged.
 - (both) Form fields, text boxes and Add text write Vietnamese and other characters covered by the bundled Inter face using an embedded TrueType subset with Unicode copy/search mappings and real advance widths; WinAnsi text keeps its existing font path and unsupported characters keep the existing warning/refusal.
 - (web) PDF saves time out after 60 seconds, show Save failed and offer Download of the pending PDF bytes while keeping the document unsaved; late callbacks are ignored and subsequent saves download instead of writing to the uncertain destination again.
 - (web) Closing the last open document calls the optional ERP shell's no-argument window.erpEditorClosed hook once; closing other documents or an already empty editor does not call it.
