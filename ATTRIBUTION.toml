@@ -2722,26 +2722,15 @@ usage = "Showcase PDF (cargo xtask demo-pdf)"
 sha256 = "acd98e64795781b2058f07b18475e0ecee2a0fe2b42a49e2f9e37d0d6bf66ce6"
 
 [[asset]]
-path = "assets/app-icon/pdfcraft-document.svg"
-title = "PdfCraft PDF document icon (master vector)"
-author = "Lucide Icons and Contributors (document outline); PdfCraft contributors (PDF badge, lettering and composition)"
-source = "https://github.com/lucide-icons/lucide (npm lucide-static 1.49.0, icons/file-text.svg); contributor-original composition (assets/app-icon/README.md)"
-licence = "ISC AND (MIT OR Apache-2.0)"
-licence_file = "assets/app-icon/LICENSE-document.txt"
-kind = "icon"
-usage = "Master artwork for the Windows PDF file type icon; rendered by packaging/icons.sh, without fonts or external images"
-sha256 = "8da8278c2b89362be0a960879d453ff879d7544d6d58e47d5389574e8dfff77b"
-
-[[asset]]
 path = "assets/app-icon/pdfcraft-document.ico"
-title = "PdfCraft PDF document icon (Windows .ico, 16-256 px)"
-author = "Lucide Icons and Contributors (document outline); PdfCraft contributors (PDF badge, lettering and composition)"
-source = "https://github.com/lucide-icons/lucide (npm lucide-static 1.49.0, icons/file-text.svg); contributor-original composition (assets/app-icon/README.md)"
-licence = "ISC AND (MIT OR Apache-2.0)"
+title = "ERPCons PDF document icon (Windows .ico, 16-256 px)"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; derived from pdfcraft-1024.png with Pillow by packaging/icons.sh; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
 licence_file = "assets/app-icon/LICENSE-document.txt"
 kind = "icon"
-usage = "Embedded in pdfcraft.exe as resource 2; the Windows installer uses it for PdfCraft.Document and Applications/pdfcraft.exe PDF file associations"
-sha256 = "ba3f9128b368fc6d17d376cf62dbdbc22455451c5c8c4779210d7a2a7409b9e6"
+usage = "Embedded in pdfcraft.exe as resource 2; the Windows installer uses it for ERPCons.PDF.pdf and Applications/pdfcraft.exe PDF file associations"
+sha256 = "ce8c497098c0d6b2e2131e83922aca29a50f945fe5dc17506851691a8e7c5125"
 
 [[asset]]
 path = "assets/icons/pin.svg"

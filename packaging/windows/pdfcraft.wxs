@@ -172,7 +172,7 @@
       <Component Id="PdfcraftCli" Guid="F34B0B24-5E7C-45A7-8F44-F3CD0772E21C">
         <File Id="PdfcraftCliExe" Source="$(var.BinDir)\pdfcraft-cli.exe" KeyPath="yes" />
       </Component>
-      <!-- The embedded PDF icon's ISC notice and project licences travel with the binaries. -->
+      <!-- The embedded ERPCons PDF icon's notice and project licences travel with the binaries. -->
       <Component Id="PdfcraftDocumentIconLicense" Guid="4B8B2A3E-9B91-4FA4-B4D1-A4428B9B3FAA">
         <File Id="PdfcraftDocumentIconLicenseFile" Source="$(var.BinDir)\LICENSE-document.txt" KeyPath="yes" />
       </Component>
