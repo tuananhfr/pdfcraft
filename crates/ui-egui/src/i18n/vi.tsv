@@ -2632,3 +2632,29 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	--control {file}: {e}. Use a control file in a folder only you can write, such as ~/.pdfcraft-control.json	--control {file}: {e}. Hãy dùng tệp điều khiển trong thư mục chỉ bạn có quyền ghi, chẳng hạn ~/.pdfcraft-control.json
 @plural	GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minute|GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minutes	GitHub đang giới hạn lượt kiểm tra cập nhật (hạn mức dùng chung mỗi giờ); hãy thử lại sau khoảng {n} phút
 	The update check stopped unexpectedly	Quá trình kiểm tra cập nhật đã dừng đột ngột
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	Trình cập nhật đang bận; hãy thử lại sau ít phút
+	Update network unavailable: {detail}	Không có kết nối cập nhật: {detail}
+	Update server returned HTTP {detail}	Máy chủ cập nhật trả về HTTP {detail}
+	The update signature is invalid	Chữ ký bản cập nhật không hợp lệ
+	The update manifest is invalid: {detail}	Thông tin bản cập nhật không hợp lệ: {detail}
+	The downloaded update failed verification	Bản cập nhật đã tải không vượt qua xác minh
+	Could not write the update: {detail}	Không ghi được bản cập nhật: {detail}
+	This installation cannot update automatically	Bản cài đặt này không hỗ trợ cập nhật tự động
+	Permission denied while updating; check folder permissions	Không có quyền cập nhật; hãy kiểm tra quyền truy cập thư mục
+	Update cancelled	Đã huỷ cập nhật
+	Updated to version {version}	Đã cập nhật lên phiên bản {version}
+	Update to {version} failed: {reason}	Cập nhật lên {version} không thành công: {reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons đang ở phiên bản mới nhất.
+	The app will close and reopen after updating	Ứng dụng sẽ đóng và mở lại sau khi cập nhật
+	Automatically check for updates	Tự động kiểm tra cập nhật
+	PDF – ERPCons {version} is available	Đã có PDF – ERPCons {version}
+	Download new version	Tải bản mới
+	Update now	Cập nhật ngay
+	Remind me later	Nhắc sau
+	Skip this version	Bỏ qua phiên bản này
+	What's new	Xem có gì mới
+	Retry	Thử lại
+	Could not start updater: {reason}	Không khởi chạy được trình cập nhật: {reason}
+	The updater failed; restart the app and try again	Trình cập nhật gặp lỗi; hãy khởi động lại ứng dụng và thử lại

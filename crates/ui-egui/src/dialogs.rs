@@ -1402,6 +1402,8 @@ fn save_prompt(app: &mut PdfCraftApp, ctx: &egui::Context) {
     let indices = match req {
         CloseRequest::Tab(id) => app.views.iter().position(|v| v.id == id).into_iter().collect(),
         CloseRequest::Quit | CloseRequest::All => app.unsaved_tabs(),
+        #[cfg(not(target_arch = "wasm32"))]
+        CloseRequest::Update => app.unsaved_tabs(),
     };
     let names: Vec<String> = indices.iter().filter_map(|&i| app.views.get(i)).filter_map(|v| app.session.get(v.id)).map(|d| d.name.clone()).collect();
     if names.len() > 1 {

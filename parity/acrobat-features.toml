@@ -1742,8 +1742,8 @@ milestone = "M3"
 status = "partial"
 commands = ["help.check_updates"]
 tools = []
-evidence = ["crates/ui-egui/tests/ui_group/updates.rs::a_newer_release_is_offered_for_download", "crates/ui-egui/tests/ui_group/updates.rs::nothing_is_asked_until_the_user_checks", "apps/pdfcraft/src/updates.rs::answers_are_read_and_only_our_release_pages_are_offered"]
-notes = "asks GitHub Releases on request and offers the release page. By the owner's decision there is no check at start and no in-place install (Acrobat has both)"
+evidence = ["crates/ui-egui/tests/ui_group/updates.rs::available_at_start_later_hides_and_forced_check_restores_notice", "crates/ui-egui/tests/ui_group/updates.rs::unsaved_document_cancel_aborts_update_without_discarding_work", "apps/pdfcraft/src/updates.rs::every_update_error_is_translated"]
+notes = "desktop checks signed ERPCons manifests at startup or on request and offers verified self-updates with save/cancel protection; UI tests use a fake installer hook. Without a native hook the command opens the releases page"
 
 [[feature]]
 id = "view.single-key-accelerators"

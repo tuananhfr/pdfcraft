@@ -141,6 +141,9 @@ fn rejoin_split_paths(args: Vec<String>, exists: impl Fn(&str) -> bool) -> Vec<S
 }
 
 fn main() -> eframe::Result {
+    if let Some(code) = erpcons_update::run_helper_from_args() {
+        std::process::exit(code);
+    }
     // First, so the panic hook and every start-up warning are recorded (`logging`).
     let logger = logging::install();
     // Last-resort guard (AGENTS.md §4): commands, edits, opens and saves catch panics and report
@@ -363,7 +366,9 @@ fn app_creator<'a>(
         {
             app.motion.source = Some(motion::source());
         }
-        app.update_source = Some(std::sync::Arc::new(updates::latest_release));
+        if let Some(dir) = settings_dir() {
+            app.update_hook = Some(std::sync::Arc::new(updates::DesktopUpdates::new(dir.join("update-state.json"))));
+        }
         app.printer_source = Some(pdfcraft_ui_egui::system_printers());
         app.os_key_store_ids = cfg!(any(target_os = "macos", target_os = "windows"));
         #[cfg(target_os = "macos")]

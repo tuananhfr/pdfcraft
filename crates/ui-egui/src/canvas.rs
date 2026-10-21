@@ -2398,8 +2398,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
         || app.palette_open
         || app.password_prompt.is_some()
         || app.pending_link.is_some()
-        || app.pending_remote_link.is_some()
-        || app.updates.open;
+        || app.pending_remote_link.is_some();
     let mut clicked_link: Option<LinkTarget> = None;
     let mut remote_open: Option<(pdfcraft_engine::DocId, String, pdfcraft_render::RemoteDestination)> = None;
     let mut canvas_action: Option<comments::CanvasAction> = None;

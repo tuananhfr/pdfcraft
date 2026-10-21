@@ -1,94 +1,120 @@
-//! Asks GitHub for the latest PdfCraft release (Help ▸ Check for updates, issue #28).
+//! Native adapter for the signed ERPCons updater.
 
-use std::time::Duration;
+use std::{
+    path::PathBuf,
+    sync::{
+        Mutex,
+        atomic::{AtomicBool, Ordering},
+    },
+};
 
-use pdfcraft_ui_egui::i18n;
+use erpcons_update::{CheckOutcome, Config, Error, InstallMode, Offer, PreviousResult, Ready, Updater};
+use pdfcraft_ui_egui::{
+    i18n,
+    updates::{CheckOutcome as UiOutcome, Offer as UiOffer, PreviousResult as UiPrevious, UpdateHook},
+};
 
-use pdfcraft_ui_egui::updates::{RELEASES_PAGE, Release};
-
-const LATEST: &str = "https://api.github.com/repos/tuananhfr/pdfcraft/releases/latest";
-
-/// The latest release. The answer is untrusted: its size is capped, and only a page under
-/// [`RELEASES_PAGE`] is ever offered for download (anything else falls back to that list).
-pub fn latest_release() -> Result<Release, String> {
-    let agent = ureq::Agent::config_builder()
-        .timeout_global(Some(Duration::from_secs(10)))
-        .tls_config(ureq::tls::TlsConfig::builder().root_certs(os_roots()?).build())
-        .build()
-        .new_agent();
-    let mut response = agent
-        .get(LATEST)
-        .header("Accept", "application/vnd.github+json")
-        .header("User-Agent", concat!("PdfCraft/", env!("CARGO_PKG_VERSION")))
-        // Read error statuses ourselves: a 403 from GitHub usually means its anonymous
-        // rate limit ran out, and the retry time rides along in a response header.
-        .config()
-        .http_status_as_error(false)
-        .build()
-        .call()
-        .map_err(|e| i18n::fmt(i18n::t("Couldn't reach GitHub ({e})"), &[("e", &e.to_string())]))?;
-    let status = response.status().as_u16();
-    if status == 403 {
-        let reset = response.headers().get("x-ratelimit-reset").and_then(|v| v.to_str().ok());
-        return Err(rate_limited(reset, now_unix()));
-    }
-    if !(200..300).contains(&status) {
-        return Err(i18n::fmt(i18n::t("Couldn't reach GitHub (HTTP status: {status})"), &[("status", &status.to_string())]));
-    }
-    let body = response
-        .body_mut()
-        .with_config()
-        .limit(1 << 20)
-        .read_to_string()
-        .map_err(|e| i18n::fmt(i18n::t("Unreadable answer ({e})"), &[("e", &e.to_string())]))?;
-    parse(&body)
+struct State {
+    updater: Updater,
+    offer: Option<Offer>,
+    ready: Option<Ready>,
 }
 
-/// The certificate authorities the operating system trusts.
-fn os_roots() -> Result<ureq::tls::RootCerts, String> {
-    let found = rustls_native_certs::load_native_certs();
-    let certs: Vec<ureq::tls::Certificate<'static>> = found.certs.iter().map(|c| ureq::tls::Certificate::from_der(c.as_ref()).to_owned()).collect();
-    if certs.is_empty() {
-        return Err(i18n::t("No trusted certificates found on this system").into());
+pub struct DesktopUpdates {
+    state: Mutex<State>,
+    auto_check: AtomicBool,
+}
+
+impl DesktopUpdates {
+    pub fn new(state_path: PathBuf) -> Self {
+        let updater = Updater::new(Config {
+            app_id: "pdf",
+            repo: "pdfcraft",
+            current_version: env!("CARGO_PKG_VERSION"),
+            public_key: erpcons_update::ERPCONS_PUBLIC_KEY,
+            state_path,
+            user_agent: format!("ERPCons-PDF/{}", env!("CARGO_PKG_VERSION")),
+        });
+        let auto_check = AtomicBool::new(updater.auto_check_enabled());
+        Self { state: Mutex::new(State { updater, offer: None, ready: None }), auto_check }
     }
-    Ok(ureq::tls::RootCerts::new_with_certs(&certs))
+
+    fn state(&self) -> Result<std::sync::MutexGuard<'_, State>, String> {
+        self.state.try_lock().map_err(|error| match error {
+            std::sync::TryLockError::WouldBlock => i18n::t("The updater is busy; try again shortly").into(),
+            std::sync::TryLockError::Poisoned(_) => i18n::t("The updater failed; restart the app and try again").into(),
+        })
+    }
 }
 
-/// The current Unix time in seconds (0 when the clock gives nothing usable).
-fn now_unix() -> u64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0)
-}
-
-/// What to tell the user when GitHub answers 403: its anonymous quota (60 checks an hour,
-/// shared by everyone behind the same address) ran out. `reset` is the `x-ratelimit-reset`
-/// header, the Unix time the quota refills; `now` is the current Unix time. Anything
-/// surprising (no header, not a number, already past) falls back to asking for patience.
-fn rate_limited(reset: Option<&str>, now: u64) -> String {
-    let fallback = i18n::t("GitHub is limiting update checks for now (shared hourly quota); try again later");
-    let wait = reset.and_then(|r| r.trim().parse::<u64>().ok()).and_then(|reset| reset.checked_sub(now)).filter(|&wait| wait > 0);
-    match wait {
-        Some(wait) => {
-            let minutes = wait.div_ceil(60).max(1);
-            i18n::trn(
-                i18n::current(),
-                minutes,
-                "GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minute",
-                "GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minutes",
-            )
+impl UpdateHook for DesktopUpdates {
+    fn check(&self, forced: bool) -> Result<UiOutcome, String> {
+        let mut state = self.state()?;
+        match state.updater.check(forced).map_err(message)? {
+            CheckOutcome::Available(offer) => {
+                let ui = UiOffer {
+                    version: offer.version.clone(),
+                    notes_url: offer.notes_url.clone(),
+                    download_page_only: offer.install == InstallMode::DownloadPageOnly,
+                };
+                state.offer = Some(offer);
+                state.ready = None;
+                Ok(UiOutcome::Available(ui))
+            }
+            CheckOutcome::UpToDate => Ok(UiOutcome::UpToDate),
+            CheckOutcome::NotDue | CheckOutcome::Disabled | CheckOutcome::Skipped(_) => Ok(UiOutcome::Quiet),
         }
-        None => fallback.into(),
+    }
+
+    fn download(&self, progress: &dyn Fn(u64, u64), cancel: &AtomicBool) -> Result<(), String> {
+        let mut state = self.state()?;
+        let offer = state.offer.as_ref().ok_or_else(|| message(Error::Unsupported))?;
+        let ready = state.updater.download(offer, progress, cancel).map_err(message)?;
+        state.ready = Some(ready);
+        Ok(())
+    }
+
+    fn install_and_restart(&self) -> Result<(), String> {
+        let mut state = self.state()?;
+        let ready = state.ready.take().ok_or_else(|| message(Error::Unsupported))?;
+        state.updater.install_and_restart(ready).map_err(message)
+    }
+
+    fn skip(&self, version: &str) -> Result<(), String> {
+        self.state()?.updater.skip(version).map_err(message)
+    }
+
+    fn auto_check(&self) -> bool {
+        self.auto_check.load(Ordering::Relaxed)
+    }
+
+    fn set_auto_check(&self, on: bool) -> Result<(), String> {
+        self.state()?.updater.set_auto_check(on).map_err(message)?;
+        self.auto_check.store(on, Ordering::Relaxed);
+        Ok(())
+    }
+
+    fn take_previous_result(&self) -> Option<UiPrevious> {
+        self.state().ok()?.updater.take_previous_result().map(|result| match result {
+            PreviousResult::Installed { version } => UiPrevious::Installed { version },
+            PreviousResult::Failed { version, reason } => UiPrevious::Failed { version, reason },
+        })
     }
 }
 
-fn parse(body: &str) -> Result<Release, String> {
-    let v: serde_json::Value = serde_json::from_str(body).map_err(|e| i18n::fmt(i18n::t("Unreadable answer ({e})"), &[("e", &e.to_string())]))?;
-    let version = v["tag_name"].as_str().filter(|t| !t.is_empty() && t.len() <= 64).ok_or(i18n::t("No release found"))?.to_string();
-    let url = v["html_url"]
-        .as_str()
-        .filter(|u| u.strip_prefix(RELEASES_PAGE).is_some_and(|rest| rest.starts_with('/') && !rest.contains(['?', '#', '\\'])))
-        .unwrap_or(RELEASES_PAGE)
-        .to_string();
-    Ok(Release { version: version.strip_prefix("erpcons-").unwrap_or(&version).to_string(), url })
+fn message(error: Error) -> String {
+    let (key, detail) = match error {
+        Error::Offline(e) => ("Update network unavailable: {detail}", e),
+        Error::Http(status) => ("Update server returned HTTP {detail}", status.to_string()),
+        Error::BadSignature => ("The update signature is invalid", String::new()),
+        Error::BadManifest(e) => ("The update manifest is invalid: {detail}", e),
+        Error::HashMismatch => ("The downloaded update failed verification", String::new()),
+        Error::Io(e) => ("Could not write the update: {detail}", e),
+        Error::Unsupported => ("This installation cannot update automatically", String::new()),
+        Error::PermissionDenied => ("Permission denied while updating; check folder permissions", String::new()),
+        Error::Cancelled => ("Update cancelled", String::new()),
+    };
+    i18n::fmt(i18n::t(key), &[("detail", &detail)])
 }
 
 #[cfg(test)]
@@ -96,67 +122,29 @@ mod tests {
     use super::*;
 
     #[test]
-    fn answers_are_read_and_only_our_release_pages_are_offered() {
-        let r = parse(r#"{"tag_name":"v0.2.0","html_url":"https://github.com/tuananhfr/pdfcraft/releases/tag/v0.2.0"}"#).unwrap();
-        assert_eq!(r, Release { version: "v0.2.0".into(), url: "https://github.com/tuananhfr/pdfcraft/releases/tag/v0.2.0".into() });
-        for elsewhere in ["https://example.com/pdfcraft.exe", "https://github.com/tuananhfr/pdfcraft/releases.evil/x", "javascript:alert(1)"] {
-            let r = parse(&format!(r#"{{"tag_name":"v9.9.9","html_url":"{elsewhere}"}}"#)).unwrap();
-            assert_eq!(r.url, RELEASES_PAGE, "{elsewhere}");
-        }
-        assert!(parse(r#"{"message":"Not Found"}"#).is_err());
-        assert!(parse("<html>").is_err());
-    }
-
-    #[test]
-    fn erpcons_tags_are_compared_as_versions() {
-        let r = parse(r#"{"tag_name":"erpcons-v99.2.0","html_url":"https://github.com/tuananhfr/pdfcraft/releases/tag/erpcons-v99.2.0"}"#).unwrap();
-        assert_eq!(r.version, "v99.2.0");
-        assert!(pdfcraft_ui_egui::updates::is_newer(&r.version, "99.1.0"));
-        assert!(!pdfcraft_ui_egui::updates::is_newer(&r.version, "99.2.0"));
-        assert!(!pdfcraft_ui_egui::updates::is_newer(&r.version, "99.3.0"));
-        assert_eq!(r.url, "https://github.com/tuananhfr/pdfcraft/releases/tag/erpcons-v99.2.0");
-    }
-
-    #[test]
-    fn rate_limit_messages_name_the_wait() {
-        let limited = "GitHub is limiting update checks for now (shared hourly quota); try again in about 20 minutes";
-        assert_eq!(rate_limited(Some("1800001200"), 1800000000), limited);
-        // Rounds up: 61 seconds out reads as 2 minutes.
-        assert_eq!(
-            rate_limited(Some("1800000061"), 1800000000),
-            "GitHub is limiting update checks for now (shared hourly quota); try again in about 2 minutes"
-        );
-        assert_eq!(
-            rate_limited(Some("1800000060"), 1800000000),
-            "GitHub is limiting update checks for now (shared hourly quota); try again in about 1 minute"
-        );
-        // No header, not a number, or already past: ask for patience instead of a time.
-        let later = "GitHub is limiting update checks for now (shared hourly quota); try again later";
-        for bad in [None, Some(""), Some("soon"), Some("1799999999"), Some("1800000000")] {
-            assert_eq!(rate_limited(bad, 1800000000), later);
-        }
-    }
-
-    #[test]
-    fn vietnamese_update_errors_and_rate_limits() {
+    fn every_update_error_is_translated() {
         let previous = i18n::current();
-        i18n::set_current(i18n::Lang::from_pref("vi"));
-        assert_eq!(parse("{}").unwrap_err(), "Không tìm thấy bản phát hành");
-        assert!(parse("<html>").unwrap_err().starts_with("Không đọc được phản hồi ("));
-        assert_eq!(
-            rate_limited(Some("61"), 0),
-            "GitHub đang giới hạn lượt kiểm tra cập nhật (hạn mức dùng chung mỗi giờ); hãy thử lại sau khoảng 2 phút"
-        );
-        assert_eq!(rate_limited(None, 0), "GitHub đang giới hạn lượt kiểm tra cập nhật (hạn mức dùng chung mỗi giờ); hãy thử lại sau");
+        for (language, network) in [("en", "Update network unavailable: test"), ("vi", "Không có kết nối cập nhật: test")] {
+            i18n::set_current(i18n::Lang::from_pref(language));
+            assert_eq!(message(Error::Offline("test".into())), network);
+            let cases = [
+                (Error::Http(403), "Update server returned HTTP 403", "Máy chủ cập nhật trả về HTTP 403"),
+                (Error::BadSignature, "The update signature is invalid", "Chữ ký bản cập nhật không hợp lệ"),
+                (Error::BadManifest("test".into()), "The update manifest is invalid: test", "Thông tin bản cập nhật không hợp lệ: test"),
+                (Error::HashMismatch, "The downloaded update failed verification", "Bản cập nhật đã tải không vượt qua xác minh"),
+                (Error::Io("test".into()), "Could not write the update: test", "Không ghi được bản cập nhật: test"),
+                (Error::Unsupported, "This installation cannot update automatically", "Bản cài đặt này không hỗ trợ cập nhật tự động"),
+                (
+                    Error::PermissionDenied,
+                    "Permission denied while updating; check folder permissions",
+                    "Không có quyền cập nhật; hãy kiểm tra quyền truy cập thư mục",
+                ),
+                (Error::Cancelled, "Update cancelled", "Đã huỷ cập nhật"),
+            ];
+            for (error, en, vi) in cases {
+                assert_eq!(message(error), if language == "vi" { vi } else { en });
+            }
+        }
         i18n::set_current(previous);
-    }
-
-    /// Live: asks GitHub over TLS with the OS's roots (`cargo test -p pdfcraft -- --ignored`).
-    #[test]
-    #[ignore = "needs network access"]
-    fn github_answers_with_the_latest_release() {
-        let r = latest_release().unwrap();
-        assert!(pdfcraft_ui_egui::updates::is_newer(&r.version, "0.0.0"), "{r:?}");
-        assert!(r.url.starts_with(RELEASES_PAGE), "{r:?}");
     }
 }

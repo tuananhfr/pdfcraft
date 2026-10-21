@@ -16,6 +16,9 @@ pub enum CloseRequest {
     Quit,
     /// File ▸ Close all: like Quit, but the application stays open.
     All,
+    /// Resolve unsaved documents before a native update.
+    #[cfg(not(target_arch = "wasm32"))]
+    Update,
 }
 
 /// Where Save writes.
@@ -801,6 +804,14 @@ impl PdfCraftApp {
                 if req == CloseRequest::Quit {
                     self.quit(ctx);
                 }
+                #[cfg(not(target_arch = "wasm32"))]
+                if req == CloseRequest::Update {
+                    if choice.is_some() {
+                        self.continue_update(ctx);
+                    } else {
+                        self.cancel_update_prompt();
+                    }
+                }
                 return;
             }
             // Quitting closes the unsaved tabs (and brings each forward to save it): remember
@@ -812,6 +823,8 @@ impl PdfCraftApp {
                 }
             }
             match choice {
+                #[cfg(not(target_arch = "wasm32"))]
+                None if req == CloseRequest::Update => self.cancel_update_prompt(),
                 None => {}
                 Some(false) => {
                     for i in self.unsaved_tabs().into_iter().rev() {
@@ -819,6 +832,10 @@ impl PdfCraftApp {
                     }
                     if req == CloseRequest::Quit {
                         self.quit(ctx);
+                    }
+                    #[cfg(not(target_arch = "wasm32"))]
+                    if req == CloseRequest::Update {
+                        self.continue_update(ctx);
                     }
                 }
                 // Browsers allow a save picker only in answer to a click.
@@ -859,6 +876,10 @@ impl PdfCraftApp {
         let Some(index) = self.first_dirty() else {
             if req == CloseRequest::Quit {
                 self.quit(ctx);
+            }
+            #[cfg(not(target_arch = "wasm32"))]
+            if req == CloseRequest::Update {
+                self.continue_update(ctx);
             }
             return;
         };
