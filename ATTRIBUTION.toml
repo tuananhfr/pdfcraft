@@ -7,7 +7,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Greek UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "5a96045251f7c5fa5ab5168b0a61aadc1fc2bce5ef1ba2bd7b0cf595a52794b5"
+sha256 = "b9492da09a5c631aa679ba81cb8f2e189b2c6ef0f844b7b87eb7102c0a85cc36"
 
 # ATTRIBUTION.toml: one entry per asset (AGENTS.md §1). The source of truth for provenance and licences.
 # ATTRIBUTION.md is generated from this file: `cargo xtask assets --write`. Checked by `cargo xtask assets` (part of `xtask ci`).
@@ -30,7 +30,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Simplified Chinese UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "74e53641e30b803f23a91ef6b48955c5d1cb561c8181ef7764a0983aa7ec8f23"
+sha256 = "9e3708a3ded98040d589349b36619ede58fa170b2affb1bbab38f1215b568394"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/zh-hant.tsv"
@@ -41,7 +41,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Traditional Chinese UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "5f113e8d5ec73da105cf0da3a035b94aacec2233d778ac7336efb697171e6073"
+sha256 = "ec8045383be86885b0cdb00d7a0b4e92ba46633d32da48226e4c6e587302f38d"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/cs.tsv"
@@ -52,7 +52,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Czech UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "628bd6a752aba229fef97d65dcf15c9e6a709487853b81fc3af9d76de72f611f"
+sha256 = "2fdd40e86bdcbfde42ae2583670dc00e7b9de690f44d936c8f53ee6da86375fe"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/pt-br.tsv"
@@ -63,7 +63,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Brazilian Portuguese UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "4d8d513dfdf00fdceb028a32bca4e294e22304eb45dee549f6e88ac37121b9df"
+sha256 = "fcf09024b2778dc0250b7b2482db8749efffa1a1cf91e2031623cd818f87cd07"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/es.tsv"
@@ -74,7 +74,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Spanish UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "38545d4f8081902983aa8f54030e6e82c68ddf7005313c720ca68e2a7d054e3b"
+sha256 = "b45fa0cbc3437a731eeb29d37137112640579fd61d228127bfec203e795ac904"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/fr.tsv"
@@ -85,7 +85,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "French UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "04c77728995f9a782be4b3064e5d67054f0a7a557edcbc6fd5fd66dfa71fc2ae"
+sha256 = "3f5be8eb4256cdcccbb35b756e31bd8947baf1cd10c7db88a62be5c2e06c2a81"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/de.tsv"
@@ -96,7 +96,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "German UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "4e60b9a0d454adf20089031f11d09c3e5d15ed0d37ee4d92297e551e9e793d87"
+sha256 = "7a2742ed9386c1d17d3b4ce657153c3dd2cefb8f7cfc25b956949d7701599139"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/te.tsv"
@@ -107,7 +107,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Telugu UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "08649a80c9d56fa7af43bf238143d8e6f8d8c71fe88a25474d83a5c83ac2db82"
+sha256 = "a93d489278283d4a87674c1ca9cd23a12f3e3f251a59369c51a4bd3f8f1c1681"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/it.tsv"
@@ -118,7 +118,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Italian UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "0e8556ec9b31652df59de3378e8d9655d4c4a1fef83e8d817039e35181b83e6e"
+sha256 = "f9bab5d72b701b9b3f348584c1409dacca07a07014b8bcccd9f1d04f79b27f2d"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/pl.tsv"
@@ -129,7 +129,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Polish UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "eb34579ef4ff5455143307937d128c09f47fe904ba9135202294be22dfd30ee5"
+sha256 = "01d8311403c5b858289815d7b5be8bbf424e36c05e74d6e35d344005b7a96940"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/ru.tsv"
@@ -140,7 +140,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Russian UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "c5714ed446975fed8651e4335688579227ba30ef1a909132122fbb98d05cd687"
+sha256 = "b90e1ec861b77f451428b4cb61ff30ae05fba4201d172ff26bc37bdc6d3f3e2f"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/hu.tsv"
@@ -151,7 +151,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Hungarian UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "e625a3ac444653a2950fbefbf73027886e744a61d28ef84df1374debc17d4e3d"
+sha256 = "1a49b8c30fa50fb4d8c2f6977de406c35f39e38da1a2e563a652f7a1630af390"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/bg.tsv"
@@ -162,7 +162,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Bulgarian UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "58551fa5e2370fa40baa0163f8eef5dcb5bafdbd87e56b91d676337c31904822"
+sha256 = "47d120ca872d1ac589ef06c933c681ed62d081620cbabb34786b115c2c9ed181"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/kk.tsv"
@@ -173,7 +173,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Kazakh UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "576724b9451a28a0ee28a8a46ddfeea1b5495f6c6e55d35bfea4dab4543985dd"
+sha256 = "0c2460a03c28689966aad7dad02c61afd49ee2a6ee70ae97c3931754d70add74"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/ja.tsv"
@@ -184,7 +184,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Japanese UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "f2baf6b43e242f708ce6603d84f6d1af0a3e54fa7e9b4f84b231180211c4a8d1"
+sha256 = "579c24ab491bde15d68b4bcddd824a7a19698f83f1df21f11d6743c9aaf24e0d"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/uk.tsv"
@@ -195,7 +195,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Ukrainian UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "6f63547ffb6ad0f80d051b75791546539a1e2b267244a74d29b0d387f9df3ca7"
+sha256 = "f342566a38604839ac150153f7e27652a2f6621a865d154fb14af905f8f93862"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/ar.tsv"
@@ -206,7 +206,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Arabic UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "8f9b836de554badda8e68d376de0d6ed0502740206a3843031437c59d1f8b57f"
+sha256 = "4ad79e18c8d840a827c79969816335d97a0d9a1627151fa4797705835c2548e5"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/tr.tsv"
@@ -217,7 +217,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Turkish UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "af84e9728f792113d21f31797bf441ecbcd134f0aebc05a0efe4cd2d4ed39224"
+sha256 = "8a9c118b60984610da9ef9c7bd967f3f07db1b5c6d2959af2ed5d61bc883c42d"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/lt.tsv"
@@ -228,7 +228,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Lithuanian UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "976f627ff5f56ee21a9874e4cbaafd04373542b86d3fc1cad11c1d4aaa71fc99"
+sha256 = "03c65d967dc52c69311f9adabefeb96a3c46942f4fa33f229813c2a57e70d6f9"
 
 [[asset]]
 path = "crates/ui-egui/src/i18n/vi.tsv"
@@ -239,7 +239,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Vietnamese UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "ce7d03289687f1cbcd3b7a637542bc9d35b434d536376ba93586c148d9e5c977"
+sha256 = "64f19b8e34a78ef7a0cbda54c5ae029c721d1147e3bd8d3d09a697e42fb8c829"
 
 [[asset]]
 path = "assets/icons/accessibility.svg"
@@ -2722,61 +2722,6 @@ usage = "Showcase PDF (cargo xtask demo-pdf)"
 sha256 = "acd98e64795781b2058f07b18475e0ecee2a0fe2b42a49e2f9e37d0d6bf66ce6"
 
 [[asset]]
-path = "assets/app-icon/pdfcraft.svg"
-title = "PdfCraft app icon (master vector)"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Master artwork; every other app-icon file is rendered from it (packaging/icons.sh)"
-sha256 = "52b384a10a2a7fdd3145d9822972cfd568ef0cb7312549bd4399addd89d45a6d"
-
-[[asset]]
-path = "assets/app-icon/pdfcraft-small.svg"
-title = "PdfCraft app icon (light vector)"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "README header and assets/app-icon/README.md"
-sha256 = "b036304c11ef5dcad36636d06ca0bf331b51e47650d25d3c916a0e1eabf544c7"
-
-[[asset]]
-path = "assets/app-icon/pdfcraft-1024.png"
-title = "PdfCraft app icon, 1024 px on Apple's icon grid"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Runtime window/Dock icon on macOS (apps/pdfcraft/src/main.rs)"
-sha256 = "da577d3f21fbcf5c739067787a9e683be2b064d76813b5d5fec9074a7a106538"
-
-[[asset]]
-path = "assets/app-icon/pdfcraft.icns"
-title = "PdfCraft app icon (macOS .icns)"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "macOS app bundle icon"
-sha256 = "2425148222873de241d267aba667a8b234ecdd0149f2ca8bb6e79443b743b1e8"
-
-[[asset]]
-path = "assets/app-icon/pdfcraft.ico"
-title = "PdfCraft app icon (Windows .ico, 16-256 px)"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Embedded in pdfcraft.exe by apps/pdfcraft/build.rs (Explorer, taskbar, Start menu, Alt-Tab)"
-sha256 = "56daaaae9ae5389794909570885809adf5e1d9183bef2d9669ed2f9bba3ed6f5"
-
-[[asset]]
 path = "assets/app-icon/pdfcraft-document.svg"
 title = "PdfCraft PDF document icon (master vector)"
 author = "Lucide Icons and Contributors (document outline); PdfCraft contributors (PDF badge, lettering and composition)"
@@ -2797,105 +2742,6 @@ licence_file = "assets/app-icon/LICENSE-document.txt"
 kind = "icon"
 usage = "Embedded in pdfcraft.exe as resource 2; the Windows installer uses it for PdfCraft.Document and Applications/pdfcraft.exe PDF file associations"
 sha256 = "ba3f9128b368fc6d17d376cf62dbdbc22455451c5c8c4779210d7a2a7409b9e6"
-
-[[asset]]
-path = "assets/app-icon/hicolor/16x16/apps/ai.storyteller.pdfcraft.png"
-title = "PdfCraft app icon, 16 px"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Linux hicolor theme icon (packaging/linux/ai.storyteller.pdfcraft.desktop)"
-sha256 = "9b77095cbe75dcba6b74a1fdcd4064812850efaf7a12edebefc9ded5eabb49da"
-
-[[asset]]
-path = "assets/app-icon/hicolor/24x24/apps/ai.storyteller.pdfcraft.png"
-title = "PdfCraft app icon, 24 px"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Linux hicolor theme icon (packaging/linux/ai.storyteller.pdfcraft.desktop)"
-sha256 = "a4cd466687f6c5cb59eef3fc564bdba1c8f0d9e324754eeebab82f18823efae7"
-
-[[asset]]
-path = "assets/app-icon/hicolor/32x32/apps/ai.storyteller.pdfcraft.png"
-title = "PdfCraft app icon, 32 px"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Linux hicolor theme icon (packaging/linux/ai.storyteller.pdfcraft.desktop)"
-sha256 = "e22279013a5ed5c02571e1e4e9bc4cef9aa0847fcb733a285b2916fabd16bf78"
-
-[[asset]]
-path = "assets/app-icon/hicolor/48x48/apps/ai.storyteller.pdfcraft.png"
-title = "PdfCraft app icon, 48 px"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Linux hicolor theme icon (packaging/linux/ai.storyteller.pdfcraft.desktop)"
-sha256 = "55daf2d5575f6c4e4c4975c9f1c74231178f1801963a8b19f68dfa9bc50cb22f"
-
-[[asset]]
-path = "assets/app-icon/hicolor/64x64/apps/ai.storyteller.pdfcraft.png"
-title = "PdfCraft app icon, 64 px"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Linux hicolor theme icon (packaging/linux/ai.storyteller.pdfcraft.desktop)"
-sha256 = "2975c200f341e247b5fa18f568fb27d390e3fa01e9b2ad37acb48d0e1cc8a124"
-
-[[asset]]
-path = "assets/app-icon/hicolor/128x128/apps/ai.storyteller.pdfcraft.png"
-title = "PdfCraft app icon, 128 px"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Linux hicolor theme icon (packaging/linux/ai.storyteller.pdfcraft.desktop)"
-sha256 = "6ef927ca252b40bc9b5d8843d84137334362f8aa1acbb1bf8c15a02affd25b2b"
-
-[[asset]]
-path = "assets/app-icon/hicolor/256x256/apps/ai.storyteller.pdfcraft.png"
-title = "PdfCraft app icon, 256 px"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Linux hicolor theme icon (packaging/linux/ai.storyteller.pdfcraft.desktop); runtime window icon on Windows and Linux (apps/pdfcraft/src/main.rs)"
-sha256 = "cde7ee8c5ee38f9fc40a429fd9e6d99a035bcd321701fce331bb13bac126614d"
-
-[[asset]]
-path = "assets/app-icon/hicolor/512x512/apps/ai.storyteller.pdfcraft.png"
-title = "PdfCraft app icon, 512 px"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Linux hicolor theme icon (packaging/linux/ai.storyteller.pdfcraft.desktop)"
-sha256 = "5ede733e93b96f4eb8d94299232cf2f9605fa19b0d913f95fe9828c316a2d066"
-
-[[asset]]
-path = "assets/app-icon/hicolor/scalable/apps/ai.storyteller.pdfcraft.svg"
-title = "PdfCraft app icon (Linux scalable)"
-author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
-source = "Contributor-original (see assets/app-icon/README.md)"
-licence = "MIT OR Apache-2.0"
-licence_file = "assets/app-icon/LICENSE.txt"
-kind = "icon"
-usage = "Linux hicolor theme icon (packaging/linux/ai.storyteller.pdfcraft.desktop)"
-sha256 = "52b384a10a2a7fdd3145d9822972cfd568ef0cb7312549bd4399addd89d45a6d"
 
 [[asset]]
 path = "assets/icons/pin.svg"
@@ -3131,7 +2977,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "translation"
 usage = "Slovene UI strings, compiled in by crates/ui-egui/src/i18n/mod.rs"
-sha256 = "251eba39b7b58fa04004bfc95de3ccc2f9afdc374fea14543d14049d36917a95"
+sha256 = "938a1a1f5c06227689280bb7d0c1438963774d3de7d71ca33a8266c5038f2468"
 
 [[asset]]
 path = "docs/images/pdfcraft-bookmarks.png"
@@ -3275,3 +3121,157 @@ licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README hero. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
 sha256 = "ecd261028d8837f7f7c013dd796d81ca7e89643bcfcbad3ab9fbfbe87ded04e3"
+
+[[asset]]
+path = "assets/app-icon/hicolor/128x128/apps/vn.erpcons.pdf.png"
+title = "ERPCons PDF application icon"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; sizes, ICO and ICNS derived by the lead with Pillow; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "ERPCons native desktop application icon"
+sha256 = "abb172d19aec18cfb5322bb39d603d7ae146132467c084146115f4984250acdc"
+
+[[asset]]
+path = "assets/app-icon/hicolor/16x16/apps/vn.erpcons.pdf.png"
+title = "ERPCons PDF application icon"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; sizes, ICO and ICNS derived by the lead with Pillow; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "ERPCons native desktop application icon"
+sha256 = "2de08726c0c970cf4ca97e7ccbb5a2e6cb12ee97d999920f8fde74af39b45c7a"
+
+[[asset]]
+path = "assets/app-icon/hicolor/24x24/apps/vn.erpcons.pdf.png"
+title = "ERPCons PDF application icon"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; sizes, ICO and ICNS derived by the lead with Pillow; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "ERPCons native desktop application icon"
+sha256 = "3845b033a8ae4e0ad8e547cd8bac8c0a504c4a827b863fd9aac68919c558bbee"
+
+[[asset]]
+path = "assets/app-icon/hicolor/256x256/apps/vn.erpcons.pdf.png"
+title = "ERPCons PDF application icon"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; sizes, ICO and ICNS derived by the lead with Pillow; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "ERPCons native desktop application icon"
+sha256 = "bdeae53b5295c56ef9c7d0ed1eaf2aa61076f64f2df1aac697425a1a7e008185"
+
+[[asset]]
+path = "assets/app-icon/hicolor/32x32/apps/vn.erpcons.pdf.png"
+title = "ERPCons PDF application icon"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; sizes, ICO and ICNS derived by the lead with Pillow; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "ERPCons native desktop application icon"
+sha256 = "817953db095aa9f0c72f5bdf6dfaec7dd6fa1001dbe0953f58c7e8e1663f5bca"
+
+[[asset]]
+path = "assets/app-icon/hicolor/48x48/apps/vn.erpcons.pdf.png"
+title = "ERPCons PDF application icon"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; sizes, ICO and ICNS derived by the lead with Pillow; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "ERPCons native desktop application icon"
+sha256 = "954c4c0a266a884ebcdb27daf078f3e15f9925c4f6168db70d210d32dd31db2a"
+
+[[asset]]
+path = "assets/app-icon/hicolor/512x512/apps/vn.erpcons.pdf.png"
+title = "ERPCons PDF application icon"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; sizes, ICO and ICNS derived by the lead with Pillow; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "ERPCons native desktop application icon"
+sha256 = "0a1360711934036d349464639be86ce0b49ba546fb210d5818dd9801f9c72138"
+
+[[asset]]
+path = "assets/app-icon/hicolor/64x64/apps/vn.erpcons.pdf.png"
+title = "ERPCons PDF application icon"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; sizes, ICO and ICNS derived by the lead with Pillow; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "ERPCons native desktop application icon"
+sha256 = "a383c56b352156a2264fc244c250a6b9ff76e318c7f5b7bda78b94f06537c7a5"
+
+[[asset]]
+path = "assets/app-icon/pdfcraft-1024.png"
+title = "ERPCons PDF application icon"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; sizes, ICO and ICNS derived by the lead with Pillow; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "ERPCons native desktop application icon"
+sha256 = "9bba5b2ce2bd40fe800e61751d9880d0cccbdbbba446e3bd3faaddc6e9026fdb"
+
+[[asset]]
+path = "assets/app-icon/pdfcraft.icns"
+title = "ERPCons PDF application icon"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; sizes, ICO and ICNS derived by the lead with Pillow; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "ERPCons native desktop application icon"
+sha256 = "3c78d10a32d7c5ac2019830a98424d6e283bdbf5ea236a8dbd99f4175b74259d"
+
+[[asset]]
+path = "assets/app-icon/pdfcraft.ico"
+title = "ERPCons PDF application icon"
+author = "Tuan Anh PHAM for ERPCons"
+source = "https://github.com/tuananhfr/erpcons-office/tree/133af85/public/brand/office (contributor-original; sizes, ICO and ICNS derived by the lead with Pillow; owner approved 2026-10-21)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "ERPCons native desktop application icon"
+sha256 = "7489b734adbaf85f8e8d0ed874dc8efd1a44eef749a70ac2a47485c4e5c6891b"
+
+[[asset]]
+path = "packaging/macos/dmg/dmg-layout.DS_Store"
+title = "ERPCons PDF macOS Finder layout"
+author = "PdfCraft contributors and ERPCons contributors"
+source = "Contributor-original: generated by packaging/macos/dmg/generate.py for the ERPCons app and volume names"
+licence = "MIT OR Apache-2.0"
+licence_file = "LICENSE-MIT"
+kind = "data"
+usage = "Finder window layout metadata copied into the macOS DMG; background artwork is unchanged"
+sha256 = "c7a8140a51fd1b3991d6bbbb953312ad2bf735d343c92920c87cb1f5059ec1d8"
+
+[[asset]]
+path = "assets/demo/showcase.html"
+title = "ERPCons PDF showcase source"
+author = "PdfCraft contributors and ERPCons contributors"
+source = "https://github.com/tuananhfr/pdfcraft/blob/64e6398abb4280d99fadf69ea21fbaab5ffcc8d1/assets/demo/showcase.html (contributor-original; ERPCons branding edits)"
+licence = "MIT OR Apache-2.0"
+licence_file = "LICENSE-MIT"
+kind = "document"
+usage = "Contributor-original source input for cargo xtask demo-pdf; generated binary sample PDFs are unchanged"
+sha256 = "8b4cb26cf9d77e4ed2b5905b600f4834160dec06c06cd8a42eff02b81ea85337"
+
+[[asset]]
+path = "assets/demo/showcase-data.csv"
+title = "ERPCons PDF showcase chart data"
+author = "PdfCraft contributors and ERPCons contributors"
+source = "https://github.com/tuananhfr/pdfcraft/blob/64e6398abb4280d99fadf69ea21fbaab5ffcc8d1/assets/demo/showcase-data.csv (contributor-original; ERPCons branding edits)"
+licence = "MIT OR Apache-2.0"
+licence_file = "LICENSE-MIT"
+kind = "data"
+usage = "Contributor-original source input for cargo xtask demo-pdf; generated binary sample PDFs are unchanged"
+sha256 = "248a81bfb79839b84684309d25665031ab5ff05b7a0711dda3ababdc1b8f6646"

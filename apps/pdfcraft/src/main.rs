@@ -46,61 +46,43 @@ mod updates;
 #[path = "windows_manifest.rs"]
 mod windows_manifest;
 
+const PRODUCT_NAME: &str = "PDF – ERPCons";
+
+fn desktop_branding() -> &'static pdfcraft_ui_egui::branding::Branding {
+    static BRANDING: std::sync::OnceLock<pdfcraft_ui_egui::branding::Branding> = std::sync::OnceLock::new();
+    BRANDING.get_or_init(|| pdfcraft_ui_egui::branding::Branding::new(PRODUCT_NAME, "ERPCons", "https://office.erpcons.vn"))
+}
+
 /// Freedesktop app id: the `.desktop` file name and the hicolor icon name.
-const APP_ID: &str = "ai.storyteller.pdfcraft";
+const APP_ID: &str = "vn.erpcons.pdf";
 
 /// The app icon (assets/app-icon/README.md). macOS gets the version on Apple's icon grid, with a
 /// transparent margin; Windows and Linux get the full-bleed tile.
 #[cfg(target_os = "macos")]
 const APP_ICON_PNG: &[u8] = include_bytes!("../../../assets/app-icon/pdfcraft-1024.png");
 #[cfg(not(target_os = "macos"))]
-const APP_ICON_PNG: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/ai.storyteller.pdfcraft.png");
+const APP_ICON_PNG: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/vn.erpcons.pdf.png");
 
 /// The app was called PrintCraft before; settings saved then are under this key.
 const LEGACY_STORAGE_KEY: &str = "printcraft";
 
 /// The settings folder: `app.ron` and the `logs` folder (docs/development.md). In portable mode
-/// it is `PdfCraftData` beside the executable (#157). eframe would otherwise derive it from the
-/// app id; keep it under "PdfCraft".
+/// it is `ERPCons/PDF` beside the executable. Preserve the platform storage root used by eframe.
 fn settings_dir() -> Option<std::path::PathBuf> {
     if let Some(dir) = pdfcraft_ui_egui::portable::data_dir() {
         return Some(dir.to_path_buf());
     }
-    eframe::storage_dir("PdfCraft")
-}
-
-/// Move the settings and crash-recovery folders of the app's former name, PrintCraft, to the new
-/// name once, so an upgrade keeps recent files, preferences and unsaved work. Best effort: a
-/// folder is left alone when the new one already exists or the move fails. A portable copy leaves
-/// the per-user folders alone.
-fn migrate_legacy_folders() {
-    if pdfcraft_ui_egui::portable::data_dir().is_some() {
-        return;
-    }
-    let mut moves = vec![(eframe::storage_dir("PrintCraft"), settings_dir())];
-    // Recovery lives in the settings folder except on Windows, where it is under %LOCALAPPDATA%.
+    let mut root = eframe::storage_dir("PDF")?;
+    root.pop();
     if cfg!(windows) {
-        let local = std::env::var_os("LOCALAPPDATA").filter(|v| !v.is_empty()).map(std::path::PathBuf::from);
-        moves.push((local.as_ref().map(|d| d.join("PrintCraft")), local.map(|d| d.join("PdfCraft"))));
+        root.pop();
     }
-    for (old, new) in moves {
-        let (Some(old), Some(new)) = (old, new) else { continue };
-        if !old.is_dir() || new.exists() {
-            continue;
-        }
-        if let Some(parent) = new.parent() {
-            let _ = std::fs::create_dir_all(parent);
-        }
-        match std::fs::rename(&old, &new) {
-            Ok(()) => log::info!("moved {} to {}", old.display(), new.display()),
-            Err(e) => log::warn!("moving {} to {}: {e}", old.display(), new.display()),
-        }
-    }
+    Some(root.join("ERPCons").join("PDF"))
 }
 
 /// Desktop launchers (GNOME Files, KDE Dolphin…) only recognise an app as the default handler for a
 /// mime type if its `Exec` takes URIs (`%u`/`%U`), not just paths (`%F`); the packaged `.desktop`
-/// file uses `%U` accordingly (packaging/linux/ai.storyteller.pdfcraft.desktop). Decode a local
+/// file uses `%U` accordingly (packaging/linux/vn.erpcons.pdf.desktop). Decode a local
 /// `file://` argument (`file:///path` or `file://localhost/path`) to a plain path here so the rest
 /// of the app, which only ever opens paths, is unaffected. Other schemes (`http://`, `mailto:`…),
 /// URIs naming another host, and plain paths pass through untouched.
@@ -204,13 +186,13 @@ fn main() -> eframe::Result {
     let integrated = cfg!(target_os = "macos");
     // GNOME on Wayland leaves the window frame to the app (src/decorations.rs).
     let window_controls = if cfg!(any(target_os = "macos", target_os = "windows")) { None } else { decorations::app_drawn() };
-    migrate_legacy_folders();
+    pdfcraft_ui_egui::branding::set_current(Some(desktop_branding()));
     // The log file lives in the settings folder; opened after the arguments (so `--version` leaves
-    // no file behind) and after the PrintCraft migration (which a fresh folder would block).
+    // no file behind).
     // Records logged until now are written to it first.
     if let (Some(logger), Some(dir)) = (logger, settings_dir()) {
         match logger.attach_dir(&dir.join("logs")) {
-            Ok(path) => log::info!("PdfCraft {}, log file {}", pdfcraft_engine::build_info::version(), path.display()),
+            Ok(path) => log::info!("{} {}, log file {}", PRODUCT_NAME, pdfcraft_engine::build_info::version(), path.display()),
             // Standard error only by now (`attach_dir` gave up on the file); unlike `eprintln!`, never panics.
             Err(e) => log::warn!("no log file: {e}"),
         }
@@ -238,7 +220,7 @@ fn main() -> eframe::Result {
     let started = Rc::new(Cell::new(false));
     let first = if choice == RendererChoice::Gl { eframe::Renderer::Glow } else { eframe::Renderer::Wgpu };
     let result = eframe::run_native(
-        "PdfCraft",
+        PRODUCT_NAME,
         native_options(launch.integrated, launch.window_controls.is_some(), first),
         app_creator(
             launch.clone(),
@@ -256,7 +238,7 @@ fn main() -> eframe::Result {
             // usually still works there, so that's better than quitting.
             log::error!("the GPU renderer (wgpu) didn't start: {e}. Starting with OpenGL instead; set PDFCRAFT_RENDERER=gl to skip wgpu.");
             eframe::run_native(
-                "PdfCraft",
+                PRODUCT_NAME,
                 native_options(launch.integrated, launch.window_controls.is_some(), eframe::Renderer::Glow),
                 app_creator(
                     launch,
@@ -299,11 +281,11 @@ fn retry_with_gl(choice: RendererChoice, app_started: bool) -> bool {
 /// The window and renderer settings for one run.
 fn native_options(integrated: bool, app_frame: bool, renderer: eframe::Renderer) -> eframe::NativeOptions {
     let mut viewport = egui::ViewportBuilder::default()
-        .with_title("PdfCraft")
+        .with_title(PRODUCT_NAME)
         .with_inner_size([1440.0, 920.0])
         .with_min_inner_size([820.0, 520.0])
         .with_drag_and_drop(true)
-        // Wayland app id: matches packaging/linux/ai.storyteller.pdfcraft.desktop.
+        // Wayland app id: matches packaging/linux/vn.erpcons.pdf.desktop.
         .with_app_id(APP_ID);
     // Dock, taskbar, Alt-Tab and launcher icon when running unbundled.
     match eframe::icon_data::from_png_bytes(APP_ICON_PNG) {
@@ -348,6 +330,7 @@ fn app_creator<'a>(
     Box::new(move |cc| {
         started.set(true);
         let mut app = PdfCraftApp::new();
+        app.branding = Some(desktop_branding());
         // First start (or settings from before Units existed): the region's unit.
         app.units = pdfcraft_ui_egui::units::Unit::system();
         #[cfg(target_os = "linux")]
@@ -441,7 +424,7 @@ fn app_creator<'a>(
 
 /// Tell the user when wgpu draws on the processor (WARP on Windows, llvmpipe on Linux) rather than
 /// a GPU, which makes everything slower. egui-wgpu only logs it, so the reporter of #519 had to find
-/// it in pdfcraft.log. The OpenGL fallback isn't covered: glow only reports its renderer through
+/// it in PDF.log. The OpenGL fallback isn't covered: glow only reports its renderer through
 /// `unsafe` calls.
 fn notify_software_renderer(app: &mut PdfCraftApp, device_type: eframe::wgpu::DeviceType) {
     if device_type == eframe::wgpu::DeviceType::Cpu {
@@ -852,7 +835,7 @@ mod tests {
     #[test]
     fn a_software_renderer_is_shown_to_the_user() {
         use eframe::wgpu::DeviceType;
-        // Issue #519: WARP or llvmpipe is announced in the app, not just in pdfcraft.log.
+        // Issue #519: WARP or llvmpipe is announced in the app, not just in PDF.log.
         let mut app = super::PdfCraftApp::new();
         super::notify_software_renderer(&mut app, DeviceType::Cpu);
         let notice = app.toast.as_ref().map(|(m, _)| m.as_str()).unwrap_or_default();
@@ -1335,8 +1318,34 @@ mod tests {
     /// so it has to be the class the window carries: the app id, on Wayland and X11 alike.
     #[test]
     fn the_desktop_entry_names_the_window_class() {
-        let entry = include_str!("../../../packaging/linux/ai.storyteller.pdfcraft.desktop");
+        let entry = include_str!("../../../packaging/linux/vn.erpcons.pdf.desktop");
         let class = entry.lines().find_map(|line| line.strip_prefix("StartupWMClass="));
         assert_eq!(class, Some(super::APP_ID));
+    }
+}
+
+#[cfg(test)]
+mod branding_tests {
+    #[test]
+    fn desktop_title_and_about_use_erpcons_product() {
+        let mut app = super::PdfCraftApp::new();
+        app.branding = Some(super::desktop_branding());
+        assert_eq!(app.product_name(), "PDF – ERPCons");
+        assert_eq!(super::PRODUCT_NAME, app.product_name());
+        assert_eq!(super::APP_ID, "vn.erpcons.pdf");
+        assert_eq!(super::desktop_branding().publisher, "ERPCons");
+        assert_eq!(super::desktop_branding().website, "https://office.erpcons.vn");
+    }
+
+    #[test]
+    fn settings_path_is_erpcons_pdf_under_existing_platform_root() {
+        if let Some(portable) = pdfcraft_ui_egui::portable::data_dir() {
+            assert_eq!(super::settings_dir().as_deref(), Some(portable));
+            assert!(portable.ends_with("ERPCons/PDF"));
+            return;
+        }
+        let original = eframe::storage_dir("PdfCraft").unwrap();
+        let root = if cfg!(windows) { original.parent().unwrap().parent().unwrap() } else { original.parent().unwrap() };
+        assert_eq!(super::settings_dir(), Some(root.join("ERPCons").join("PDF")));
     }
 }

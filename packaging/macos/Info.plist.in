@@ -7,13 +7,13 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleDisplayName</key>
-  <string>PdfCraft</string>
+  <string>PDF – ERPCons</string>
   <key>CFBundleName</key>
-  <string>PdfCraft</string>
+  <string>PDF – ERPCons</string>
   <key>CFBundleExecutable</key>
-  <string>PdfCraft</string>
+  <string>pdfcraft</string>
   <key>CFBundleIdentifier</key>
-  <string>ai.storyteller.pdfcraft</string>
+  <string>vn.erpcons.pdf</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundlePackageType</key>
@@ -29,7 +29,7 @@
   <key>PdfCraftBuildCommit</key>
   <string>@BUILD_SHA@</string>
   <key>CFBundleIconFile</key>
-  <string>PdfCraft</string>
+  <string>pdfcraft</string>
   <key>LSApplicationCategoryType</key>
   <string>public.app-category.graphics-design</string>
   <!-- Must match MACOSX_DEPLOYMENT_TARGET in package.sh. Big Sur is the first release on
@@ -60,7 +60,7 @@
       <key>LSHandlerRank</key>
       <string>Alternate</string>
       <key>CFBundleTypeIconFile</key>
-      <string>PdfCraft</string>
+      <string>pdfcraft</string>
       <key>LSItemContentTypes</key>
       <array><string>com.adobe.pdf</string></array>
       <key>CFBundleTypeExtensions</key>

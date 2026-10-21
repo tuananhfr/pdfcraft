@@ -25,6 +25,7 @@ macro_rules! tl_ctx {
 mod a11y_ui;
 mod actions_ui;
 mod appearance;
+pub mod branding;
 pub mod canvas;
 mod cert_guard;
 mod chrome;
@@ -489,6 +490,8 @@ pub struct RecentFile {
 }
 
 pub struct PdfCraftApp {
+    /// Native hosts may supply branding; None preserves the web product.
+    pub branding: Option<&'static branding::Branding>,
     pub docking: docking::Workspace,
     pub(crate) pending_panel_reveals: Vec<docking::Panel>,
     pub session: Session,
@@ -897,6 +900,10 @@ fn rgb_triple(v: &serde_json::Value) -> Option<[f64; 3]> {
 }
 
 impl PdfCraftApp {
+    pub fn product_name(&self) -> &'static str {
+        self.branding.map_or("PdfCraft", |branding| branding.product_name)
+    }
+
     pub fn new() -> Self {
         Self {
             session: Session::new(),
@@ -1049,6 +1056,7 @@ impl PdfCraftApp {
             duplicate_draft: None,
             form_preview: false,
             window_title: String::new(),
+            branding: None,
             recovery: None,
             recoverable: Vec::new(),
             recovery_keys: Default::default(),
@@ -2854,6 +2862,7 @@ impl eframe::App for PdfCraftApp {
         // Notices raised outside `ui` (opened files, OS events, the control channel) translate too.
         let lang = i18n::Lang::from_pref(&self.language);
         i18n::set_current(lang);
+        branding::set_current(self.branding);
         self.poll_clipboard();
         #[cfg(not(target_arch = "wasm32"))]
         {
@@ -3013,6 +3022,7 @@ impl eframe::App for PdfCraftApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         i18n::set_current(i18n::Lang::from_pref(&self.language));
+        branding::set_current(self.branding);
         // Fonts registered via set_fonts only take effect next frame; named families would panic now.
         if !self.fonts_ready {
             ctx.request_repaint();
@@ -3031,7 +3041,7 @@ impl eframe::App for PdfCraftApp {
             .and_then(|i| self.session.get(self.views[i].id))
             .map(|d| d.display_name())
             .or_else(|| self.combine_showing().then(|| tl!("Combine files").to_owned()))
-            .map_or_else(|| "PdfCraft".to_owned(), |name| format!("{name} — PdfCraft"));
+            .map_or_else(|| self.product_name().to_owned(), |name| format!("{name} — {}", self.product_name()));
         if title != self.window_title {
             ctx.send_viewport_cmd(egui::ViewportCommand::Title(title.clone()));
             self.window_title = title;

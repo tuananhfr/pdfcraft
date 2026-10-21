@@ -1,5 +1,5 @@
 //! Portable mode (#157): a marker file beside the executable ([`MARKERS`]) keeps the settings,
-//! log files, crash-recovery autosaves and new digital IDs in `<exe dir>/PdfCraftData`, so a
+//! log files, crash-recovery autosaves and new digital IDs in `<exe dir>/ERPCons/PDF`, so a
 //! portable copy (on a USB stick, say) writes nothing to `%APPDATA%` or `%LOCALAPPDATA%`. The
 //! Windows portable zip ships with `portable.txt`; the MSI doesn't. PhotoCraft uses the same
 //! scheme (`photocraft/apps/photocraft/src/app_dirs.rs`).
@@ -11,14 +11,20 @@ use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
 /// Files beside the executable that switch on portable mode (either one; contents are ignored).
+#[cfg(not(target_arch = "wasm32"))]
+pub const MARKERS: [&str; 2] = ["portable.txt", "PDF.portable"];
+#[cfg(target_arch = "wasm32")]
 pub const MARKERS: [&str; 2] = ["portable.txt", "PdfCraft.portable"];
 /// The data folder created beside the executable in portable mode.
+#[cfg(not(target_arch = "wasm32"))]
+pub const DATA_DIR: &str = "ERPCons/PDF";
+#[cfg(target_arch = "wasm32")]
 pub const DATA_DIR: &str = "PdfCraftData";
 
 /// The outcome of looking for a portable marker.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Portable {
-    /// `<exe dir>/PdfCraftData` when portable mode is on, `None` otherwise.
+    /// `<exe dir>/ERPCons/PDF` when portable mode is on, `None` otherwise.
     pub dir: Option<PathBuf>,
     /// Set when a marker was found but its data folder can't be written.
     pub unwritable: Option<Unwritable>,
@@ -153,7 +159,9 @@ mod tests {
         let exe = temp("unwritable");
         std::fs::write(exe.join("portable.txt"), b"").unwrap();
         // A file where the data folder should go: it can't be created, on every platform.
-        std::fs::write(exe.join(DATA_DIR), b"in the way").unwrap();
+        let folder = exe.join(DATA_DIR);
+        std::fs::create_dir_all(folder.parent().unwrap()).unwrap();
+        std::fs::write(&folder, b"in the way").unwrap();
         let p = resolve(Some(&exe));
         assert_eq!(p.dir, None);
         let unwritable = p.unwritable.unwrap();

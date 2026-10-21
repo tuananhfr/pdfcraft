@@ -237,8 +237,10 @@ impl PdfCraftApp {
         let p = progress.clone();
         // The summary is written on the worker thread: draw it in the UI's language.
         let lang = crate::i18n::current();
+        let branding = self.branding;
         let work = move || {
             crate::i18n::set_current(lang);
+            crate::branding::set_current(branding);
             let (mut ok, mut words, mut failed) = (0, 0, Vec::new());
             match pdfcraft_engine::ocr::engine() {
                 Err(e) => failed.push(e),

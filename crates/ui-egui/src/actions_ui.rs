@@ -96,8 +96,10 @@ impl PdfCraftApp {
         let p = progress.clone();
         // The summary is written on the worker thread: draw it in the UI's language.
         let lang = crate::i18n::current();
+        let branding = self.branding;
         let work = move || {
             crate::i18n::set_current(lang);
+            crate::branding::set_current(branding);
             let (mut ok, mut failed) = (0, Vec::new());
             for (i, (name, bytes)) in files.into_iter().enumerate() {
                 if let Ok(mut s) = p.lock() {

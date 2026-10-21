@@ -3,7 +3,7 @@
 # exports VERSION, RELEASE and NFPM_ARCH.
 #
 #   nfpm package -f packaging/linux/nfpm.yaml -p deb -t dist/release/
-name: pdfcraft
+name: erpcons-pdf
 arch: ${NFPM_ARCH}
 platform: linux
 version: ${VERSION}
@@ -15,8 +15,8 @@ release: ${RELEASE}
 section: graphics
 priority: optional
 maintainer: ${PDFCRAFT_MAINTAINER}
-vendor: Learning Machines LLC
-homepage: https://github.com/tuananhfr/pdfcraft
+vendor: ERPCons
+homepage: https://office.erpcons.vn
 license: MIT OR Apache-2.0
 description: |-
   Open-source, native PDF workbench: read, comment, fill and sign forms,

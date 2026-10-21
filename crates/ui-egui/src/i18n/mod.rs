@@ -23,7 +23,7 @@
 //! - [`trn`]: plural-aware (`{n}` is filled in). [`fmt`]: fill `{name}` placeholders after [`tr`];
 //!   translators may reorder placeholders freely.
 
-mod catalog;
+pub(crate) mod catalog;
 
 use std::cell::Cell;
 use std::sync::OnceLock;
@@ -213,7 +213,7 @@ pub static LANGUAGES: [LangInfo; 23] = [
 
 impl LangInfo {
     /// How many plural forms the language's `@plural` entries list.
-    fn plural_forms(&self) -> usize {
+    pub(crate) fn plural_forms(&self) -> usize {
         (0..=1000).map(self.plural).max().unwrap_or(0).saturating_add(1)
     }
 
@@ -435,7 +435,7 @@ pub fn key_name(s: &str) -> &str {
 
 /// Translate an English UI string; unknown strings come back unchanged.
 pub fn tr(lang: Lang, s: &str) -> &str {
-    lang.catalog().plain(s).unwrap_or(s)
+    crate::branding::text(lang.catalog().plain(s).unwrap_or(s))
 }
 
 /// How the layers below say their own sentences in the current language.
@@ -451,12 +451,12 @@ pub fn words(wording: &str) -> String {
 
 /// Like [`tr`], for an English string that needs a disambiguating `context`.
 pub fn tr_ctx<'a>(lang: Lang, context: &str, s: &'a str) -> &'a str {
-    lang.catalog().contextual(context, s).unwrap_or_else(|| tr(lang, s))
+    crate::branding::text(lang.catalog().contextual(context, s).unwrap_or_else(|| tr(lang, s)))
 }
 
 /// A string keyed by its command id, falling back to the translation of the English `label`.
 pub fn tr_id<'a>(lang: Lang, id: &str, label: &'a str) -> &'a str {
-    lang.catalog().id(id).unwrap_or_else(|| tr(lang, label))
+    crate::branding::text(lang.catalog().id(id).unwrap_or_else(|| tr(lang, label)))
 }
 
 /// Fill `{name}` placeholders in one pass. Unknown placeholders are left as written, and inserted
@@ -552,7 +552,7 @@ pub fn menu_label(id: &str, label: &str) -> String {
 pub fn trn(lang: Lang, n: u64, one: &str, other: &str) -> String {
     let idx = (lang.0.plural)(n);
     let text = lang.catalog().plural(one, other, idx).unwrap_or(if n == 1 { one } else { other });
-    fmt(text, &[("n", &n.to_string())])
+    fmt(crate::branding::text(text), &[("n", &n.to_string())])
 }
 
 #[cfg(test)]

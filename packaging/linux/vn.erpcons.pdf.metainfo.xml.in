@@ -2,26 +2,26 @@
 <!-- AppStream metadata (software centres, Flathub). Template: package.sh and the Flatpak
      manifest substitute @VERSION@ and @DATE@ from Cargo.toml and the build date. -->
 <component type="desktop-application">
-  <id>ai.storyteller.pdfcraft</id>
+  <id>vn.erpcons.pdf</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT OR Apache-2.0</project_license>
-  <name>PdfCraft</name>
+  <name>PDF – ERPCons</name>
   <summary>Read, organize, combine, split and secure PDFs</summary>
-  <developer id="ai.storyteller">
-    <name>Learning Machines LLC</name>
+  <developer id="vn.erpcons">
+    <name>ERPCons</name>
   </developer>
   <description>
     <p>
-      PdfCraft is an open-source PDF workbench. Read, comment on, fill in and sign PDFs;
+      PDF – ERPCons is an open-source PDF workbench. Read, comment on, fill in and sign PDFs;
       organize, combine and split pages; edit, redact, protect and export documents.
     </p>
   </description>
-  <launchable type="desktop-id">ai.storyteller.pdfcraft.desktop</launchable>
-  <icon type="stock">ai.storyteller.pdfcraft</icon>
+  <launchable type="desktop-id">vn.erpcons.pdf.desktop</launchable>
+  <icon type="stock">vn.erpcons.pdf</icon>
   <!-- Only url types known to appstream 0.15 (Ubuntu 22.04, where CI validates): no vcs-browser. -->
-  <url type="homepage">https://github.com/tuananhfr/pdfcraft</url>
+  <url type="homepage">https://office.erpcons.vn</url>
   <url type="bugtracker">https://github.com/tuananhfr/pdfcraft/issues</url>
-  <url type="help">https://github.com/tuananhfr/pdfcraft</url>
+  <url type="help">https://office.erpcons.vn</url>
   <url type="contact">https://github.com/tuananhfr/pdfcraft/issues</url>
   <categories>
     <category>Office</category>

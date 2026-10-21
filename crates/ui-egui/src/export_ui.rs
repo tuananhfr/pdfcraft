@@ -240,7 +240,9 @@ impl PdfCraftApp {
                 let st = status.clone();
                 let shown = dir.display().to_string();
                 let lang = crate::i18n::current();
+                let branding = app.branding;
                 let work = move || {
+                    crate::branding::set_current(branding);
                     let sink = |name: &str, bytes: Vec<u8>| {
                         crate::editing::write_atomically(&dir.join(name).to_string_lossy(), &bytes).map_err(|e| format!("{name}: {e}"))
                     };

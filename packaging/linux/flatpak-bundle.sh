@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-# Repackage a PdfCraft Linux tarball as a single-file Flatpak bundle:
+# Repackage a PDF – ERPCons Linux tarball as a single-file Flatpak bundle:
 #
-#   $DIST/pdfcraft-<version>-linux-<arch>.flatpak
+#   $DIST/ERPCons-PDF-<version>-linux-<arch>.flatpak
 #
 # Usage: packaging/linux/flatpak-bundle.sh [--no-test] [TARBALL]
 #
-# TARBALL defaults to $DIST/pdfcraft-<version>-linux-<arch>.tar.gz from package.sh. The bundle
+# TARBALL defaults to $DIST/ERPCons-PDF-<version>-linux-<arch>.tar.gz from package.sh. The bundle
 # is built for the host architecture (x86_64 or aarch64), which must match the tarball's.
 # Needs flatpak, flatpak-builder and the SVG pixbuf loader (librsvg2-common) for the host's
 # `appstreamcli compose`; the freedesktop runtime and SDK named in the manifest are
 # installed per-user from Flathub. Unless --no-test, the bundle is then installed per-user and
 # `pdfcraft-cli --version` is run inside the sandbox as a smoke test.
-# Manifest: packaging/linux/flatpak/ai.storyteller.pdfcraft.bundle.yml.
+# Manifest: packaging/linux/flatpak/vn.erpcons.pdf.bundle.yml.
 set -euo pipefail
 # shellcheck source=../env.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../env.sh"
 HERE="$ROOT/packaging/linux"
-APP_ID=ai.storyteller.pdfcraft
+APP_ID=vn.erpcons.pdf
 FLATHUB=https://dl.flathub.org/repo/flathub.flatpakrepo
 
 TEST=1
@@ -36,14 +36,14 @@ case "$ARCH" in
   aarch64 | arm64) ARCH=aarch64 ;;
   *) echo "unsupported architecture $ARCH" >&2; exit 2 ;;
 esac
-BASENAME="pdfcraft-$VERSION-linux-$ARCH"
+BASENAME="ERPCons-PDF-$VERSION-linux-$ARCH"
 TARBALL="${TARBALL:-$DIST/$BASENAME.tar.gz}"
 [ -f "$TARBALL" ] || { echo "error: $TARBALL not found (run packaging/linux/package.sh --formats tar first)" >&2; exit 1; }
 for tool in flatpak flatpak-builder; do
   command -v "$tool" >/dev/null || { echo "error: $tool not found (apt install flatpak flatpak-builder librsvg2-common)" >&2; exit 1; }
 done
 
-echo "==> PdfCraft $VERSION Flatpak bundle for $ARCH from $(basename "$TARBALL")"
+echo "==> PDF – ERPCons $VERSION Flatpak bundle for $ARCH from $(basename "$TARBALL")"
 
 WORK="$CARGO_TARGET_DIR/flatpak-bundle"
 rm -rf "$WORK"
@@ -66,7 +66,7 @@ if [ "$TEST" = 1 ]; then
   flatpak install --user -y --noninteractive --reinstall "$OUT"
   flatpak info --user "$APP_ID"
   flatpak run --command=pdfcraft-cli "$APP_ID" --version
-  flatpak run --command=sh "$APP_ID" -c 'ls /app/share/applications /app/share/metainfo /app/share/mime/packages /app/share/icons/hicolor/scalable/apps /app/share/pdfcraft/models'
+  flatpak run --command=sh "$APP_ID" -c 'ls /app/share/applications /app/share/metainfo /app/share/mime/packages /app/share/icons/hicolor/256x256/apps /app/share/pdfcraft/models'
   # Informational: printing runs lp/lpstat, which the freedesktop runtime doesn't ship (see the
   # manifest's finish-args). Says so if a runtime update ever adds them.
   flatpak run --command=sh "$APP_ID" -c 'command -v lp lpstat' || echo "note: no lp/lpstat in the runtime, so printing is unavailable in the Flatpak"

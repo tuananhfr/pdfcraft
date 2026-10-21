@@ -9,9 +9,9 @@
 # at runtime; the freedesktop runtime has all of them, and the GPU driver comes from its
 # org.freedesktop.Platform.GL extension.
 #
-# ai.storyteller.pdfcraft.yml (same directory) is the from-source manifest for Flathub. Keep
+# vn.erpcons.pdf.yml (same directory) is the from-source manifest for Flathub. Keep
 # runtime-version and finish-args identical in both (packaging-lint checks this).
-id: ai.storyteller.pdfcraft
+id: vn.erpcons.pdf
 runtime: org.freedesktop.Platform
 runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
@@ -41,14 +41,14 @@ modules:
     build-commands:
       - install -Dm755 bin/pdfcraft /app/bin/pdfcraft
       - install -Dm755 bin/pdfcraft-cli /app/bin/pdfcraft-cli
-      - install -Dm644 share/applications/ai.storyteller.pdfcraft.desktop /app/share/applications/ai.storyteller.pdfcraft.desktop
-      - install -Dm644 share/mime/packages/ai.storyteller.pdfcraft.xml /app/share/mime/packages/ai.storyteller.pdfcraft.xml
+      - install -Dm644 share/applications/vn.erpcons.pdf.desktop /app/share/applications/vn.erpcons.pdf.desktop
+      - install -Dm644 share/mime/packages/vn.erpcons.pdf.xml /app/share/mime/packages/vn.erpcons.pdf.xml
       # Already has the release's version and date substituted by package.sh.
-      - install -Dm644 share/metainfo/ai.storyteller.pdfcraft.metainfo.xml /app/share/metainfo/ai.storyteller.pdfcraft.metainfo.xml
+      - install -Dm644 share/metainfo/vn.erpcons.pdf.metainfo.xml /app/share/metainfo/vn.erpcons.pdf.metainfo.xml
       # OCR models (with their licences), found at /app/bin/../share/pdfcraft/models.
       - mkdir -p /app/share/pdfcraft && cp -R share/pdfcraft/models /app/share/pdfcraft/
       # Licences, including the embedded craft-fonts' OFL texts.
-      - mkdir -p /app/share/icons /app/share/doc && cp -R share/icons/hicolor /app/share/icons/ && cp -R share/doc/pdfcraft /app/share/doc/
+      - mkdir -p /app/share/icons /app/share/doc && cp -R share/icons/hicolor /app/share/icons/ && cp -R share/doc/erpcons-pdf /app/share/doc/
     sources:
       - type: dir
         path: stage
