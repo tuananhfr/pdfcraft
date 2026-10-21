@@ -33,6 +33,7 @@ use pdfcraft_ui_egui::PdfCraftApp;
 mod apple_events;
 mod compositor_gpu;
 mod decorations;
+mod language;
 mod logging;
 #[cfg(target_os = "windows")]
 mod motion;
@@ -351,6 +352,18 @@ fn app_creator<'a>(
         if let Some(json) = cc.storage.and_then(|s| s.get_string("pdfcraft").or_else(|| s.get_string(LEGACY_STORAGE_KEY))) {
             app.restore(&json);
         }
+        let language_path = settings_dir().map(|dir| dir.join("language.json"));
+        let saved_language = language::read(language_path.as_deref());
+        let legacy_language = cc
+            .storage
+            .and_then(|s| s.get_string("pdfcraft").or_else(|| s.get_string(LEGACY_STORAGE_KEY)))
+            .and_then(|json| serde_json::from_str::<serde_json::Value>(&json).ok())
+            .and_then(|state| state.get("language").and_then(|v| v.as_str()).map(str::to_owned));
+        app.language = language::choose(
+            saved_language.as_deref().or(legacy_language.as_deref()),
+            options.iter().rev().find(|(key, _)| key == "language").map(|(_, value)| value.as_str()),
+        )
+        .to_owned();
         app.integrated_titlebar = integrated;
         app.window_controls = window_controls;
         app.system_text_scale = text_scale::system();
@@ -415,7 +428,7 @@ fn app_creator<'a>(
                 log::warn!("--{k} {v}: {e}");
             }
         }
-        Ok(Box::new(app))
+        Ok(Box::new(language::DesktopApp::new(app, language_path)))
     })
 }
 

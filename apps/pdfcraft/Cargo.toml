@@ -21,6 +21,7 @@ pdfcraft-engine = { workspace = true }
 eframe = { workspace = true, features = ["default_fonts", "wgpu", "glow", "accesskit", "wayland", "x11", "persistence", "links"] }
 egui = { workspace = true }
 serde_json = { workspace = true }
+tempfile = "3.27"
 # Records from every crate go to standard error and the log file (src/logging.rs).
 log = { workspace = true }
 
