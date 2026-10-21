@@ -88,7 +88,7 @@ fn parse(body: &str) -> Result<Release, String> {
         .filter(|u| u.strip_prefix(RELEASES_PAGE).is_some_and(|rest| rest.starts_with('/') && !rest.contains(['?', '#', '\\'])))
         .unwrap_or(RELEASES_PAGE)
         .to_string();
-    Ok(Release { version, url })
+    Ok(Release { version: version.strip_prefix("erpcons-").unwrap_or(&version).to_string(), url })
 }
 
 #[cfg(test)]
@@ -105,6 +105,16 @@ mod tests {
         }
         assert!(parse(r#"{"message":"Not Found"}"#).is_err());
         assert!(parse("<html>").is_err());
+    }
+
+    #[test]
+    fn erpcons_tags_are_compared_as_versions() {
+        let r = parse(r#"{"tag_name":"erpcons-v99.2.0","html_url":"https://github.com/tuananhfr/pdfcraft/releases/tag/erpcons-v99.2.0"}"#).unwrap();
+        assert_eq!(r.version, "v99.2.0");
+        assert!(pdfcraft_ui_egui::updates::is_newer(&r.version, "99.1.0"));
+        assert!(!pdfcraft_ui_egui::updates::is_newer(&r.version, "99.2.0"));
+        assert!(!pdfcraft_ui_egui::updates::is_newer(&r.version, "99.3.0"));
+        assert_eq!(r.url, "https://github.com/tuananhfr/pdfcraft/releases/tag/erpcons-v99.2.0");
     }
 
     #[test]

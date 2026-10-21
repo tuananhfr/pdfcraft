@@ -1,0 +1,231 @@
+name: ERPCons desktop installers
+
+on:
+  push:
+    tags: ["erpcons-v*"]
+    # Dry runs without a release: workflow_dispatch needs the file on the default branch (upstream's main).
+    branches: ["installers/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: "0"
+  CRAFT_FONTS_REF: 3d9ab3a132ed0eff457e424226a435a901da30d3
+  CRAFT_FONTS_DIR: ${{ github.workspace }}/craft-fonts
+  CRAFT_FONTS_REQUIRED: "1"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 120
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Read version and validate tag before building
+        id: version
+        shell: bash
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(cargo pkgid -p pdfcraft | sed 's/.*[#@]//')
+          if [ "$REF_TYPE" = tag ] && [ "$TAG" != "erpcons-v$version" ]; then
+            echo "::error::Tag must be exactly erpcons-v$version (got $TAG)"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "PDFCRAFT_VERSION=$version" >> "$GITHUB_ENV"
+      - name: Check out craft-fonts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: tuananhfr/craft-fonts
+          ref: ${{ env.CRAFT_FONTS_REF }}
+          path: craft-fonts
+      - name: Install Rust (stable)
+        shell: bash
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Install WiX 5.0.2
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          wix extension add --global WixToolset.UI.wixext/5.0.2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          wix extension add --global WixToolset.Util.wixext/5.0.2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Package unsigned MSI and portable zip (includes test-msi.ps1)
+        run: pwsh packaging/windows/package.ps1 -Arch x64
+      - name: Stage fixed release names
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path release-assets | Out-Null
+          Move-Item "dist/release/ERPCons-PDF-$env:PDFCRAFT_VERSION-x64.msi" release-assets/ERPCons-PDF-windows-x64.msi
+          Move-Item "dist/release/ERPCons-PDF-$env:PDFCRAFT_VERSION-x64.zip" release-assets/ERPCons-PDF-windows-x64-portable.zip
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: erpcons-desktop-windows
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
+
+  linux:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Read version and validate tag before building
+        id: version
+        shell: bash
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(cargo pkgid -p pdfcraft | sed 's/.*[#@]//')
+          if [ "$REF_TYPE" = tag ] && [ "$TAG" != "erpcons-v$version" ]; then
+            echo "::error::Tag must be exactly erpcons-v$version (got $TAG)"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "PDFCRAFT_VERSION=$version" >> "$GITHUB_ENV"
+      - name: Check out craft-fonts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: tuananhfr/craft-fonts
+          ref: ${{ env.CRAFT_FONTS_REF }}
+          path: craft-fonts
+      - name: Install Rust (stable)
+        shell: bash
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Install Linux build and packaging dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pkg-config libasound2-dev libgl1-mesa-dev libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev libxrandr-dev \
+            libxi-dev libgtk-3-dev libfontconfig1-dev libfreetype-dev mesa-vulkan-drivers zsync
+      - name: Install pinned packaging tools
+        run: |
+          tools="$RUNNER_TEMP/packaging-tools"
+          mkdir -p "$tools"
+          curl -fsSL https://github.com/goreleaser/nfpm/releases/download/v2.43.4/nfpm_2.43.4_Linux_x86_64.tar.gz -o "$tools/nfpm.tar.gz"
+          echo "cafb544650cb0305d1b164fc0ab261eb77a81af324e18011282d326b326d20fb  $tools/nfpm.tar.gz" | sha256sum -c -
+          tar -xzf "$tools/nfpm.tar.gz" -C "$tools" nfpm
+          echo "$tools" >> "$GITHUB_PATH"
+          curl -fsSL https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage -o "$tools/appimagetool"
+          chmod +x "$tools/appimagetool"
+          echo "APPIMAGETOOL=$tools/appimagetool" >> "$GITHUB_ENV"
+      - name: Package AppImage, deb and rpm
+        run: packaging/linux/package.sh --formats "appimage deb rpm"
+      - name: Stage fixed release names
+        run: |
+          mkdir release-assets
+          mv "dist/release/ERPCons-PDF-$PDFCRAFT_VERSION-linux-x86_64.AppImage" release-assets/ERPCons-PDF-linux-x86_64.AppImage
+          mv "dist/release/ERPCons-PDF-$PDFCRAFT_VERSION-linux-x86_64.deb" release-assets/erpcons-pdf_amd64.deb
+          mv "dist/release/ERPCons-PDF-$PDFCRAFT_VERSION-linux-x86_64.rpm" release-assets/erpcons-pdf.x86_64.rpm
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: erpcons-desktop-linux
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
+
+  macos:
+    runs-on: macos-14
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Read version and validate tag before building
+        id: version
+        shell: bash
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(cargo pkgid -p pdfcraft | sed 's/.*[#@]//')
+          if [ "$REF_TYPE" = tag ] && [ "$TAG" != "erpcons-v$version" ]; then
+            echo "::error::Tag must be exactly erpcons-v$version (got $TAG)"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "PDFCRAFT_VERSION=$version" >> "$GITHUB_ENV"
+      - name: Check out craft-fonts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: tuananhfr/craft-fonts
+          ref: ${{ env.CRAFT_FONTS_REF }}
+          path: craft-fonts
+      - name: Install Rust (stable)
+        shell: bash
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Install universal targets
+        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin
+      - name: Package ad-hoc signed universal DMG
+        env:
+          MACOS_SIGN_IDENTITY: "-"
+        run: packaging/macos/package.sh --arch universal
+      - name: Stage fixed release name
+        run: |
+          mkdir release-assets
+          mv "dist/release/ERPCons-PDF-$PDFCRAFT_VERSION-macos-universal.dmg" release-assets/ERPCons-PDF-macos-universal.dmg
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: erpcons-desktop-macos
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/erpcons-v')
+    needs: [windows, linux, macos]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          pattern: erpcons-desktop-*
+          merge-multiple: true
+          path: release-assets
+      - name: Write checksums and publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.windows.outputs.version }}
+        run: |
+          cd release-assets
+          sha256sum ERPCons-PDF-windows-x64.msi ERPCons-PDF-windows-x64-portable.zip \
+            ERPCons-PDF-linux-x86_64.AppImage erpcons-pdf_amd64.deb erpcons-pdf.x86_64.rpm \
+            ERPCons-PDF-macos-universal.dmg > SHA256SUMS.txt
+          cat > "$RUNNER_TEMP/release-notes.md" <<'NOTES'
+          PDF – ERPCons dành cho máy tính. Bản trực tuyến: https://office.erpcons.vn.
+
+          - Windows x64: tải `ERPCons-PDF-windows-x64.msi` để cài đặt, hoặc `ERPCons-PDF-windows-x64-portable.zip` để chạy bản di động.
+          - Linux x86_64: tải `ERPCons-PDF-linux-x86_64.AppImage` (cấp quyền thực thi trước khi chạy), `erpcons-pdf_amd64.deb` cho Debian/Ubuntu, hoặc `erpcons-pdf.x86_64.rpm` cho Fedora/openSUSE.
+          - macOS (Apple Silicon và Intel): tải `ERPCons-PDF-macos-universal.dmg`, mở rồi kéo PDF – ERPCons vào Applications.
+
+          Bản Windows chưa được ký mã; bản macOS chỉ được ký ad-hoc, chưa được công chứng (notarization).
+          Windows SmartScreen: chọn "More info" → "Run anyway".
+          macOS: nhấp chuột phải vào ứng dụng → Open, hoặc chạy:
+
+          ```sh
+          xattr -dr com.apple.quarantine "/Applications/PDF – ERPCons.app"
+          ```
+
+          Dùng `SHA256SUMS.txt` để kiểm tra tính toàn vẹn của các tệp tải về.
+          NOTES
+          gh release create "$TAG" --verify-tag --latest --title "PDF – ERPCons $VERSION" \
+            --notes-file "$RUNNER_TEMP/release-notes.md" ./*

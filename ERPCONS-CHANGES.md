@@ -2,6 +2,7 @@
 
 This branch (`erpcons`) is the ERPCons Văn phòng fork of [PdfCraft](https://github.com/storytold/pdfcraft), based on PdfCraft by the ArtCraft team, licensed MIT OR Apache-2.0 (see `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`). Changes from upstream `main` (Apache-2.0 §4b):
 
+- (desktop) Build unsigned Windows, ad-hoc signed universal macOS and Linux desktop installers in a dedicated GitHub Actions workflow, publish tagged releases with fixed download names and checksums, and accept ERPCons update tags.
 - (desktop) Complete update-check translations and Lithuanian catalog coverage, preserving diagnostic placeholders and plural forms.
 - (desktop) Brand the native app and installers as PDF – ERPCons, with ERPCons icons, application id and isolated settings paths.
 - (desktop) Copy PDF text as escaped HTML paragraphs with a plain-text alternative, preserving copy-permission checks and falling back to plain text if rich clipboard writing fails.
