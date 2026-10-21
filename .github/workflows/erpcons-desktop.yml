@@ -204,24 +204,30 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: tuananhfr/erpcons-update
-          ref: v0.1.0
+          # v0.1.0, pinned by commit like Cargo.lock: a moved tag must not change what runs next to the signing key.
+          ref: 16d74709d1c964382d052ec568e7c7cd756b39fc
           path: erpcons-update
           persist-credentials: false
-      - name: Write and sign the update manifest
+      - name: Write the update manifest
         env:
           VERSION: ${{ needs.windows.outputs.version }}
+        run: |
+          python3 erpcons-update/tools/make_manifest.py --app pdf --repo pdfcraft --version "$VERSION" \
+            --dir release-assets --out release-assets/update.json
+          rm -rf erpcons-update
+      # Only openssl runs while the key exists; the manifest generator above never sees the secret.
+      - name: Sign the update manifest
+        env:
           UPDATE_KEY: ${{ secrets.ERPCONS_UPDATE_KEY }}
         run: |
           test -n "$UPDATE_KEY" || { echo "::error::ERPCONS_UPDATE_KEY is not set"; exit 1; }
           key="$RUNNER_TEMP/update-key.pem"
+          trap 'rm -f "$key"' EXIT
           (umask 077 && printf '%s\n' "$UPDATE_KEY" > "$key")
           # Installed apps only trust this public key; signing with any other key would strand them.
           test "$(openssl pkey -in "$key" -pubout -outform DER | tail -c 32 | od -An -tx1 | tr -d ' \n')" = \
             e9a7dd9f1d4550e0dd13986d67893666a3bdb1833ae04e5b93ace45b4f01bda3
-          python3 erpcons-update/tools/make_manifest.py --app pdf --repo pdfcraft --version "$VERSION" \
-            --dir release-assets --out release-assets/update.json
           openssl pkeyutl -sign -rawin -inkey "$key" -in release-assets/update.json -out release-assets/update.json.sig
-          rm -f "$key"
       - name: Write checksums and publish release
         env:
           GH_TOKEN: ${{ github.token }}
