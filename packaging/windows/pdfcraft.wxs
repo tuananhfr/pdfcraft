@@ -21,7 +21,7 @@
       Compressed="yes"
       Language="1033"
       Codepage="65001">
-    <SummaryInformation Description="PDF – ERPCons PDF workbench" Manufacturer="ERPCons" />
+    <SummaryInformation Codepage="1252" Description="ERPCons PDF PDF workbench" Manufacturer="ERPCons" />
     <!-- HKLM registrations must never point into a per-user installation (#305). Allow removal
          of an existing installation even if an older MSI let it install per-user. -->
     <Launch Condition="ALLUSERS = 1 OR (Installed AND REMOVE = &quot;ALL&quot;)"
