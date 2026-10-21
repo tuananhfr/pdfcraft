@@ -29,6 +29,7 @@ pub mod canvas;
 mod cert_guard;
 mod chrome;
 pub mod clipboard;
+pub mod clipboard_html;
 mod closed_docs;
 mod combine_grid;
 mod image_pick;
@@ -742,6 +743,8 @@ pub struct PdfCraftApp {
     pub last_copied_file: Option<(String, Vec<u8>)>,
     pub system_clipboard: bool,
     pub clipboard: Option<clipboard::HostClipboard>,
+    /// Desktop rich-copy writer, installed by the native host.
+    pub desktop_copy_text: Option<clipboard::TextWriter>,
     /// Attach file: the file to attach instead of asking (tests, automation).
     pub attach_override: Option<(String, Vec<u8>)>,
     /// Duplicate Field: which field and onto which pages.
@@ -1041,6 +1044,7 @@ impl PdfCraftApp {
             last_copied_file: None,
             system_clipboard: true,
             clipboard: None,
+            desktop_copy_text: None,
             attach_override: None,
             duplicate_draft: None,
             form_preview: false,
@@ -2784,6 +2788,8 @@ impl PdfCraftApp {
         }
         if let Some(clipboard) = &self.clipboard {
             (clipboard.write)(&text);
+        } else if let Some(write) = &self.desktop_copy_text {
+            write(&text);
         } else {
             ctx.copy_text(text);
         }

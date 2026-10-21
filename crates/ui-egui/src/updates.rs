@@ -77,7 +77,9 @@ impl PdfCraftApp {
             }
             let (tx, rx) = std::sync::mpsc::channel();
             let ctx = self.ctx.clone();
+            let language = crate::i18n::current();
             std::thread::spawn(move || {
+                crate::i18n::set_current(language);
                 // The receiver may be gone (the app quit): nothing to report to then.
                 let _ = tx.send(source());
                 if let Some(ctx) = ctx {
@@ -100,7 +102,7 @@ impl PdfCraftApp {
             let result = match rx.try_recv() {
                 Ok(r) => r,
                 Err(std::sync::mpsc::TryRecvError::Empty) => return,
-                Err(std::sync::mpsc::TryRecvError::Disconnected) => Err("the update check stopped unexpectedly".into()),
+                Err(std::sync::mpsc::TryRecvError::Disconnected) => Err(tl!("The update check stopped unexpectedly").into()),
             };
             self.updates.check = Check::Done(result);
         }
@@ -187,5 +189,22 @@ pub(crate) fn dialog(app: &mut PdfCraftApp, ctx: &egui::Context) {
         if let Some(url) = download {
             app.open_url(&url);
         }
+    }
+}
+
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn update_worker_uses_selected_language() {
+        let previous = crate::i18n::current();
+        crate::i18n::set_current(crate::i18n::Lang::from_pref("vi"));
+        let mut app = PdfCraftApp::new();
+        app.update_source = Some(Arc::new(|| Err(crate::i18n::t("Cancel").to_owned())));
+        app.check_for_updates();
+        let Check::Running(rx) = &app.updates.check else { panic!("update worker was not started") };
+        assert_eq!(rx.recv_timeout(std::time::Duration::from_secs(5)).unwrap(), Err("Hủy".into()));
+        crate::i18n::set_current(previous);
     }
 }

@@ -2,6 +2,8 @@
 
 This branch (`erpcons`) is the ERPCons Văn phòng fork of [PdfCraft](https://github.com/storytold/pdfcraft), based on PdfCraft by the ArtCraft team, licensed MIT OR Apache-2.0 (see `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`). Changes from upstream `main` (Apache-2.0 §4b):
 
+- (desktop) Copy PDF text as escaped HTML paragraphs with a plain-text alternative, preserving copy-permission checks and falling back to plain text if rich clipboard writing fails.
+- (desktop) Translate update-check errors and control-file guidance into Vietnamese, using the selected interface language.
 - (desktop) Default to Vietnamese when no language is saved, respect saved and command-line choices, and atomically save language changes immediately.
 - (both) At window widths up to 480 points, the quick tool rail has its own space beside the page viewport so it no longer hides page text; wider layouts are unchanged.
 - (both) Single-document and multi-document save confirmation dialogs fit within the screen with at least 16-point side margins, keeping wrapped text and action buttons reachable on phones.

@@ -35,16 +35,20 @@ fn selection_app(allow_copy: bool) -> PdfCraftApp {
 #[test]
 fn floating_copy_obeys_permissions_before_platform_or_host_writes() {
     for allow_copy in [false, true] {
-        for host in [false, true] {
+        for destination in [0, 1, 2] {
             let writes = Rc::new(RefCell::new(Vec::<String>::new()));
             let captured = writes.clone();
             let mut app = selection_app(allow_copy);
-            if host {
+            if destination == 1 {
                 app.clipboard = Some(HostClipboard {
                     read: Box::new(|| {}),
                     write: Box::new(move |text| captured.borrow_mut().push(text.into())),
                     inbox: ReadInbox::default(),
                 });
+            }
+            let captured = writes.clone();
+            if destination == 2 {
+                app.desktop_copy_text = Some(Box::new(move |text| captured.borrow_mut().push(text.into())));
             }
             let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_| app);
             h.run_steps(4);
@@ -61,7 +65,7 @@ fn floating_copy_obeys_permissions_before_platform_or_host_writes() {
                 }
             }
             if allow_copy {
-                let actual = if host { writes.borrow().clone() } else { platform_writes };
+                let actual = if destination != 0 { writes.borrow().clone() } else { platform_writes };
                 assert_eq!(actual, [selected]);
             } else {
                 assert!(platform_writes.is_empty());

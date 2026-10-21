@@ -27,10 +27,11 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
-use pdfcraft_ui_egui::PdfCraftApp;
+use pdfcraft_ui_egui::{PdfCraftApp, i18n};
 
 #[cfg(target_os = "macos")]
 mod apple_events;
+mod clipboard;
 mod compositor_gpu;
 mod decorations;
 mod language;
@@ -218,6 +219,10 @@ fn main() -> eframe::Result {
     // hands them to the PdfCraft already running and exits (#282, #317). Any option means the
     // caller wants this launch's own window.
     let may_hand_off = !new_window && !files.is_empty() && options.is_empty() && control_file.is_none() && !create_images;
+    pdfcraft_ui_egui::i18n::set_current(pdfcraft_ui_egui::i18n::Lang::from_pref(language::choose(
+        language::read(settings_dir().map(|dir| dir.join("language.json")).as_deref()).as_deref(),
+        options.iter().rev().find(|(key, _)| key == "language").map(|(_, value)| value.as_str()),
+    )));
     let instance = match single_instance::claim(&single_instance::absolute(&files), may_hand_off) {
         single_instance::Claim::HandedOff => return Ok(()),
         single_instance::Claim::Primary(server) => Some(server),
@@ -364,6 +369,8 @@ fn app_creator<'a>(
             options.iter().rev().find(|(key, _)| key == "language").map(|(_, value)| value.as_str()),
         )
         .to_owned();
+        pdfcraft_ui_egui::i18n::set_current(pdfcraft_ui_egui::i18n::Lang::from_pref(&app.language));
+        app.desktop_copy_text = Some(clipboard::writer(cc.egui_ctx.clone()));
         app.integrated_titlebar = integrated;
         app.window_controls = window_controls;
         app.system_text_scale = text_scale::system();
@@ -456,7 +463,10 @@ fn open_control_channel(file: &str, endpoint: std::io::Result<pdfcraft_ui_egui::
             Ok(())
         }
         Err(e) => {
-            let message = format!("--control {file}: {e}. Use a control file in a folder only you can write, such as ~/.pdfcraft-control.json");
+            let message = i18n::fmt(
+                i18n::t("--control {file}: {e}. Use a control file in a folder only you can write, such as ~/.pdfcraft-control.json"),
+                &[("file", file), ("e", &e.to_string())],
+            );
             log::error!("{message}");
             Err(message)
         }

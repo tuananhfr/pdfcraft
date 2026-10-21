@@ -3877,6 +3877,7 @@ dependencies = [
 name = "pdfcraft"
 version = "0.7.1"
 dependencies = [
+ "arboard",
  "eframe",
  "egui",
  "fmv-macos-events",

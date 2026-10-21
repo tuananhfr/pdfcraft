@@ -16,9 +16,11 @@ pub enum Contents {
 
 pub type ReadInbox = Arc<Mutex<Vec<Result<Option<Contents>, ()>>>>;
 
+pub type TextWriter = Box<dyn Fn(&str)>;
+
 pub struct HostClipboard {
     pub read: Box<dyn Fn()>,
-    pub write: Box<dyn Fn(&str)>,
+    pub write: TextWriter,
     pub inbox: ReadInbox,
 }
 

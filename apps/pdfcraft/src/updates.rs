@@ -2,6 +2,8 @@
 
 use std::time::Duration;
 
+use pdfcraft_ui_egui::i18n;
+
 use pdfcraft_ui_egui::updates::{RELEASES_PAGE, Release};
 
 const LATEST: &str = "https://api.github.com/repos/tuananhfr/pdfcraft/releases/latest";
@@ -24,16 +26,21 @@ pub fn latest_release() -> Result<Release, String> {
         .http_status_as_error(false)
         .build()
         .call()
-        .map_err(|e| format!("couldn't reach GitHub ({e})"))?;
+        .map_err(|e| i18n::fmt(i18n::t("Couldn't reach GitHub ({e})"), &[("e", &e.to_string())]))?;
     let status = response.status().as_u16();
     if status == 403 {
         let reset = response.headers().get("x-ratelimit-reset").and_then(|v| v.to_str().ok());
         return Err(rate_limited(reset, now_unix()));
     }
     if !(200..300).contains(&status) {
-        return Err(format!("couldn't reach GitHub (http status: {status})"));
+        return Err(i18n::fmt(i18n::t("Couldn't reach GitHub (HTTP status: {status})"), &[("status", &status.to_string())]));
     }
-    let body = response.body_mut().with_config().limit(1 << 20).read_to_string().map_err(|e| format!("unreadable answer ({e})"))?;
+    let body = response
+        .body_mut()
+        .with_config()
+        .limit(1 << 20)
+        .read_to_string()
+        .map_err(|e| i18n::fmt(i18n::t("Unreadable answer ({e})"), &[("e", &e.to_string())]))?;
     parse(&body)
 }
 
@@ -42,7 +49,7 @@ fn os_roots() -> Result<ureq::tls::RootCerts, String> {
     let found = rustls_native_certs::load_native_certs();
     let certs: Vec<ureq::tls::Certificate<'static>> = found.certs.iter().map(|c| ureq::tls::Certificate::from_der(c.as_ref()).to_owned()).collect();
     if certs.is_empty() {
-        return Err("no trusted certificates found on this system".into());
+        return Err(i18n::t("No trusted certificates found on this system").into());
     }
     Ok(ureq::tls::RootCerts::new_with_certs(&certs))
 }
@@ -57,21 +64,25 @@ fn now_unix() -> u64 {
 /// header, the Unix time the quota refills; `now` is the current Unix time. Anything
 /// surprising (no header, not a number, already past) falls back to asking for patience.
 fn rate_limited(reset: Option<&str>, now: u64) -> String {
-    const FALLBACK: &str = "GitHub is limiting update checks for now (shared hourly quota); try again later";
+    let fallback = i18n::t("GitHub is limiting update checks for now (shared hourly quota); try again later");
     let wait = reset.and_then(|r| r.trim().parse::<u64>().ok()).and_then(|reset| reset.checked_sub(now)).filter(|&wait| wait > 0);
     match wait {
         Some(wait) => {
             let minutes = wait.div_ceil(60).max(1);
-            let plural = if minutes == 1 { "" } else { "s" };
-            format!("GitHub is limiting update checks for now (shared hourly quota); try again in about {minutes} minute{plural}")
+            i18n::trn(
+                i18n::current(),
+                minutes,
+                "GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minute",
+                "GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minutes",
+            )
         }
-        None => FALLBACK.into(),
+        None => fallback.into(),
     }
 }
 
 fn parse(body: &str) -> Result<Release, String> {
-    let v: serde_json::Value = serde_json::from_str(body).map_err(|e| format!("unreadable answer ({e})"))?;
-    let version = v["tag_name"].as_str().filter(|t| !t.is_empty() && t.len() <= 64).ok_or("no release found")?.to_string();
+    let v: serde_json::Value = serde_json::from_str(body).map_err(|e| i18n::fmt(i18n::t("Unreadable answer ({e})"), &[("e", &e.to_string())]))?;
+    let version = v["tag_name"].as_str().filter(|t| !t.is_empty() && t.len() <= 64).ok_or(i18n::t("No release found"))?.to_string();
     let url = v["html_url"]
         .as_str()
         .filter(|u| u.strip_prefix(RELEASES_PAGE).is_some_and(|rest| rest.starts_with('/') && !rest.contains(['?', '#', '\\'])))
@@ -114,6 +125,20 @@ mod tests {
         for bad in [None, Some(""), Some("soon"), Some("1799999999"), Some("1800000000")] {
             assert_eq!(rate_limited(bad, 1800000000), later);
         }
+    }
+
+    #[test]
+    fn vietnamese_update_errors_and_rate_limits() {
+        let previous = i18n::current();
+        i18n::set_current(i18n::Lang::from_pref("vi"));
+        assert_eq!(parse("{}").unwrap_err(), "Không tìm thấy bản phát hành");
+        assert!(parse("<html>").unwrap_err().starts_with("Không đọc được phản hồi ("));
+        assert_eq!(
+            rate_limited(Some("61"), 0),
+            "GitHub đang giới hạn lượt kiểm tra cập nhật (hạn mức dùng chung mỗi giờ); hãy thử lại sau khoảng 2 phút"
+        );
+        assert_eq!(rate_limited(None, 0), "GitHub đang giới hạn lượt kiểm tra cập nhật (hạn mức dùng chung mỗi giờ); hãy thử lại sau");
+        i18n::set_current(previous);
     }
 
     /// Live: asks GitHub over TLS with the OS's roots (`cargo test -p pdfcraft -- --ignored`).

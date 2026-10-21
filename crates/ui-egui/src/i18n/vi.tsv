@@ -2623,3 +2623,12 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	The layout may change.	Bố cục có thể thay đổi.
 	Export anyway	Vẫn xuất
 	OCR is not available on the web. Please use the desktop app.	OCR chưa có trên bản web. Hãy dùng bản máy tính.
+	Couldn't reach GitHub ({e})	Không thể kết nối đến GitHub ({e})
+	Couldn't reach GitHub (HTTP status: {status})	Không thể kết nối đến GitHub (mã HTTP: {status})
+	Unreadable answer ({e})	Không đọc được phản hồi ({e})
+	No trusted certificates found on this system	Không tìm thấy chứng thư số tin cậy trên hệ thống này
+	No release found	Không tìm thấy bản phát hành
+	GitHub is limiting update checks for now (shared hourly quota); try again later	GitHub đang giới hạn lượt kiểm tra cập nhật (hạn mức dùng chung mỗi giờ); hãy thử lại sau
+	--control {file}: {e}. Use a control file in a folder only you can write, such as ~/.pdfcraft-control.json	--control {file}: {e}. Hãy dùng tệp điều khiển trong thư mục chỉ bạn có quyền ghi, chẳng hạn ~/.pdfcraft-control.json
+@plural	GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minute|GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minutes	GitHub đang giới hạn lượt kiểm tra cập nhật (hạn mức dùng chung mỗi giờ); hãy thử lại sau khoảng {n} phút
+	The update check stopped unexpectedly	Quá trình kiểm tra cập nhật đã dừng đột ngột
