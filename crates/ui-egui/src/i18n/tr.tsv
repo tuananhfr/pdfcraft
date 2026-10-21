@@ -2373,3 +2373,29 @@ animation effects	Off	Kapalı
 	Export anyway	Yine de dışa aktar
 	OCR is not available on the web. Please use the desktop app.	OCR web sürümünde kullanılamıyor. Lütfen masaüstü uygulamasını kullanın.
 	The update check stopped unexpectedly	Güncelleme denetimi beklenmedik biçimde durdu
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	Güncelleyici meşgul; kısa süre sonra yeniden deneyin
+	Update network unavailable: {detail}	Güncelleme ağı kullanılamıyor: {detail}
+	Update server returned HTTP {detail}	Güncelleme sunucusu HTTP {detail} döndürdü
+	The update signature is invalid	Güncelleme imzası geçersiz
+	The update manifest is invalid: {detail}	Güncelleme bildirimi geçersiz: {detail}
+	The downloaded update failed verification	İndirilen güncelleme doğrulamadan geçemedi
+	Could not write the update: {detail}	Güncelleme yazılamadı: {detail}
+	This installation cannot update automatically	Bu kurulum otomatik olarak güncellenemez
+	Permission denied while updating; check folder permissions	Güncelleme sırasında izin reddedildi; klasör izinlerini denetleyin
+	Update cancelled	Güncelleme iptal edildi
+	Updated to version {version}	{version} sürümüne güncellendi
+	Update to {version} failed: {reason}	{version} sürümüne güncelleme başarısız oldu: {reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons güncel.
+	The app will close and reopen after updating	Uygulama güncellemeden sonra kapanıp yeniden açılacak
+	Automatically check for updates	Güncellemeleri otomatik olarak denetle
+	PDF – ERPCons {version} is available	PDF – ERPCons {version} kullanıma sunuldu
+	Download new version	Yeni sürümü indir
+	Update now	Şimdi güncelle
+	Remind me later	Daha sonra hatırlat
+	Skip this version	Bu sürümü atla
+	What's new	Yenilikler
+	Retry	Yeniden dene
+	Could not start updater: {reason}	Güncelleyici başlatılamadı: {reason}
+	The updater failed; restart the app and try again	Güncelleyici başarısız oldu; uygulamayı yeniden başlatıp tekrar deneyin

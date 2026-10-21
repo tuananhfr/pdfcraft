@@ -2629,3 +2629,29 @@ key	Space	Tarpas
 	GitHub is limiting update checks for now (shared hourly quota); try again later	„GitHub“ šiuo metu riboja naujinimų tikrinimą (bendras valandinis limitas); bandykite vėliau
 	--control {file}: {e}. Use a control file in a folder only you can write, such as ~/.pdfcraft-control.json	--control {file}: {e}. Valdymo failą laikykite aplanke, kuriame rašyti galite tik jūs, pavyzdžiui, ~/.pdfcraft-control.json
 @plural	GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minute|GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minutes	„GitHub“ šiuo metu riboja naujinimų tikrinimą (bendras valandinis limitas); bandykite maždaug po {n} minutės|„GitHub“ šiuo metu riboja naujinimų tikrinimą (bendras valandinis limitas); bandykite maždaug po {n} minučių|„GitHub“ šiuo metu riboja naujinimų tikrinimą (bendras valandinis limitas); bandykite maždaug po {n} minučių
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	Naujinimo programa užimta; netrukus bandykite dar kartą
+	Update network unavailable: {detail}	Naujinimo tinklas nepasiekiamas: {detail}
+	Update server returned HTTP {detail}	Naujinimo serveris grąžino HTTP {detail}
+	The update signature is invalid	Naujinimo parašas netinkamas
+	The update manifest is invalid: {detail}	Naujinimo manifestas netinkamas: {detail}
+	The downloaded update failed verification	Atsisiųstas naujinimas nepraėjo patikros
+	Could not write the update: {detail}	Nepavyko įrašyti naujinimo: {detail}
+	This installation cannot update automatically	Šio diegimo negalima atnaujinti automatiškai
+	Permission denied while updating; check folder permissions	Naujinant prieiga uždrausta; patikrinkite aplanko teises
+	Update cancelled	Naujinimas atšauktas
+	Updated to version {version}	Atnaujinta į versiją {version}
+	Update to {version} failed: {reason}	Nepavyko atnaujinti į {version}: {reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons yra naujausios versijos.
+	The app will close and reopen after updating	Po naujinimo programa bus uždaryta ir vėl atidaryta
+	Automatically check for updates	Automatiškai tikrinti, ar yra naujinimų
+	PDF – ERPCons {version} is available	Pasiekiama PDF – ERPCons {version}
+	Download new version	Atsisiųsti naują versiją
+	Update now	Atnaujinti dabar
+	Remind me later	Priminti vėliau
+	Skip this version	Praleisti šią versiją
+	What's new	Kas naujo
+	Retry	Bandyti dar kartą
+	Could not start updater: {reason}	Nepavyko paleisti naujinimo programos: {reason}
+	The updater failed; restart the app and try again	Naujinimo programos klaida; paleiskite programą iš naujo ir bandykite dar kartą

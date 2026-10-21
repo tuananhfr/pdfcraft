@@ -2398,3 +2398,29 @@ animation effects	Off	معطّلة
 	Export anyway	تصدير على أي حال
 	OCR is not available on the web. Please use the desktop app.	OCR غير متاح على الويب. يُرجى استخدام تطبيق سطح المكتب.
 	The update check stopped unexpectedly	توقّف التحقّق من التحديثات بشكل غير متوقع
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	أداة التحديث مشغولة؛ حاول مجددًا بعد قليل
+	Update network unavailable: {detail}	شبكة التحديث غير متاحة: {detail}
+	Update server returned HTTP {detail}	أعاد خادم التحديث HTTP {detail}
+	The update signature is invalid	توقيع التحديث غير صالح
+	The update manifest is invalid: {detail}	بيان التحديث غير صالح: {detail}
+	The downloaded update failed verification	فشل التحقق من التحديث الذي تم تنزيله
+	Could not write the update: {detail}	تعذّرت كتابة التحديث: {detail}
+	This installation cannot update automatically	لا يمكن تحديث هذا التثبيت تلقائيًا
+	Permission denied while updating; check folder permissions	رُفض الإذن أثناء التحديث؛ تحقق من أذونات المجلد
+	Update cancelled	أُلغي التحديث
+	Updated to version {version}	تم التحديث إلى الإصدار {version}
+	Update to {version} failed: {reason}	فشل التحديث إلى {version}: {reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons محدّث.
+	The app will close and reopen after updating	سيُغلق التطبيق ويُعاد فتحه بعد التحديث
+	Automatically check for updates	التحقق من التحديثات تلقائيًا
+	PDF – ERPCons {version} is available	يتوفر PDF – ERPCons {version}
+	Download new version	تنزيل الإصدار الجديد
+	Update now	التحديث الآن
+	Remind me later	ذكّرني لاحقًا
+	Skip this version	تخطي هذا الإصدار
+	What's new	ما الجديد
+	Retry	إعادة المحاولة
+	Could not start updater: {reason}	تعذّر بدء أداة التحديث: {reason}
+	The updater failed; restart the app and try again	فشلت أداة التحديث؛ أعد تشغيل التطبيق وحاول مجددًا

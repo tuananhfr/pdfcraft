@@ -2378,3 +2378,29 @@ animation effects	Off	Aus
 	Export anyway	Trotzdem exportieren
 	OCR is not available on the web. Please use the desktop app.	OCR ist in der Webversion nicht verfügbar. Bitte verwenden Sie die Desktop-App.
 	The update check stopped unexpectedly	Die Suche nach Updates wurde unerwartet beendet
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	Das Aktualisierungsprogramm ist beschäftigt; versuchen Sie es gleich erneut
+	Update network unavailable: {detail}	Netzwerk für Updates nicht verfügbar: {detail}
+	Update server returned HTTP {detail}	Der Update-Server hat HTTP {detail} zurückgegeben
+	The update signature is invalid	Die Signatur des Updates ist ungültig
+	The update manifest is invalid: {detail}	Das Update-Manifest ist ungültig: {detail}
+	The downloaded update failed verification	Das heruntergeladene Update hat die Überprüfung nicht bestanden
+	Could not write the update: {detail}	Das Update konnte nicht geschrieben werden: {detail}
+	This installation cannot update automatically	Diese Installation kann nicht automatisch aktualisiert werden
+	Permission denied while updating; check folder permissions	Zugriff beim Aktualisieren verweigert; prüfen Sie die Ordnerberechtigungen
+	Update cancelled	Update abgebrochen
+	Updated to version {version}	Auf Version {version} aktualisiert
+	Update to {version} failed: {reason}	Update auf {version} fehlgeschlagen: {reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons ist auf dem neuesten Stand.
+	The app will close and reopen after updating	Die App wird nach dem Update geschlossen und erneut geöffnet
+	Automatically check for updates	Automatisch nach Updates suchen
+	PDF – ERPCons {version} is available	PDF – ERPCons {version} ist verfügbar
+	Download new version	Neue Version herunterladen
+	Update now	Jetzt aktualisieren
+	Remind me later	Später erinnern
+	Skip this version	Diese Version überspringen
+	What's new	Neuigkeiten
+	Retry	Erneut versuchen
+	Could not start updater: {reason}	Das Aktualisierungsprogramm konnte nicht gestartet werden: {reason}
+	The updater failed; restart the app and try again	Das Aktualisierungsprogramm ist fehlgeschlagen; starten Sie die App neu und versuchen Sie es erneut

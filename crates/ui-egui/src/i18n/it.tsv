@@ -2386,3 +2386,29 @@ animation effects	Off	Disattivati
 	Export anyway	Esporta comunque
 	OCR is not available on the web. Please use the desktop app.	L’OCR non è disponibile nella versione web. Usa l’applicazione desktop.
 	The update check stopped unexpectedly	La ricerca di aggiornamenti si è interrotta in modo imprevisto
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	Il programma di aggiornamento è occupato; riprova tra poco
+	Update network unavailable: {detail}	Rete di aggiornamento non disponibile: {detail}
+	Update server returned HTTP {detail}	Il server di aggiornamento ha restituito HTTP {detail}
+	The update signature is invalid	La firma dell’aggiornamento non è valida
+	The update manifest is invalid: {detail}	Il manifesto dell’aggiornamento non è valido: {detail}
+	The downloaded update failed verification	L’aggiornamento scaricato non ha superato la verifica
+	Could not write the update: {detail}	Impossibile scrivere l’aggiornamento: {detail}
+	This installation cannot update automatically	Questa installazione non può aggiornarsi automaticamente
+	Permission denied while updating; check folder permissions	Autorizzazione negata durante l’aggiornamento; controlla i permessi della cartella
+	Update cancelled	Aggiornamento annullato
+	Updated to version {version}	Aggiornato alla versione {version}
+	Update to {version} failed: {reason}	Aggiornamento a {version} non riuscito: {reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons è aggiornato.
+	The app will close and reopen after updating	L’applicazione verrà chiusa e riaperta dopo l’aggiornamento
+	Automatically check for updates	Verifica automaticamente gli aggiornamenti
+	PDF – ERPCons {version} is available	PDF – ERPCons {version} è disponibile
+	Download new version	Scarica la nuova versione
+	Update now	Aggiorna ora
+	Remind me later	Ricordamelo più tardi
+	Skip this version	Salta questa versione
+	What's new	Novità
+	Retry	Riprova
+	Could not start updater: {reason}	Impossibile avviare il programma di aggiornamento: {reason}
+	The updater failed; restart the app and try again	Il programma di aggiornamento non è riuscito; riavvia l’applicazione e riprova

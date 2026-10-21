@@ -2382,3 +2382,29 @@ animation effects	Off	Izklopljeni
 	Export anyway	Vseeno izvozi
 	OCR is not available on the web. Please use the desktop app.	OCR v spletni različici ni na voljo. Uporabite namizno aplikacijo.
 	The update check stopped unexpectedly	Preverjanje posodobitev se je nepričakovano ustavilo
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	Program za posodabljanje je zaseden; poskusite znova čez nekaj trenutkov
+	Update network unavailable: {detail}	Omrežje za posodobitve ni na voljo: {detail}
+	Update server returned HTTP {detail}	Strežnik za posodobitve je vrnil HTTP {detail}
+	The update signature is invalid	Podpis posodobitve ni veljaven
+	The update manifest is invalid: {detail}	Manifest posodobitve ni veljaven: {detail}
+	The downloaded update failed verification	Prenesena posodobitev ni prestala preverjanja
+	Could not write the update: {detail}	Posodobitve ni bilo mogoče zapisati: {detail}
+	This installation cannot update automatically	Te namestitve ni mogoče samodejno posodobiti
+	Permission denied while updating; check folder permissions	Dostop med posodabljanjem je zavrnjen; preverite dovoljenja mape
+	Update cancelled	Posodobitev preklicana
+	Updated to version {version}	Posodobljeno na različico {version}
+	Update to {version} failed: {reason}	Posodobitev na {version} ni uspela: {reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons je posodobljen.
+	The app will close and reopen after updating	Aplikacija se bo po posodobitvi zaprla in znova odprla
+	Automatically check for updates	Samodejno preverjaj posodobitve
+	PDF – ERPCons {version} is available	Na voljo je PDF – ERPCons {version}
+	Download new version	Prenesi novo različico
+	Update now	Posodobi zdaj
+	Remind me later	Opomni me pozneje
+	Skip this version	Preskoči to različico
+	What's new	Kaj je novega
+	Retry	Poskusi znova
+	Could not start updater: {reason}	Programa za posodabljanje ni bilo mogoče zagnati: {reason}
+	The updater failed; restart the app and try again	Program za posodabljanje ni uspel; znova zaženite aplikacijo in poskusite znova

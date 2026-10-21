@@ -2341,3 +2341,29 @@ animation effects	Off	关
 	Export anyway	仍然导出
 	OCR is not available on the web. Please use the desktop app.	网页版暂不支持 OCR。请使用桌面版。
 	The update check stopped unexpectedly	更新检查意外停止
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	更新程序正忙，请稍后重试
+	Update network unavailable: {detail}	更新网络不可用：{detail}
+	Update server returned HTTP {detail}	更新服务器返回 HTTP {detail}
+	The update signature is invalid	更新签名无效
+	The update manifest is invalid: {detail}	更新清单无效：{detail}
+	The downloaded update failed verification	下载的更新未通过验证
+	Could not write the update: {detail}	无法写入更新：{detail}
+	This installation cannot update automatically	此安装无法自动更新
+	Permission denied while updating; check folder permissions	更新时权限被拒绝，请检查文件夹权限
+	Update cancelled	更新已取消
+	Updated to version {version}	已更新至版本 {version}
+	Update to {version} failed: {reason}	更新至 {version} 失败：{reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons 已是最新版本。
+	The app will close and reopen after updating	更新后应用将关闭并重新打开
+	Automatically check for updates	自动检查更新
+	PDF – ERPCons {version} is available	PDF – ERPCons {version} 已可用
+	Download new version	下载新版本
+	Update now	立即更新
+	Remind me later	稍后提醒我
+	Skip this version	跳过此版本
+	What's new	更新内容
+	Retry	重试
+	Could not start updater: {reason}	无法启动更新程序：{reason}
+	The updater failed; restart the app and try again	更新程序失败，请重启应用后重试

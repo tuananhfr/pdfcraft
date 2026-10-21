@@ -2377,3 +2377,29 @@ animation effects	Off	オフ
 	Export anyway	このまま書き出す
 	OCR is not available on the web. Please use the desktop app.	Web版ではOCRを利用できません。デスクトップ版をご利用ください。
 	The update check stopped unexpectedly	更新の確認が予期せず停止しました
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	更新プログラムは使用中です。しばらくしてから再試行してください
+	Update network unavailable: {detail}	更新用ネットワークを利用できません: {detail}
+	Update server returned HTTP {detail}	更新サーバーが HTTP {detail} を返しました
+	The update signature is invalid	更新の署名が無効です
+	The update manifest is invalid: {detail}	更新マニフェストが無効です: {detail}
+	The downloaded update failed verification	ダウンロードした更新の検証に失敗しました
+	Could not write the update: {detail}	更新を書き込めませんでした: {detail}
+	This installation cannot update automatically	このインストールでは自動更新できません
+	Permission denied while updating; check folder permissions	更新中にアクセスが拒否されました。フォルダーのアクセス権を確認してください
+	Update cancelled	更新をキャンセルしました
+	Updated to version {version}	バージョン {version} に更新しました
+	Update to {version} failed: {reason}	{version} への更新に失敗しました: {reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons は最新です。
+	The app will close and reopen after updating	更新後にアプリを閉じて再起動します
+	Automatically check for updates	更新を自動的に確認する
+	PDF – ERPCons {version} is available	PDF – ERPCons {version} が利用可能です
+	Download new version	新しいバージョンをダウンロード
+	Update now	今すぐ更新
+	Remind me later	後で通知
+	Skip this version	このバージョンをスキップ
+	What's new	新機能
+	Retry	再試行
+	Could not start updater: {reason}	更新プログラムを起動できませんでした: {reason}
+	The updater failed; restart the app and try again	更新プログラムでエラーが発生しました。アプリを再起動して再試行してください

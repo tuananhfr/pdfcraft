@@ -2290,3 +2290,29 @@ animation effects	Off	Выкл
 	Export anyway	Всё равно экспортировать
 	OCR is not available on the web. Please use the desktop app.	OCR недоступно в веб-версии. Используйте приложение для компьютера.
 	The update check stopped unexpectedly	Проверка обновлений неожиданно прервалась
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	Программа обновления занята; повторите попытку чуть позже
+	Update network unavailable: {detail}	Сеть обновлений недоступна: {detail}
+	Update server returned HTTP {detail}	Сервер обновлений вернул HTTP {detail}
+	The update signature is invalid	Подпись обновления недействительна
+	The update manifest is invalid: {detail}	Манифест обновления недействителен: {detail}
+	The downloaded update failed verification	Загруженное обновление не прошло проверку
+	Could not write the update: {detail}	Не удалось записать обновление: {detail}
+	This installation cannot update automatically	Эту установку нельзя обновить автоматически
+	Permission denied while updating; check folder permissions	Доступ при обновлении запрещён; проверьте права на папку
+	Update cancelled	Обновление отменено
+	Updated to version {version}	Обновлено до версии {version}
+	Update to {version} failed: {reason}	Не удалось обновить до {version}: {reason}
+	PDF – ERPCons is up to date.	Установлена последняя версия PDF – ERPCons.
+	The app will close and reopen after updating	После обновления приложение закроется и откроется снова
+	Automatically check for updates	Автоматически проверять обновления
+	PDF – ERPCons {version} is available	Доступна версия PDF – ERPCons {version}
+	Download new version	Скачать новую версию
+	Update now	Обновить сейчас
+	Remind me later	Напомнить позже
+	Skip this version	Пропустить эту версию
+	What's new	Что нового
+	Retry	Повторить
+	Could not start updater: {reason}	Не удалось запустить программу обновления: {reason}
+	The updater failed; restart the app and try again	Программа обновления завершилась с ошибкой; перезапустите приложение и повторите попытку

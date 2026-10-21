@@ -2375,3 +2375,29 @@ animation effects	Off	Өшірулі
 	Export anyway	Сонда да экспорттау
 	OCR is not available on the web. Please use the desktop app.	Веб-нұсқада OCR қолжетімді емес. Компьютерге арналған қолданбаны пайдаланыңыз.
 	The update check stopped unexpectedly	Жаңартуларды тексеру күтпеген жерден тоқтады
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	Жаңарту құралы бос емес; сәл кейінірек қайталап көріңіз
+	Update network unavailable: {detail}	Жаңарту желісі қолжетімсіз: {detail}
+	Update server returned HTTP {detail}	Жаңарту сервері HTTP {detail} қайтарды
+	The update signature is invalid	Жаңарту қолтаңбасы жарамсыз
+	The update manifest is invalid: {detail}	Жаңарту манифесті жарамсыз: {detail}
+	The downloaded update failed verification	Жүктеп алынған жаңарту тексеруден өтпеді
+	Could not write the update: {detail}	Жаңартуды жазу мүмкін болмады: {detail}
+	This installation cannot update automatically	Бұл орнатылымды автоматты түрде жаңарту мүмкін емес
+	Permission denied while updating; check folder permissions	Жаңарту кезінде рұқсат берілмеді; қалта рұқсаттарын тексеріңіз
+	Update cancelled	Жаңарту тоқтатылды
+	Updated to version {version}	{version} нұсқасына жаңартылды
+	Update to {version} failed: {reason}	{version} нұсқасына жаңарту сәтсіз аяқталды: {reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons соңғы нұсқада.
+	The app will close and reopen after updating	Жаңартудан кейін қолданба жабылып, қайта ашылады
+	Automatically check for updates	Жаңартуларды автоматты түрде тексеру
+	PDF – ERPCons {version} is available	PDF – ERPCons {version} қолжетімді
+	Download new version	Жаңа нұсқаны жүктеп алу
+	Update now	Қазір жаңарту
+	Remind me later	Кейінірек еске салу
+	Skip this version	Бұл нұсқаны өткізіп жіберу
+	What's new	Жаңалықтар
+	Retry	Қайталау
+	Could not start updater: {reason}	Жаңарту құралын іске қосу мүмкін болмады: {reason}
+	The updater failed; restart the app and try again	Жаңарту құралы сәтсіз аяқталды; қолданбаны қайта іске қосып, қайталап көріңіз

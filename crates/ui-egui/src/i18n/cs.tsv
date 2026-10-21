@@ -2451,3 +2451,29 @@ animation effects	Off	Vypnuto
 	Export anyway	Přesto exportovat
 	OCR is not available on the web. Please use the desktop app.	OCR není ve webové verzi k dispozici. Použijte prosím aplikaci pro počítač.
 	The update check stopped unexpectedly	Kontrola aktualizací se neočekávaně zastavila
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	Aktualizační program je zaneprázdněn; zkuste to za chvíli znovu
+	Update network unavailable: {detail}	Síť pro aktualizace není dostupná: {detail}
+	Update server returned HTTP {detail}	Aktualizační server vrátil HTTP {detail}
+	The update signature is invalid	Podpis aktualizace je neplatný
+	The update manifest is invalid: {detail}	Manifest aktualizace je neplatný: {detail}
+	The downloaded update failed verification	Stažená aktualizace neprošla ověřením
+	Could not write the update: {detail}	Aktualizaci nelze zapsat: {detail}
+	This installation cannot update automatically	Tuto instalaci nelze aktualizovat automaticky
+	Permission denied while updating; check folder permissions	Přístup při aktualizaci odepřen; zkontrolujte oprávnění složky
+	Update cancelled	Aktualizace zrušena
+	Updated to version {version}	Aktualizováno na verzi {version}
+	Update to {version} failed: {reason}	Aktualizace na {version} selhala: {reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons je aktuální.
+	The app will close and reopen after updating	Aplikace se po aktualizaci zavře a znovu otevře
+	Automatically check for updates	Automaticky kontrolovat aktualizace
+	PDF – ERPCons {version} is available	Je k dispozici PDF – ERPCons {version}
+	Download new version	Stáhnout novou verzi
+	Update now	Aktualizovat nyní
+	Remind me later	Připomenout později
+	Skip this version	Přeskočit tuto verzi
+	What's new	Co je nového
+	Retry	Zkusit znovu
+	Could not start updater: {reason}	Aktualizační program nelze spustit: {reason}
+	The updater failed; restart the app and try again	Aktualizační program selhal; restartujte aplikaci a zkuste to znovu

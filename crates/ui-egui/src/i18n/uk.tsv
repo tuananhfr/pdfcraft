@@ -2399,3 +2399,29 @@ animation effects	Off	Вимкнено
 	Export anyway	Усе одно експортувати
 	OCR is not available on the web. Please use the desktop app.	OCR недоступне у вебверсії. Скористайтеся програмою для комп’ютера.
 	The update check stopped unexpectedly	Перевірка оновлень несподівано перервалася
+
+# Native ERPCons updates
+	The updater is busy; try again shortly	Програма оновлення зайнята; спробуйте знову трохи пізніше
+	Update network unavailable: {detail}	Мережа оновлень недоступна: {detail}
+	Update server returned HTTP {detail}	Сервер оновлень повернув HTTP {detail}
+	The update signature is invalid	Підпис оновлення недійсний
+	The update manifest is invalid: {detail}	Маніфест оновлення недійсний: {detail}
+	The downloaded update failed verification	Завантажене оновлення не пройшло перевірку
+	Could not write the update: {detail}	Не вдалося записати оновлення: {detail}
+	This installation cannot update automatically	Цю інсталяцію неможливо оновити автоматично
+	Permission denied while updating; check folder permissions	Доступ під час оновлення заборонено; перевірте дозволи папки
+	Update cancelled	Оновлення скасовано
+	Updated to version {version}	Оновлено до версії {version}
+	Update to {version} failed: {reason}	Не вдалося оновити до {version}: {reason}
+	PDF – ERPCons is up to date.	PDF – ERPCons має найновішу версію.
+	The app will close and reopen after updating	Після оновлення застосунок закриється й відкриється знову
+	Automatically check for updates	Автоматично перевіряти оновлення
+	PDF – ERPCons {version} is available	Доступна версія PDF – ERPCons {version}
+	Download new version	Завантажити нову версію
+	Update now	Оновити зараз
+	Remind me later	Нагадати пізніше
+	Skip this version	Пропустити цю версію
+	What's new	Що нового
+	Retry	Спробувати знову
+	Could not start updater: {reason}	Не вдалося запустити програму оновлення: {reason}
+	The updater failed; restart the app and try again	Програма оновлення завершилася з помилкою; перезапустіть застосунок і спробуйте знову
