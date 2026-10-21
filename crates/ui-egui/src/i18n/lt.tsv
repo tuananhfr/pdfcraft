@@ -2620,3 +2620,12 @@ key	Space	Tarpas
 	The layout may change.	Maketas gali pasikeisti.
 	Export anyway	Vis tiek eksportuoti
 	OCR is not available on the web. Please use the desktop app.	OCR žiniatinklio versijoje nepasiekiamas. Naudokite kompiuteriams skirtą programą.
+	The update check stopped unexpectedly	Naujinimų tikrinimas netikėtai nutrūko
+	Couldn't reach GitHub ({e})	Nepavyko prisijungti prie „GitHub“ ({e})
+	Couldn't reach GitHub (HTTP status: {status})	Nepavyko prisijungti prie „GitHub“ (HTTP būsena: {status})
+	Unreadable answer ({e})	Nepavyko perskaityti atsakymo ({e})
+	No trusted certificates found on this system	Šioje sistemoje nerasta patikimų sertifikatų
+	No release found	Nerasta išleistos versijos
+	GitHub is limiting update checks for now (shared hourly quota); try again later	„GitHub“ šiuo metu riboja naujinimų tikrinimą (bendras valandinis limitas); bandykite vėliau
+	--control {file}: {e}. Use a control file in a folder only you can write, such as ~/.pdfcraft-control.json	--control {file}: {e}. Valdymo failą laikykite aplanke, kuriame rašyti galite tik jūs, pavyzdžiui, ~/.pdfcraft-control.json
+@plural	GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minute|GitHub is limiting update checks for now (shared hourly quota); try again in about {n} minutes	„GitHub“ šiuo metu riboja naujinimų tikrinimą (bendras valandinis limitas); bandykite maždaug po {n} minutės|„GitHub“ šiuo metu riboja naujinimų tikrinimą (bendras valandinis limitas); bandykite maždaug po {n} minučių|„GitHub“ šiuo metu riboja naujinimų tikrinimą (bendras valandinis limitas); bandykite maždaug po {n} minučių
