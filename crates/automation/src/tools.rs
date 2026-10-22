@@ -438,10 +438,10 @@ pub fn tools() -> Vec<ToolDef> {
         t(
             "redact_apply",
             "Apply redactions",
-            "Apply the redaction marks (all, or those on pages): text, images, vectors, comments and form fields under them are removed for good and boxes are drawn in their place. A verification pass fails the operation if anything readable remains. Undoable until saved; the saved file no longer contains the content.",
+            "Apply the redaction marks (all, or those on pages): text, images, vectors, comments and form fields under them are removed for good and boxes are drawn in their place. A verification pass fails the operation if anything readable remains. Cannot be undone: clears all earlier Undo and Redo history. Removes metadata and hidden data by default (the same categories as doc_sanitize); set remove_hidden to false to keep them. Saving rewrites the whole file to remove earlier revisions.",
         )
         .destructive()
-        .with(schema(json!({ "doc": doc(), "pages": pages("whose marks to apply (default: all)") }), &["doc"])),
+        .with(schema(json!({ "doc": doc(), "pages": pages("whose marks to apply (default: all)"), "remove_hidden": { "type": "boolean", "description": "Also sanitize metadata and hidden data (default true)." } }), &["doc"])),
         t("redact_clear", "Remove redaction marks", "Remove every redaction mark without applying it. Undoable.")
             .destructive()
             .with(schema(json!({ "doc": doc() }), &["doc"])),

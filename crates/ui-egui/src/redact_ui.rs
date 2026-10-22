@@ -434,7 +434,7 @@ pub(crate) fn props_body(ui: &mut egui::Ui, d: &mut RedactPrefs, _t: &Tokens) ->
 }
 
 /// Apply redactions confirmation. Returns (apply, cancel).
-pub(crate) fn apply_body(ui: &mut egui::Ui, marks: usize, t: &Tokens) -> (bool, bool) {
+pub(crate) fn apply_body(ui: &mut egui::Ui, marks: usize, remove_hidden: &mut bool, t: &Tokens) -> (bool, bool) {
     ui.set_width(420.0);
     ui.label(egui::RichText::new(tl!("Apply redactions")).font(crate::theme::semibold(18.0)));
     ui.add_space(8.0);
@@ -449,24 +449,22 @@ pub(crate) fn apply_body(ui: &mut egui::Ui, marks: usize, t: &Tokens) -> (bool, 
             .small()
             .color(t.text_muted),
     );
-    ui.label(egui::RichText::new(sanitize_hint()).small().color(t.text_muted));
+    ui.label(tl!("This cannot be undone. All earlier Undo and Redo history will be cleared."));
+    ui.add(widgets::checkbox(remove_hidden, tl!("Also remove metadata and hidden data (title, author, XMP, …)")));
+    if *remove_hidden {
+        ui.label(egui::RichText::new(tl!("Sanitizing removes hidden information from the document: metadata, file attachments, comments, form fields (flattened), hidden text and layers, bookmarks, links, actions and scripts, and private application data.")).small().color(t.text_muted));
+    }
     ui.add_space(12.0);
     buttons(ui, "Apply", true)
 }
 
-/// Redaction removes page content only, never the document's metadata.
-fn sanitize_hint() -> &'static str {
-    tl!("Metadata such as the title may still contain the text: run Sanitize document to remove it.")
-}
-
 /// The notice once `marks` redaction marks are applied.
 pub(crate) fn applied_notice(marks: usize) -> String {
-    let applied = if marks == 1 {
+    if marks == 1 {
         tl!("Applied 1 redaction mark. Save to remove the content from the file.").to_string()
     } else {
         crate::i18n::fmt(tl!("Applied {n} redaction marks. Save to remove the content from the file."), &[("n", &marks.to_string())])
-    };
-    format!("{applied} {}", sanitize_hint())
+    }
 }
 
 fn buttons(ui: &mut egui::Ui, ok: &str, primary: bool) -> (bool, bool) {

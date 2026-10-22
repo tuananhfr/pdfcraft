@@ -2479,3 +2479,7 @@ animation effects	Off	Vypnuto
 	The updater failed; restart the app and try again	Aktualizační program selhal; restartujte aplikaci a zkuste to znovu
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	Aplikace se zavře, Windows požádá o oprávnění k instalaci — zvolte Yes — a aplikace se automaticky znovu otevře
 	Install now	Nainstalovat nyní
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	Tuto akci nelze vrátit zpět. Celá předchozí historie vrácení a opakování bude vymazána.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	Odstranit také metadata a skrytá data (název, autor, XMP, …)

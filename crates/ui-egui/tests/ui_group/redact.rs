@@ -4,6 +4,7 @@
 use egui::Pos2;
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
+use pdfcraft_engine::{Edit, NewAnnotation, Session, Shape, Style};
 use pdfcraft_ui_egui::{Dialog, PdfCraftApp};
 
 fn harness() -> Harness<'static, PdfCraftApp> {
@@ -76,10 +77,10 @@ fn marking_applying_and_clearing() {
     h.run_steps(4);
     let s = h.state();
     let doc = s.session.get(s.views[0].id).unwrap();
-    assert_eq!((doc.redaction_marks(), doc.can_undo()), (0, Some("Apply redactions")));
+    assert_eq!((doc.redaction_marks(), doc.can_undo(), doc.can_redo()), (0, None, None));
     assert!(doc.form.is_empty(), "the whole page was redacted, fields included");
     let toast = s.toast.as_ref().map(|t| t.0.as_str()).unwrap_or_default();
-    assert!(toast.starts_with("Applied 2 redaction marks.") && toast.contains("run Sanitize document"), "{toast:?}");
+    assert_eq!(toast, "Applied 2 redaction marks. Save to remove the content from the file.");
 }
 
 #[test]
@@ -183,4 +184,48 @@ fn removing_hidden_information_and_sanitizing() {
     h.run_steps(3);
     let s = h.state();
     assert_eq!(s.session.get(s.views[0].id).unwrap().can_undo(), Some("Sanitize document"));
+}
+
+#[test]
+fn redaction_confirmation_defaults_to_hidden_data_and_blocks_undo() {
+    let bytes = Session::new().create_from_text("SECRET-123", "SECRET-123").unwrap().to_vec();
+    let mut h = Harness::builder().with_size(egui::vec2(1100.0, 900.0)).build_eframe(move |_cc| {
+        let mut app = PdfCraftApp::new();
+        app.set_option("language", "vi").unwrap();
+        app.open_bytes("secret.pdf", None, bytes.clone()).unwrap();
+        let shape =
+            Shape::Redact { quads: vec![pdfcraft_engine::rect_quad([0.0, 0.0, 1000.0, 1000.0])], overlay: String::new(), look: Default::default() };
+        assert!(app.apply_edit(Edit::AddAnnotation(NewAnnotation {
+            page: 0,
+            style: Style::default_for(&shape),
+            shape,
+            contents: String::new(),
+            author: String::new(),
+        })));
+        app
+    });
+    h.run_steps(4);
+    assert!(h.state_mut().execute("redact.apply"));
+    h.run_steps(2);
+    assert!(h.state().redact_remove_hidden);
+    h.get_by_label("Thao tác này không thể hoàn tác. Toàn bộ lịch sử Hoàn tác và Làm lại trước đó sẽ bị xoá.");
+    if let Ok(out) = std::env::var("PDFCRAFT_SHOT") {
+        h.render().unwrap().save(out).unwrap();
+    }
+    h.get_by_label("Xoá cả siêu dữ liệu và dữ liệu ẩn (tiêu đề, tác giả, XMP, …)").click();
+    h.run_steps(2);
+    assert!(!h.state().redact_remove_hidden);
+    h.get_by_label("Hủy").click();
+    h.run_steps(2);
+    let id = h.state().active_ids().unwrap().1;
+    assert_eq!(h.state().session.get(id).unwrap().redaction_marks(), 1);
+    assert!(h.state_mut().execute("redact.apply"));
+    h.run_steps(2);
+    assert!(h.state().redact_remove_hidden);
+    h.get_by_label("Áp dụng").click();
+    h.run_steps(4);
+    let doc = h.state().session.get(id).unwrap();
+    assert_eq!(doc.redaction_marks(), 0);
+    assert!(doc.can_undo().is_none() && doc.can_redo().is_none());
+    assert!(doc.info.title.is_none());
 }

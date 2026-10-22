@@ -4121,6 +4121,7 @@ dependencies = [
  "icu_properties",
  "idna",
  "image",
+ "lopdf",
  "pdfcraft-a11y",
  "pdfcraft-annot",
  "pdfcraft-audit",

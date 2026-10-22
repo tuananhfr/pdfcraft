@@ -2490,3 +2490,7 @@ animation effects	Off	Desactivados
 	OCR is not available on the web. Please use the desktop app.	El OCR no está disponible en la versión web. Usa la aplicación de escritorio.
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	La aplicación se cerrará, Windows pedirá permiso de instalación — elija Yes — y la aplicación se abrirá automáticamente
 	Install now	Instalar ahora
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	Esta operación no se puede deshacer. Se borrará todo el historial anterior de deshacer y rehacer.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	Eliminar también metadatos y datos ocultos (título, autor, XMP, …)

@@ -2419,3 +2419,7 @@ animation effects	Off	Desativados
 	The updater failed; restart the app and try again	O atualizador falhou; reinicie o aplicativo e tente novamente
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	O aplicativo será fechado, o Windows pedirá permissão para instalar — escolha Yes — e o aplicativo reabrirá automaticamente
 	Install now	Instalar agora
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	Esta operação não pode ser desfeita. Todo o histórico anterior de desfazer e refazer será apagado.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	Remover também metadados e dados ocultos (título, autor, XMP, …)

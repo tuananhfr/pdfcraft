@@ -2657,3 +2657,7 @@ key	Space	Tarpas
 	The updater failed; restart the app and try again	Naujinimo programos klaida; paleiskite programą iš naujo ir bandykite dar kartą
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	Programa užsidarys, Windows paprašys leidimo įdiegti — pasirinkite Yes — tada programa automatiškai vėl atsidarys
 	Install now	Įdiegti dabar
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	Šio veiksmo atšaukti negalima. Visa ankstesnė atšaukimo ir grąžinimo istorija bus išvalyta.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	Taip pat pašalinti metaduomenis ir paslėptus duomenis (pavadinimą, autorių, XMP, …)

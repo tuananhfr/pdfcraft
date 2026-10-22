@@ -2414,3 +2414,7 @@ animation effects	Off	Disattivati
 	The updater failed; restart the app and try again	Il programma di aggiornamento non è riuscito; riavvia l’applicazione e riprova
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	L’app si chiuderà, Windows chiederà il permesso di installazione — scegli Yes — poi l’app si riaprirà automaticamente
 	Install now	Installa ora
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	Questa operazione è irreversibile. Tutta la cronologia precedente di annullamento e ripristino verrà cancellata.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	Rimuovi anche metadati e dati nascosti (titolo, autore, XMP, …)

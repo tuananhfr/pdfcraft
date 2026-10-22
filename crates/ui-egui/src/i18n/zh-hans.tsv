@@ -2369,3 +2369,7 @@ animation effects	Off	关
 	The updater failed; restart the app and try again	更新程序失败，请重启应用后重试
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	应用将关闭，Windows 将请求安装权限 — 请选择 Yes — 随后应用将自动重新打开
 	Install now	立即安装
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	此操作无法撤销。此前的所有撤销和重做历史记录都将清除。
+
+	Also remove metadata and hidden data (title, author, XMP, …)	同时删除元数据和隐藏数据（标题、作者、XMP、…）

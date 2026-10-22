@@ -540,7 +540,7 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
             }
             Dialog::RedactApply => {
                 let marks = app.active_ids().and_then(|(_, id)| app.session.get(id)).map_or(0, |d| d.redaction_marks());
-                let (ok, cancel) = crate::redact_ui::apply_body(ui, marks, &t);
+                let (ok, cancel) = crate::redact_ui::apply_body(ui, marks, &mut app.redact_remove_hidden, &t);
                 if ok {
                     redact_now = Some(dialog);
                 }
@@ -1257,7 +1257,7 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
         }
         Some(Dialog::RedactApply) => {
             let marks = app.active_ids().and_then(|(_, id)| app.session.get(id)).map_or(0, |d| d.redaction_marks());
-            if app.apply_edit(Edit::ApplyRedactions { pages: None }) {
+            if app.apply_edit(Edit::ApplyRedactions { pages: None, remove_hidden: app.redact_remove_hidden }) {
                 app.notify(crate::redact_ui::applied_notice(marks));
             }
         }

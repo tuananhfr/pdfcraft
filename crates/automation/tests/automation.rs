@@ -5789,3 +5789,42 @@ fn doc_save_keeps_a_certified_original_intact() {
     assert!(std::fs::read(dir.join("copy.pdf")).unwrap().starts_with(&certified));
     assert_eq!(std::fs::read(dir.join("certified.pdf")).unwrap(), certified.as_slice());
 }
+
+#[test]
+fn redaction_tools_block_undo_after_apply_and_save() {
+    let dir = workdir("redact-history-boundary");
+    std::fs::write(dir.join("secret.txt"), "SECRET-123\nPublic line").unwrap();
+    let mut a = auto(&dir);
+    let doc = ok(&mut a, "doc_create", json!({ "from": "text", "path": "secret.txt" }))["doc"].as_u64().unwrap();
+    ok(&mut a, "doc_set_info", json!({ "doc": doc, "key": "Title", "value": "SECRET-123" }));
+    ok(&mut a, "redact_mark", json!({ "doc": doc, "find": "SECRET-123" }));
+    ok(&mut a, "redact_apply", json!({ "doc": doc }));
+    ok(&mut a, "doc_save", json!({ "doc": doc, "path": "first.pdf" }));
+    assert!(a.call("edit_undo", &json!({ "doc": doc })).is_err());
+    assert!(a.call("edit_redo", &json!({ "doc": doc })).is_err());
+    ok(&mut a, "doc_save", json!({ "doc": doc, "path": "second.pdf" }));
+    for name in ["first.pdf", "second.pdf"] {
+        let bytes = std::fs::read(dir.join(name)).unwrap();
+        assert!(!bytes.windows(10).any(|w| w == b"SECRET-123"));
+        let reopened = ok(&mut a, "doc_open", json!({ "path": name }))["doc"].clone();
+        assert_eq!(ok(&mut a, "doc_info", json!({ "doc": reopened }))["title"], Value::Null);
+    }
+    assert!(!page_text(&mut a, doc).join("\n").contains("SECRET-123"));
+}
+
+#[test]
+fn redaction_tools_can_keep_metadata_but_cannot_undo() {
+    let dir = workdir("redact-keep-metadata");
+    std::fs::write(dir.join("secret.txt"), "SECRET-123").unwrap();
+    let mut a = auto(&dir);
+    let doc = ok(&mut a, "doc_create", json!({ "from": "text", "path": "secret.txt" }))["doc"].as_u64().unwrap();
+    ok(&mut a, "doc_set_info", json!({ "doc": doc, "key": "Title", "value": "SECRET-123" }));
+    ok(&mut a, "redact_mark", json!({ "doc": doc, "find": "SECRET-123" }));
+    ok(&mut a, "redact_apply", json!({ "doc": doc, "remove_hidden": false }));
+    assert!(a.call("edit_undo", &json!({ "doc": doc })).is_err());
+    assert!(a.call("edit_redo", &json!({ "doc": doc })).is_err());
+    ok(&mut a, "doc_save", json!({ "doc": doc, "path": "kept.pdf", "full": false }));
+    assert!(!page_text(&mut a, doc).join("\n").contains("SECRET-123"));
+    let reopened = ok(&mut a, "doc_open", json!({ "path": "kept.pdf" }))["doc"].clone();
+    assert_eq!(ok(&mut a, "doc_info", json!({ "doc": reopened }))["title"], "SECRET-123");
+}

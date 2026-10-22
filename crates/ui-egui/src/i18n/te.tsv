@@ -2273,3 +2273,7 @@ animation effects	Off	ఆఫ్
 	OCR is not available on the web. Please use the desktop app.	వెబ్ వెర్షన్‌లో OCR అందుబాటులో లేదు. దయచేసి డెస్క్‌టాప్ యాప్‌ను ఉపయోగించండి.
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	యాప్ మూసివేయబడుతుంది, Windows ఇన్‌స్టాలేషన్ అనుమతి అడుగుతుంది — Yes ఎంచుకోండి — తర్వాత యాప్ స్వయంచాలకంగా మళ్లీ తెరుచుకుంటుంది
 	Install now	ఇప్పుడే ఇన్‌స్టాల్ చేయండి
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	ఈ చర్యను రద్దు చేయలేరు. మునుపటి చర్యల రద్దు మరియు పునరావృత చరిత్ర మొత్తం తొలగించబడుతుంది.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	మెటాడేటా మరియు దాచిన డేటాను కూడా తొలగించు (శీర్షిక, రచయిత, XMP, …)

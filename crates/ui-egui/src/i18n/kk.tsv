@@ -2403,3 +2403,7 @@ animation effects	Off	Өшірулі
 	The updater failed; restart the app and try again	Жаңарту құралы сәтсіз аяқталды; қолданбаны қайта іске қосып, қайталап көріңіз
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	Қолданба жабылады, Windows орнатуға рұқсат сұрайды — Yes таңдаңыз — содан кейін қолданба автоматты түрде қайта ашылады
 	Install now	Қазір орнату
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	Бұл әрекетті болдырмау мүмкін емес. Бұрынғы болдырмау және қайталау тарихы толығымен өшіріледі.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	Метадеректер мен жасырын деректерді де жою (тақырып, автор, XMP, …)

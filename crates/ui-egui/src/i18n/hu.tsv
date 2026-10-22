@@ -2404,3 +2404,7 @@ animation effects	Off	Ki
 	The updater failed; restart the app and try again	A frissítő hibát jelzett; indítsa újra az alkalmazást, és próbálja újra
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	Az alkalmazás bezárul, a Windows telepítési engedélyt kér — válassza a Yes lehetőséget — majd az alkalmazás automatikusan újra megnyílik
 	Install now	Telepítés most
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	Ez a művelet nem vonható vissza. Minden korábbi visszavonási és ismétlési előzmény törlődik.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	A metaadatok és rejtett adatok törlése is (cím, szerző, XMP, …)

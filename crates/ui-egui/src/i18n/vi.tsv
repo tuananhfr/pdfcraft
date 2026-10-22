@@ -2660,3 +2660,7 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	The updater failed; restart the app and try again	Trình cập nhật gặp lỗi; hãy khởi động lại ứng dụng và thử lại
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	Ứng dụng sẽ đóng, Windows sẽ hỏi quyền cài đặt — hãy chọn Yes — rồi ứng dụng tự mở lại
 	Install now	Cài đặt ngay
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	Thao tác này không thể hoàn tác. Toàn bộ lịch sử Hoàn tác và Làm lại trước đó sẽ bị xoá.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	Xoá cả siêu dữ liệu và dữ liệu ẩn (tiêu đề, tác giả, XMP, …)

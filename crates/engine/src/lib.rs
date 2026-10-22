@@ -1516,6 +1516,7 @@ pub enum Edit {
     /// Apply redaction marks (all, or those on `pages`): remove what they cover for good.
     ApplyRedactions {
         pages: Option<Vec<usize>>,
+        remove_hidden: bool,
     },
     /// Remove redaction marks without applying them.
     ClearRedactions,
@@ -2428,8 +2429,11 @@ fn run_edit(doc: &mut pdfcraft_cos::Document, edit: &Edit, cx: &mut EditCtx) -> 
             let (image, _) = embed_image(doc, name, bytes)?;
             pdfcraft_edit::update_content(doc, *page, *index, &AddedContent::Image(pdfcraft_edit::AddedImage { image, ..old }))?;
         }
-        Edit::ApplyRedactions { pages } => {
+        Edit::ApplyRedactions { pages, remove_hidden } => {
             pdfcraft_redact::apply(doc, pages.as_deref())?;
+            if *remove_hidden {
+                pdfcraft_redact::sanitize::sanitize(doc)?;
+            }
         }
         Edit::ClearRedactions => {
             pdfcraft_redact::clear_marks(doc, None)?;
@@ -3322,7 +3326,7 @@ impl Session {
         self.docs.iter_mut().find(|d| d.id == id).ok_or(EditError::NoDocument)
     }
 
-    /// Apply an edit. On success the previous state is undoable and the view data is refreshed.
+    /// Apply an edit and refresh the view. Applying redactions clears all earlier history.
     pub fn apply(&mut self, id: DocId, edit: Edit) -> Result<(), EditError> {
         let now = self.now();
         let today = self.today();
@@ -3380,7 +3384,7 @@ impl Session {
             .unwrap_or_else(|m| Err(EditError::Invalid(format!("{} failed unexpectedly ({m}); the document was not changed", edit.label()))))?;
         // Redaction removed what its own interpreter places under the marks. The marks were drawn
         // over the page as the renderer shows it, so the renderer has the last word.
-        if let Edit::ApplyRedactions { pages } = &edit {
+        if let Edit::ApplyRedactions { pages, .. } = &edit {
             let marks: Vec<pdfcraft_redact::Mark> =
                 pdfcraft_redact::marks(&editor.cos).into_iter().filter(|m| pages.as_ref().is_none_or(|p| p.contains(&m.page))).collect();
             guard(|| shown_under_redactions(&next, &marks, &doc.info.pages, doc.password.as_deref()))
@@ -3470,6 +3474,18 @@ impl Session {
         } else {
             Vec::new()
         };
+        let irreversible = {
+            let mut pending = vec![&edit];
+            let mut found = false;
+            while let Some(edit) = pending.pop() {
+                match edit {
+                    Edit::ApplyRedactions { .. } => found = true,
+                    Edit::Batch { edits, .. } => pending.extend(edits),
+                    _ => {}
+                }
+            }
+            found
+        };
         let previous = std::mem::replace(&mut editor.cos, next);
         let keys = keys_after(&edit).unwrap_or_else(|| editor.keys.clone());
         let previous_keys = std::mem::replace(&mut editor.keys, keys);
@@ -3495,6 +3511,11 @@ impl Session {
                 Self::show_released(doc);
             }
             return Err(e);
+        }
+        // Keep the rollback snapshot until refresh succeeds, then discard every pre-apply state.
+        if irreversible && let Some(editor) = doc.editor.as_mut() {
+            editor.undo.clear();
+            editor.redo.clear();
         }
         doc.dirty = true;
         doc.generation += 1;

@@ -2427,3 +2427,7 @@ animation effects	Off	Вимкнено
 	The updater failed; restart the app and try again	Програма оновлення завершилася з помилкою; перезапустіть застосунок і спробуйте знову
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	Програма закриється, Windows запитає дозвіл на встановлення — виберіть Yes — потім програма відкриється автоматично
 	Install now	Установити зараз
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	Цю дію неможливо скасувати. Усю попередню історію скасування й повторення буде очищено.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	Також видалити метадані та приховані дані (назву, автора, XMP, …)

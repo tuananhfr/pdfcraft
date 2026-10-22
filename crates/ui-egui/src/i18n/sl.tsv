@@ -2410,3 +2410,7 @@ animation effects	Off	Izklopljeni
 	The updater failed; restart the app and try again	Program za posodabljanje ni uspel; znova zaženite aplikacijo in poskusite znova
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	Aplikacija se bo zaprla, Windows bo zahteval dovoljenje za namestitev — izberite Yes — nato se bo aplikacija samodejno znova odprla
 	Install now	Namesti zdaj
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	Tega dejanja ni mogoče razveljaviti. Vsa prejšnja zgodovina razveljavitev in ponovitev bo izbrisana.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	Odstrani tudi metapodatke in skrite podatke (naslov, avtor, XMP, …)

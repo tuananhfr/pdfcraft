@@ -816,6 +816,7 @@ pub struct PdfCraftApp {
     pub redact_pages_draft: RedactPagesDraft,
     pub redact_search: RedactSearchDraft,
     pub hidden_draft: HiddenDraft,
+    pub redact_remove_hidden: bool,
     pub print_draft: PrintDraft,
     pub link_draft: Option<LinkDraft>,
     /// The style new text gets (Edit a PDF ▸ Format text).
@@ -1099,6 +1100,7 @@ impl PdfCraftApp {
             redact_pages_draft: RedactPagesDraft::default(),
             redact_search: RedactSearchDraft::default(),
             hidden_draft: HiddenDraft::default(),
+            redact_remove_hidden: true,
             print_draft: PrintDraft::default(),
             link_draft: None,
             text_style: content_ui::default_style(),

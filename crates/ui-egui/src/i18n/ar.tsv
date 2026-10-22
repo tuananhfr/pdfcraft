@@ -2426,3 +2426,7 @@ animation effects	Off	معطّلة
 	The updater failed; restart the app and try again	فشلت أداة التحديث؛ أعد تشغيل التطبيق وحاول مجددًا
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	سيُغلق التطبيق، وسيطلب Windows إذن التثبيت — اختر Yes — ثم سيُفتح التطبيق تلقائيًا
 	Install now	ثبّت الآن
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	لا يمكن التراجع عن هذا الإجراء. سيتم مسح سجل التراجع والإعادة السابق بالكامل.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	إزالة البيانات الوصفية والمخفية أيضاً (العنوان، المؤلف، XMP، …)

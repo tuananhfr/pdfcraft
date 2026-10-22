@@ -2405,3 +2405,7 @@ animation effects	Off	オフ
 	The updater failed; restart the app and try again	更新プログラムでエラーが発生しました。アプリを再起動して再試行してください
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	アプリが終了し、Windows がインストールの許可を求めます — Yes を選択してください — その後アプリが自動的に再起動します
 	Install now	今すぐインストール
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	この操作は取り消せません。以前の元に戻す・やり直しの履歴はすべて消去されます。
+
+	Also remove metadata and hidden data (title, author, XMP, …)	メタデータと非表示データも削除（タイトル、作成者、XMP、…）

@@ -151,7 +151,8 @@ impl Automation {
         if before == 0 {
             return Err(failed("there are no redaction marks to apply (see redact_mark)"));
         }
-        let mut out = self.apply(a, Edit::ApplyRedactions { pages })?;
+        let remove_hidden = a.opt_bool("remove_hidden")?.unwrap_or(true);
+        let mut out = self.apply(a, Edit::ApplyRedactions { pages, remove_hidden })?;
         let after = self.doc(a)?.redaction_marks();
         out["applied"] = json!(before - after);
         out["marks_pending"] = json!(after);

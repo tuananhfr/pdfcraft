@@ -2401,3 +2401,7 @@ animation effects	Off	Kapalı
 	The updater failed; restart the app and try again	Güncelleyici başarısız oldu; uygulamayı yeniden başlatıp tekrar deneyin
 	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	Uygulama kapanacak, Windows kurulum izni isteyecek — Yes seçin — ardından uygulama otomatik olarak yeniden açılacak
 	Install now	Şimdi yükle
+
+	This cannot be undone. All earlier Undo and Redo history will be cleared.	Bu işlem geri alınamaz. Önceki tüm geri alma ve yineleme geçmişi silinecek.
+
+	Also remove metadata and hidden data (title, author, XMP, …)	Meta verileri ve gizli verileri de kaldır (başlık, yazar, XMP, …)

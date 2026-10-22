@@ -1772,7 +1772,7 @@ fn redaction_is_refused_when_the_page_still_shows_text_under_a_mark() {
     let by_gs = one_line_page("/ExtGState << /GS1 << /Type /ExtGState /Font [4 0 R 16] >> >>", &format!("BT /GS1 gs 20 150 Td ({line}) Tj ET"));
     let id = s.open("gs.pdf", None, Arc::new(by_gs), None).unwrap();
     mark_shown_text(&mut s, id, "SECRET42");
-    let refused = s.apply(id, Edit::ApplyRedactions { pages: None });
+    let refused = s.apply(id, Edit::ApplyRedactions { pages: None, remove_hidden: true });
     assert!(matches!(refused, Err(EditError::Redact(pdfcraft_redact::RedactError::Residue(n))) if n > 0), "{refused:?}");
     // Nothing was changed: the mark is still pending and the page still shows the line.
     assert_eq!(s.get(id).unwrap().redaction_marks(), 1);
@@ -1782,7 +1782,7 @@ fn redaction_is_refused_when_the_page_still_shows_text_under_a_mark() {
     let by_tf = one_line_page("/Font << /F1 4 0 R >>", &format!("BT /F1 16 Tf 20 150 Td ({line}) Tj ET"));
     let id = s.open("tf.pdf", None, Arc::new(by_tf), None).unwrap();
     mark_shown_text(&mut s, id, "SECRET42");
-    s.apply(id, Edit::ApplyRedactions { pages: None }).unwrap();
+    s.apply(id, Edit::ApplyRedactions { pages: None, remove_hidden: true }).unwrap();
     let shown = page_texts(&s, id).swap_remove(0);
     assert!(shown.starts_with("Public words then") && shown.ends_with("and more") && !shown.contains("SECRET42"), "{shown}");
 }
@@ -1799,9 +1799,9 @@ fn redaction_marks_apply_for_good_and_undo() {
     assert_eq!(s.get(id).unwrap().can_undo(), Some("Add redaction mark"));
     assert_eq!(s.get(id).unwrap().redaction_marks(), 1);
     assert_eq!(page_texts(&s, id), ["Page 1", "Page 2"], "marking alone changes nothing");
-    s.apply(id, Edit::ApplyRedactions { pages: None }).unwrap();
+    s.apply(id, Edit::ApplyRedactions { pages: None, remove_hidden: true }).unwrap();
     let d = s.get(id).unwrap();
-    assert_eq!((d.can_undo(), d.redaction_marks()), (Some("Apply redactions"), 0));
+    assert_eq!((d.can_undo(), d.redaction_marks()), (None, 0));
     // An independent extractor (the renderer's) no longer finds the "1".
     assert_eq!(page_texts(&s, id), ["Page", "Page 2"]);
     let saved = s.save_bytes(id).unwrap();
@@ -1810,10 +1810,10 @@ fn redaction_marks_apply_for_good_and_undo() {
     let mut s2 = Session::new();
     let id2 = s2.open("r.pdf", None, saved, None).unwrap();
     assert_eq!(page_texts(&s2, id2), ["Page", "Page 2"]);
-    s.undo(id).unwrap();
-    assert_eq!(page_texts(&s, id), ["Page 1", "Page 2"]);
-    assert_eq!(s.apply(id, Edit::ClearRedactions).map(|_| s.get(id).unwrap().redaction_marks()), Ok(0));
-    assert!(matches!(s.apply(id, Edit::ApplyRedactions { pages: None }), Err(EditError::Redact(_))));
+    assert!(matches!(s.undo(id), Err(EditError::NothingToUndo)));
+    assert!(matches!(s.redo(id), Err(EditError::NothingToRedo)));
+    assert_eq!(page_texts(&s, id), ["Page", "Page 2"]);
+    assert!(matches!(s.apply(id, Edit::ApplyRedactions { pages: None, remove_hidden: true }), Err(EditError::Redact(_))));
 }
 
 #[test]
@@ -4536,4 +4536,101 @@ fn copy_image_finds_a_picture_inside_form_artwork_under_text() {
     // The largest picture in the group, as the JPEG stored in the PDF.
     assert_eq!(d.page_image_copy_file(0, 0).unwrap(), ("jpg", jpeg));
     assert!(d.page_image_copy_file(0, 1).is_err());
+}
+
+fn secret_redaction_fixture() -> Vec<u8> {
+    let mut pdf = lopdf::Document::load_mem(&fixture(1)).unwrap();
+    let page = *pdf.get_pages().values().next().unwrap();
+    let content = pdf.add_object(lopdf::Stream::new(lopdf::Dictionary::new(), b"BT /F1 24 Tf 20 150 Td (SECRET-123) Tj ET".to_vec()));
+    pdf.get_object_mut(page).unwrap().as_dict_mut().unwrap().set("Contents", content);
+    let mut info = lopdf::Dictionary::new();
+    info.set("Title", lopdf::Object::string_literal("SECRET-123"));
+    let info = pdf.add_object(info);
+    pdf.trailer.set("Info", info);
+    let mut xmp = lopdf::Dictionary::new();
+    xmp.set("Type", lopdf::Object::Name(b"Metadata".to_vec()));
+    xmp.set("Subtype", lopdf::Object::Name(b"XML".to_vec()));
+    let xmp = pdf.add_object(lopdf::Stream::new(xmp, b"<secret>SECRET-123</secret>".to_vec()));
+    pdf.catalog_mut().unwrap().set("Metadata", xmp);
+    pdf.compress();
+    let mut input = Vec::new();
+    pdf.save_modern(&mut input).unwrap();
+    assert!(input.windows(7).any(|w| w == b"/ObjStm"));
+    input
+}
+
+#[test]
+fn redaction_exports_remove_secret_metadata_and_history() {
+    let mut session = Session::new();
+    let id = session.open("secret.pdf", None, Arc::new(secret_redaction_fixture()), None).unwrap();
+    let shape =
+        Shape::Redact { quads: vec![pdfcraft_annot::rect_quad([0.0, 130.0, 200.0, 185.0])], overlay: String::new(), look: Default::default() };
+    session
+        .apply(
+            id,
+            Edit::AddAnnotation(NewAnnotation { page: 0, style: Style::default_for(&shape), shape, contents: String::new(), author: String::new() }),
+        )
+        .unwrap();
+    session.apply(id, Edit::ApplyRedactions { pages: None, remove_hidden: true }).unwrap();
+    let first = session.save_bytes(id).unwrap();
+    session.mark_saved(id, first.clone(), None).unwrap();
+    session.apply(id, Edit::SetInfo { key: "Subject".into(), value: "Public".into() }).unwrap();
+    while session.undo(id).is_ok() {}
+    let second = session.save_bytes(id).unwrap();
+    for bytes in [first, second] {
+        assert!(!bytes.windows(10).any(|w| w == b"SECRET-123"), "raw bytes retain secret");
+        let mut pdf = lopdf::Document::load_mem(&bytes).unwrap();
+        pdf.decompress();
+        assert!(!pdf.trailer.has(b"Prev"), "old incremental revision remains");
+        assert!(!pdf.extract_text(&[1]).unwrap().contains("SECRET-123"));
+        fn scan(object: &lopdf::Object) {
+            match object {
+                lopdf::Object::String(bytes, _) => assert!(!bytes.windows(10).any(|w| w == b"SECRET-123"), "string retains secret"),
+                lopdf::Object::Array(items) => items.iter().for_each(scan),
+                lopdf::Object::Dictionary(dict) => dict.iter().for_each(|(_, value)| scan(value)),
+                lopdf::Object::Stream(stream) => {
+                    assert!(!stream.content.windows(10).any(|w| w == b"SECRET-123"), "decoded stream retains secret");
+                    stream.dict.iter().for_each(|(_, value)| scan(value));
+                }
+                _ => {}
+            }
+        }
+        pdf.objects.values().for_each(scan);
+        if let Ok(info) = pdf.trailer.get(b"Info").and_then(lopdf::Object::as_reference) {
+            assert!(!pdf.get_dictionary(info).unwrap().has(b"Title"));
+        }
+        assert!(!pdf.catalog().unwrap().has(b"Metadata"));
+    }
+}
+
+#[test]
+fn redaction_metadata_opt_out_still_blocks_history_in_a_batch() {
+    let mut session = Session::new();
+    let id = session.open("secret.pdf", None, Arc::new(secret_redaction_fixture()), None).unwrap();
+    let shape =
+        Shape::Redact { quads: vec![pdfcraft_annot::rect_quad([0.0, 130.0, 200.0, 185.0])], overlay: String::new(), look: Default::default() };
+    session
+        .apply(
+            id,
+            Edit::AddAnnotation(NewAnnotation { page: 0, style: Style::default_for(&shape), shape, contents: String::new(), author: String::new() }),
+        )
+        .unwrap();
+    session.apply(id, Edit::SetInfo { key: "Author".into(), value: "Public".into() }).unwrap();
+    session.undo(id).unwrap();
+    assert!(session.get(id).unwrap().can_redo().is_some());
+    session.apply(id, Edit::Batch { label: "Redact".into(), edits: vec![Edit::ApplyRedactions { pages: None, remove_hidden: false }] }).unwrap();
+    assert!(matches!(session.undo(id), Err(EditError::NothingToUndo)));
+    assert!(matches!(session.redo(id), Err(EditError::NothingToRedo)));
+    for _ in 0..2 {
+        let saved = session.save_bytes(id).unwrap();
+        let pdf = lopdf::Document::load_mem(&saved).unwrap();
+        let info = pdf.trailer.get(b"Info").unwrap().as_reference().unwrap();
+        assert_eq!(pdf.get_dictionary(info).unwrap().get(b"Title").unwrap().as_str().unwrap(), b"SECRET-123");
+        let xmp = pdf.catalog().unwrap().get(b"Metadata").unwrap().as_reference().unwrap();
+        let stream = pdf.get_object(xmp).unwrap().as_stream().unwrap();
+        let xmp = stream.decompressed_content().unwrap_or_else(|_| stream.content.clone());
+        assert!(xmp.windows(10).any(|w| w == b"SECRET-123"));
+        assert!(!pdf.extract_text(&[1]).unwrap().contains("SECRET-123"));
+        session.mark_saved(id, saved, None).unwrap();
+    }
 }
