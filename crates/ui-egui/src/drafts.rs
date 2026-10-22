@@ -33,8 +33,25 @@ pub trait DraftSink {
     fn ready(&self) -> Result<(), String>;
     fn put(&self, key: &str, name: &str, format: &str, bytes: &[u8]) -> Result<(), String>;
     fn remove(&self, key: &str) -> Result<(), String>;
+    #[cfg(target_arch = "wasm32")]
+    fn observe(&self, _documents: &[DraftDocument], _active: Option<&str>) {}
+    #[cfg(target_arch = "wasm32")]
+    fn restored(&self, _key: &str, _name: &str, _generation: u64) {}
+    #[cfg(target_arch = "wasm32")]
+    fn failed(&self) -> Vec<(String, u64)> {
+        Vec::new()
+    }
     /// Wall-clock milliseconds (`Date.now()` on the web).
     fn now_ms(&self) -> f64;
+}
+
+/// Web bridge observations use the planner's adopted key and the engine's edit generation.
+#[cfg(target_arch = "wasm32")]
+pub struct DraftDocument {
+    pub key: String,
+    pub name: String,
+    pub generation: u64,
+    pub unsaved: bool,
 }
 
 /// A draft the store asked to reopen.
@@ -330,6 +347,10 @@ impl PdfCraftApp {
         let Some(generation) = self.session.get(id).map(|d| d.edit_generation()) else { return };
         if let Some(drafts) = self.drafts.as_mut() {
             let now = drafts.sink.now_ms();
+            #[cfg(target_arch = "wasm32")]
+            if let Some(doc) = self.session.get(id) {
+                drafts.sink.restored(&key, &draft_name(&doc.name), generation);
+            }
             drafts.planner.adopt(id, key, generation, now);
         }
     }
@@ -356,6 +377,8 @@ impl PdfCraftApp {
                 Some(DocState { id, generation: doc.edit_generation(), unsaved: doc.dirty, transient: self.has_uncommitted_input(i) })
             })
             .collect();
+        #[cfg(target_arch = "wasm32")]
+        let active = self.active.and_then(|i| self.views.get(i)).map(|v| v.id);
         let drafts = self.drafts.as_mut()?;
         if !drafts.ready_sent {
             drafts.ready_sent = true;
@@ -368,7 +391,33 @@ impl PdfCraftApp {
         for (id, generation) in flushed {
             drafts.planner.put_done(id, generation, now, None);
         }
+        #[cfg(target_arch = "wasm32")]
+        for (key, revision) in drafts.sink.failed() {
+            if let Some((id, tracked)) = drafts.planner.docs.iter_mut().find(|(_, t)| t.key == key)
+                && tracked.drafted == Some(revision)
+            {
+                let id = *id;
+                tracked.drafted = None;
+                drafts.planner.put_failed(id, now);
+            }
+        }
         let plan = drafts.planner.observe(&states, now);
+        #[cfg(target_arch = "wasm32")]
+        {
+            let documents: Vec<_> = states
+                .iter()
+                .filter_map(|state| {
+                    let doc = self.session.get(state.id)?;
+                    Some(DraftDocument {
+                        key: drafts.planner.key(state.id)?.to_owned(),
+                        name: draft_name(&doc.name),
+                        generation: state.generation,
+                        unsaved: state.unsaved,
+                    })
+                })
+                .collect();
+            drafts.sink.observe(&documents, active.and_then(|id| drafts.planner.key(id)));
+        }
         for key in &plan.remove {
             if let Err(e) = drafts.sink.remove(key) {
                 log::warn!("draft remove failed for {key}: {e}");

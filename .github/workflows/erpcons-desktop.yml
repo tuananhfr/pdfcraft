@@ -133,6 +133,11 @@ jobs:
           mv "dist/release/ERPCons-PDF-$PDFCRAFT_VERSION-linux-x86_64.AppImage" release-assets/ERPCons-PDF-linux-x86_64.AppImage
           mv "dist/release/ERPCons-PDF-$PDFCRAFT_VERSION-linux-x86_64.deb" release-assets/erpcons-pdf_amd64.deb
           mv "dist/release/ERPCons-PDF-$PDFCRAFT_VERSION-linux-x86_64.rpm" release-assets/erpcons-pdf.x86_64.rpm
+      - name: Generate desktop SBOM
+        run: |
+          python3 -m unittest discover -s packaging/sbom -v
+          python3 packaging/sbom/cargo_sbom.py --target x86_64-unknown-linux-gnu \
+            --output "release-assets/pdfcraft-$PDFCRAFT_VERSION.cdx.json"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: erpcons-desktop-linux
@@ -238,7 +243,7 @@ jobs:
           cd release-assets
           sha256sum ERPCons-PDF-windows-x64.msi ERPCons-PDF-windows-x64-portable.zip \
             ERPCons-PDF-linux-x86_64.AppImage erpcons-pdf_amd64.deb erpcons-pdf.x86_64.rpm \
-            ERPCons-PDF-macos-universal.dmg > SHA256SUMS.txt
+            ERPCons-PDF-macos-universal.dmg "pdfcraft-$VERSION.cdx.json" > SHA256SUMS.txt
           cat > "$RUNNER_TEMP/release-notes.md" <<'NOTES'
           PDF – ERPCons dành cho máy tính. Bản trực tuyến: https://office.erpcons.ai.
 

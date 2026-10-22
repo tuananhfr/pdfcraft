@@ -249,6 +249,7 @@ struct AtomicRenderStats {
 }
 
 impl AtomicRenderStats {
+    #[cfg(not(target_arch = "wasm32"))]
     fn record_request(&self, req: RenderRequest) {
         self.render_requests.fetch_add(1, Ordering::Relaxed);
         if req.tile.is_some() {
@@ -561,6 +562,8 @@ struct Shared {
     busy: Mutex<Vec<Option<Busy>>>,
     /// Exact requests the watchdog gave up on: answered with an error at once, so a pathological
     /// request cannot trap every worker in turn while other scales, tiles, or generations remain usable.
+    // Retained with the pool; only native workers and the watchdog read it.
+    #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     stuck: Mutex<std::collections::HashSet<RequestFailureKey>>,
     stats: AtomicRenderStats,
     /// Per worker id: set to stop that worker's render at its next content operator once nobody
@@ -735,8 +738,13 @@ pub struct RenderPool {
     shared: Arc<Shared>,
     wake: Mutex<Vec<SyncSender<()>>>,
     results: ResultReceiver,
+    // Retained with the pool; only native workers and the watchdog read it.
+    #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     results_tx: Arc<WorkQueue>,
+    // Inline wasm rendering owns its bytes and configuration in PageRenderer.
+    #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     bytes: Arc<Vec<u8>>,
+    #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     config: RenderConfig,
     _workers: Mutex<Vec<JoinHandle<()>>>,
     stuck_after: std::time::Duration,

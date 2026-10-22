@@ -4,6 +4,9 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 #[cfg(any(target_arch = "wasm32", test))]
+mod draft_state;
+
+#[cfg(any(target_arch = "wasm32", test))]
 fn web_app() -> pdfcraft_ui_egui::PdfCraftApp {
     let mut app = pdfcraft_ui_egui::PdfCraftApp::new();
     app.branding = Some(pdfcraft_ui_egui::branding::erpcons());
@@ -143,8 +146,42 @@ mod drafts {
 
     #[derive(Clone)]
     struct WebSink {
+        tracking: std::rc::Rc<std::cell::RefCell<Tracking>>,
+        ctx: egui::Context,
         /// `restore(key, name, format, bytes)`, handed to `ready`.
         restore: JsValue,
+    }
+
+    #[derive(Default)]
+    struct Tracking {
+        states: crate::draft_state::States,
+        generations: std::collections::BTreeMap<String, u64>,
+        failed: Vec<(String, u64)>,
+    }
+
+    fn state_available() -> bool {
+        store().and_then(|s| js_sys::Reflect::get(&s, &"state".into()).ok()).is_some_and(|v| v.is_function())
+    }
+
+    fn send(messages: Vec<crate::draft_state::Message>) {
+        let Some(store) = store() else { return };
+        let Ok(function) = js_sys::Reflect::get(&store, &"state".into()) else { return };
+        let Some(function) = function.dyn_ref::<js_sys::Function>() else { return };
+        for m in messages {
+            let value = js_sys::Object::new();
+            let fields = [
+                ("docId", JsValue::from_str(&m.doc_id)),
+                ("name", JsValue::from_str(&m.name)),
+                ("revision", JsValue::from_f64(m.revision as f64)),
+                ("dirty", JsValue::from_bool(m.dirty)),
+                ("pending", JsValue::from_bool(m.pending)),
+                ("committed", JsValue::from_bool(m.committed)),
+                ("failed", JsValue::from_bool(m.failed)),
+            ];
+            if fields.into_iter().all(|(key, v)| js_sys::Reflect::set(&value, &JsValue::from_str(key), &v).is_ok()) {
+                let _ = function.call1(&store, &value);
+            }
+        }
     }
 
     fn store() -> Option<JsValue> {
@@ -152,14 +189,14 @@ mod drafts {
         js_sys::Reflect::get(&window, &JsValue::from_str("erpDrafts")).ok().filter(|s| s.is_object())
     }
 
-    fn call(method: &str, args: &[JsValue]) -> Result<(), String> {
+    fn call(method: &str, args: &[JsValue]) -> Result<JsValue, String> {
         let store = store().ok_or("window.erpDrafts is gone")?;
         let f: js_sys::Function = js_sys::Reflect::get(&store, &JsValue::from_str(method))
             .ok()
             .and_then(|f| f.dyn_into().ok())
             .ok_or_else(|| format!("erpDrafts.{method} is not a function"))?;
         let args: js_sys::Array = args.iter().collect();
-        f.apply(&store, &args).map(|_| ()).map_err(|e| e.as_string().unwrap_or_else(|| format!("{e:?}")))
+        f.apply(&store, &args).map_err(|e| e.as_string().unwrap_or_else(|| format!("{e:?}")))
     }
 
     impl DraftSink for WebSink {
@@ -168,17 +205,79 @@ mod drafts {
         }
 
         fn ready(&self) -> Result<(), String> {
-            call("ready", std::slice::from_ref(&self.restore))
+            call("ready", std::slice::from_ref(&self.restore)).map(|_| ())
         }
 
         fn put(&self, key: &str, name: &str, format: &str, bytes: &[u8]) -> Result<(), String> {
             // A JS-owned copy: a view into wasm memory would go stale when memory grows.
             let bytes = js_sys::Uint8Array::from(bytes);
-            call("put", &[key.into(), name.into(), format.into(), bytes.into()])
+            let revision = if let Ok(mut tracking) = self.tracking.try_borrow_mut() {
+                send(tracking.states.checkpoint(key));
+                tracking.states.revision(key)
+            } else {
+                None
+            };
+            let result = call("put", &[key.into(), name.into(), format.into(), bytes.into()]);
+            if !state_available() {
+                return result.map(|_| ());
+            }
+            let Some(revision) = revision else { return result.map(|_| ()) };
+            let sink = self.clone();
+            let key = key.to_owned();
+            wasm_bindgen_futures::spawn_local(async move {
+                let success = match result {
+                    Ok(value) => match value.dyn_into::<js_sys::Promise>() {
+                        Ok(promise) => wasm_bindgen_futures::JsFuture::from(promise).await.ok().and_then(|v| v.as_bool()) == Some(true),
+                        Err(_) => false,
+                    },
+                    Err(_) => false,
+                };
+                if let Ok(mut tracking) = sink.tracking.try_borrow_mut() {
+                    send(tracking.states.complete(&key, revision, success));
+                    if !success {
+                        tracking.failed.push((key, revision));
+                    }
+                }
+                sink.ctx.request_repaint();
+            });
+            Ok(())
         }
 
         fn remove(&self, key: &str) -> Result<(), String> {
-            call("remove", &[key.into()])
+            call("remove", &[key.into()]).map(|_| ())
+        }
+
+        fn observe(&self, documents: &[pdfcraft_ui_egui::drafts::DraftDocument], active: Option<&str>) {
+            if !state_available() {
+                return;
+            }
+            let Ok(mut tracking) = self.tracking.try_borrow_mut() else { return };
+            let closed: Vec<_> = tracking.generations.keys().filter(|key| !documents.iter().any(|d| &d.key == *key)).cloned().collect();
+            send(tracking.states.switch(active));
+            for key in closed {
+                send(tracking.states.close(&key));
+                tracking.generations.remove(&key);
+            }
+            for d in documents {
+                send(tracking.states.observe(&d.key, &d.name, d.generation, d.unsaved));
+                tracking.generations.insert(d.key.clone(), d.generation);
+            }
+        }
+
+        fn restored(&self, key: &str, name: &str, generation: u64) {
+            if !state_available() {
+                return;
+            }
+            if let Ok(mut tracking) = self.tracking.try_borrow_mut() {
+                tracking.states.observe(key, name, generation, true);
+                tracking.states.checkpoint(key);
+                send(tracking.states.complete(key, generation, true));
+                tracking.generations.insert(key.to_owned(), generation);
+            }
+        }
+
+        fn failed(&self) -> Vec<(String, u64)> {
+            self.tracking.try_borrow_mut().map(|mut t| std::mem::take(&mut t.failed)).unwrap_or_default()
         }
 
         fn now_ms(&self) -> f64 {
@@ -190,6 +289,7 @@ mod drafts {
         let inbox = DraftInbox::default();
         let queue = inbox.clone();
         // Only queued here: the document opens on the next frame, never inside the callback.
+        let repaint = ctx.clone();
         let restore =
             Closure::<dyn FnMut(JsValue, JsValue, JsValue, JsValue)>::new(move |key: JsValue, name: JsValue, format: JsValue, bytes: JsValue| {
                 let bytes = if let Some(array) = bytes.dyn_ref::<js_sys::Uint8Array>() {
@@ -207,7 +307,7 @@ mod drafts {
                 ctx.request_repaint();
             })
             .into_js_value();
-        let sink = WebSink { restore };
+        let sink = WebSink { restore, tracking: Default::default(), ctx: repaint };
         let drafts = Drafts::new(Box::new(sink.clone()), inbox);
         flush_when_hidden(drafts.flush_cell(), sink);
         drafts

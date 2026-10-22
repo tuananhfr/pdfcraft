@@ -953,7 +953,10 @@ impl PdfCraftApp {
             dialog: None,
             #[cfg(not(target_arch = "wasm32"))]
             update_hook: None,
+            #[cfg(not(target_arch = "wasm32"))]
             updates: updates::Updates::default(),
+            #[cfg(target_arch = "wasm32")]
+            updates: updates::Updates,
             printer_source: None,
             print_tasks: print_ui::PrintTasks::default(),
             palette_open: false,
