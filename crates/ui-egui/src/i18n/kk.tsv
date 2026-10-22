@@ -2407,3 +2407,9 @@ animation effects	Off	Өшірулі
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Бұл әрекетті болдырмау мүмкін емес. Бұрынғы болдырмау және қайталау тарихы толығымен өшіріледі.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Метадеректер мен жасырын деректерді де жою (тақырып, автор, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Бұл PDF файлында цифрлық қолтаңбалар бар: {names}. Қолтаңбалар қол қойылған нұсқа үшін жарамды қалады, бірақ қарау бағдарламалары қол қойылғаннан кейінгі өзгерістерді көрсетеді.
+	Saving may violate the certification's allowed-changes policy.	Сақтау куәландырудың рұқсат етілген өзгерістер саясатын бұзуы мүмкін.
+	This certification allows no changes. Use Save a copy… to save to another file.	Бұл куәландыру өзгерістерге рұқсат бермейді. Басқа файлға сақтау үшін Көшірмені сақтау… пәрменін пайдаланыңыз.
+	Save changes after signing?	Қол қойылғаннан кейінгі өзгерістер сақталсын ба?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Жадты үнемдеу үшін жеңіл, тек оқу режимінде ашылды. Өңдеу және үлкен нобайлар өшірілген.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Бұл PDF жад шегінен асады. Басқа құжаттарды жабыңыз немесе кішірек PDF ашыңыз.

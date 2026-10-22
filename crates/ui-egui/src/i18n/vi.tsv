@@ -2664,3 +2664,9 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Thao tác này không thể hoàn tác. Toàn bộ lịch sử Hoàn tác và Làm lại trước đó sẽ bị xoá.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Xoá cả siêu dữ liệu và dữ liệu ẩn (tiêu đề, tác giả, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Tệp PDF này có chữ ký số: {names}. Chữ ký vẫn có hiệu lực đối với phiên bản đã ký, nhưng trình xem sẽ cho biết tài liệu đã thay đổi sau khi ký.
+	Saving may violate the certification's allowed-changes policy.	Việc lưu có thể vi phạm chính sách về các thay đổi được phép của chứng nhận.
+	This certification allows no changes. Use Save a copy… to save to another file.	Chứng nhận này không cho phép thay đổi. Chọn Lưu Bản sao… để lưu sang tệp khác.
+	Save changes after signing?	Lưu thay đổi sau khi ký?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Đã mở ở chế độ chỉ đọc tiết kiệm bộ nhớ. Không thể chỉnh sửa hoặc dùng hình thu nhỏ lớn.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Tệp PDF này vượt quá giới hạn bộ nhớ. Hãy đóng các tài liệu khác hoặc mở tệp PDF nhỏ hơn.

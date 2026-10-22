@@ -128,7 +128,7 @@ impl RecoveryStore {
     }
 
     pub fn read(&self, key: &str) -> std::io::Result<Vec<u8>> {
-        std::fs::read(self.dir.join(format!("{key}.pdf")))
+        pdfcraft_engine::memory::read_file(&self.dir.join(format!("{key}.pdf"))).map_err(std::io::Error::other)
     }
 
     /// Remove every entry (clean quit, or "Discard all"), and metadata left without a snapshot.

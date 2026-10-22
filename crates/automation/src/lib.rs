@@ -837,7 +837,7 @@ impl Automation {
 
     fn doc_open(&mut self, a: &Args) -> Result<Value> {
         let path = self.resolve(a.str("path")?, false)?;
-        let bytes = std::fs::read(&path).map_err(|e| failed(format!("{}: {e}", path.display())))?;
+        let bytes = pdfcraft_engine::memory::read_file(&path).map_err(|e| failed(format!("{}: {e}", path.display())))?;
         let name = path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
         let id = self.session.open(name, Some(path.to_string_lossy().into_owned()), Arc::new(bytes), a.opt_str("password")?).map_err(failed)?;
         let doc = self.session.get(id).ok_or_else(|| failed("the document vanished"))?;
@@ -882,7 +882,19 @@ impl Automation {
             let why = conflicts.iter().map(ToString::to_string).collect::<Vec<_>>().join("; ");
             return Err(failed(format!("saving these changes over {} would invalidate {why}: pass another path to save a copy", target.display())));
         }
-        let bytes = if full { self.session.save_full_bytes(id) } else { self.session.save_bytes(id) }.map_err(failed)?;
+        // Changes after signing leave the signed revision intact but show as made after signing.
+        let affected = self.session.signatures_affected(id);
+        if !affected.is_empty() && !a.opt_bool("acknowledgeSignatures")?.unwrap_or(false) {
+            let names =
+                affected.iter().map(|s| s.signer.as_ref().map_or_else(|| s.field.clone(), |n| format!("{n} ({})", s.field))).collect::<Vec<_>>();
+            return Err(failed(format!(
+                "this document has digital signatures ({}): viewers will show these changes as made after signing, and a certification or field lock may not allow them; pass acknowledgeSignatures: true to confirm",
+                names.join(", ")
+            )));
+        }
+        let signatures: Vec<Value> = affected.iter().map(|s| json!({ "field": s.field, "signer": s.signer, "docMdp": s.doc_mdp })).collect();
+        let bytes =
+            if full { self.session.save_full_bytes(id) } else { self.session.save_report(id, !same_file).map(|r| r.bytes) }.map_err(failed)?;
         // A save that adds or removes encryption, or must not keep the old revision (Sanitize,
         // redaction), is rewritten in full even when an incremental save was asked for.
         let incremental = !full && bytes.starts_with(&self.doc(a)?.saved_bytes());
@@ -890,7 +902,9 @@ impl Automation {
         write(&target, &bytes)?;
         let path = target.to_string_lossy().into_owned();
         self.session.mark_saved(id, bytes.clone(), Some(path.clone())).map_err(failed)?;
-        Ok(json!({ "path": path, "bytes": bytes.len(), "incremental": incremental, "document": summary(self.doc(a)?) }))
+        Ok(
+            json!({ "path": path, "bytes": bytes.len(), "incremental": incremental, "signaturesAffected": signatures, "document": summary(self.doc(a)?) }),
+        )
     }
 
     fn doc_revisions(&mut self, a: &Args) -> Result<Value> {

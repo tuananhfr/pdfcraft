@@ -3,6 +3,8 @@
 //! user is offered a copy instead, so the signed original is never overwritten with a breaking
 //! change. A certification that allows no changes at all is said as soon as an editing tool is
 //! picked, rather than at save; one that allows some (levels 2 and 3) greys the tools it forbids.
+//! Any other save of a signed file with changes asks first: the signed revision stays valid, but
+//! viewers show the document as changed after signing.
 
 use egui::{Align, Layout};
 use pdfcraft_engine::commands::Needs;
@@ -21,6 +23,8 @@ pub struct HeldSave {
     pub doc: DocId,
     pub conflicts: Vec<CertificationConflict>,
     after: After,
+    target: SaveTarget,
+    affected: Vec<pdfcraft_engine::SignatureAffected>,
 }
 
 /// The sentence shown wherever a level-1 certification refuses a change.
@@ -63,10 +67,8 @@ fn tool_change(tool: QuickTool) -> Option<&'static str> {
 impl PdfCraftApp {
     /// Check a save of document `id` against its signatures. Gives `after` back when the save may
     /// go ahead; otherwise the save is held (the dialog asks) or was refused with a notice.
-    pub(crate) fn hold_breaking_save(&mut self, id: DocId, after: After) -> Option<After> {
-        let restricted =
-            self.session.get(id).is_some_and(|d| d.signatures.iter().any(|s| s.signed && (s.certify.is_some() || s.field_lock.is_some())));
-        if !restricted {
+    pub(crate) fn hold_breaking_save(&mut self, id: DocId, target: SaveTarget, after: After) -> Option<After> {
+        if !self.session.get(id).is_some_and(|d| d.is_signed()) {
             return Some(after);
         }
         // Fill & Sign is baked into the page as the file is written: judge what will be written.
@@ -74,11 +76,18 @@ impl PdfCraftApp {
             return None;
         }
         let conflicts = self.session.certification_conflicts(id);
-        if conflicts.is_empty() {
+        let affected = self.session.signatures_affected(id);
+        if conflicts.is_empty() && affected.is_empty() {
             return Some(after);
         }
-        self.held_save = Some(HeldSave { doc: id, conflicts, after });
+        self.held_save = Some(HeldSave { doc: id, conflicts, after, target, affected });
         None
+    }
+
+    /// Whether the user confirmed writing the current changes of signed document `id`.
+    pub(crate) fn signature_write_confirmed(&self, id: DocId) -> bool {
+        self.session.signatures_affected(id).is_empty()
+            || self.session.get(id).is_some_and(|d| self.signature_save_ack == Some((id, d.edit_generation())))
     }
 
     /// Whether writing document `id` to `dest` would replace its own signed file with edits that
@@ -87,13 +96,14 @@ impl PdfCraftApp {
     pub(crate) fn overwrites_signed_original(&self, id: DocId, dest: &str) -> bool {
         let Some(path) = self.session.get(id).and_then(|d| d.path.clone()) else { return false };
         let same = path == dest || matches!((std::fs::canonicalize(&path), std::fs::canonicalize(dest)), (Ok(a), Ok(b)) if a == b);
-        same && !self.session.certification_conflicts(id).is_empty()
+        same && (!self.session.certification_conflicts(id).is_empty() || self.session.signatures_affected(id).iter().any(|s| s.doc_mdp == Some(1)))
     }
 
     /// The held save's "Save a copy…": Save As, unguarded, since the copy is a new file.
     fn save_held_as_copy(&mut self) {
         let Some(held) = self.held_save.take() else { return };
         let Some(index) = self.views.iter().position(|v| v.id == held.doc) else { return };
+        self.signature_save_ack = self.session.get(held.doc).map(|d| (held.doc, d.edit_generation()));
         self.save_guarded(index, SaveTarget::As, held.after, false);
     }
 
@@ -151,18 +161,53 @@ fn explain(conflict: &CertificationConflict) -> Vec<String> {
     lines
 }
 
-/// The held save's dialog: name who signed and what would break; Save a copy… or Cancel.
+/// The held save's dialog: name who signed and what would break; Save (when the signatures allow
+/// it), Save a copy… or Cancel.
 pub(crate) fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
     let Some(held) = app.held_save.as_ref() else { return };
-    let lines: Vec<String> = held.conflicts.iter().flat_map(explain).collect();
+    let mut lines: Vec<String> = held.conflicts.iter().flat_map(explain).collect();
+    let confirm_allowed = held.conflicts.is_empty() && !held.affected.iter().any(|s| s.doc_mdp == Some(1));
+    // A conflict already says the signature breaks; the changed-after-signing note is for the rest.
+    if held.conflicts.is_empty() && !held.affected.is_empty() {
+        let names = held
+            .affected
+            .iter()
+            .map(|s| match &s.signer {
+                Some(name) => format!("{name} ({})", s.field),
+                None => s.field.clone(),
+            })
+            .collect::<Vec<_>>()
+            .join(", ");
+        lines.push(crate::i18n::fmt(
+            tl!("This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing."),
+            &[("names", &names)],
+        ));
+        if held.affected.iter().any(|s| matches!(s.doc_mdp, Some(2 | 3))) {
+            lines.push(tl!("Saving may violate the certification's allowed-changes policy.").into());
+        }
+        if held.affected.iter().any(|s| s.doc_mdp == Some(1)) {
+            lines.push(tl!("This certification allows no changes. Use Save a copy… to save to another file.").into());
+        }
+    }
     let t = Tokens::get(ctx);
     let mut copy = false;
+    let mut confirm = false;
     let mut cancel = false;
     let modal = widgets::show_modal(ctx, "signed_save_guard", |ui| {
         ui.set_width(460.0);
         ui.horizontal(|ui| {
             ui.add(crate::icons::image("lock", 22.0, t.accent));
-            ui.add(egui::Label::new(egui::RichText::new(tl!("Saving would invalidate a signature")).font(theme::semibold(16.0))).wrap());
+            ui.add(
+                egui::Label::new(
+                    egui::RichText::new(if confirm_allowed {
+                        tl!("Save changes after signing?")
+                    } else {
+                        tl!("Saving would invalidate a signature")
+                    })
+                    .font(theme::semibold(16.0)),
+                )
+                .wrap(),
+            );
         });
         ui.add_space(6.0);
         for line in &lines {
@@ -171,6 +216,9 @@ pub(crate) fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
         }
         ui.add_space(10.0);
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+            if confirm_allowed && widgets::pill_button(ui, tl!("Save"), true).clicked() {
+                confirm = true;
+            }
             if widgets::pill_button(ui, tl!("Save a copy…"), true).clicked() {
                 copy = true;
             }
@@ -179,7 +227,14 @@ pub(crate) fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
             }
         });
     });
-    if copy {
+    if confirm {
+        if let Some(held) = app.held_save.take()
+            && let Some(index) = app.views.iter().position(|v| v.id == held.doc)
+        {
+            app.signature_save_ack = app.session.get(held.doc).map(|d| (held.doc, d.edit_generation()));
+            app.save_guarded(index, held.target, held.after, false);
+        }
+    } else if copy {
         app.save_held_as_copy();
     } else if cancel || modal.should_close() {
         app.held_save = None;

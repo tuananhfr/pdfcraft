@@ -2405,3 +2405,9 @@ animation effects	Off	Kapalı
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Bu işlem geri alınamaz. Önceki tüm geri alma ve yineleme geçmişi silinecek.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Meta verileri ve gizli verileri de kaldır (başlık, yazar, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Bu PDF dijital imzalar içeriyor: {names}. İmzalar imzalanan sürüm için geçerli kalır, ancak görüntüleyiciler imzadan sonraki değişiklikleri gösterir.
+	Saving may violate the certification's allowed-changes policy.	Kaydetmek, sertifikanın izin verilen değişiklik ilkesini ihlal edebilir.
+	This certification allows no changes. Use Save a copy… to save to another file.	Bu sertifika değişikliklere izin vermiyor. Başka bir dosyaya kaydetmek için Bir kopyasını kaydet… seçeneğini kullanın.
+	Save changes after signing?	İmzadan sonraki değişiklikler kaydedilsin mi?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Bellek kullanımını sınırlamak için hafif salt okunur modda açıldı. Düzenleme ve büyük küçük resimler devre dışı.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Bu PDF bellek sınırını aşıyor. Diğer belgeleri kapatın veya daha küçük bir PDF açın.

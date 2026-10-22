@@ -2414,3 +2414,9 @@ animation effects	Off	Izklopljeni
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Tega dejanja ni mogoče razveljaviti. Vsa prejšnja zgodovina razveljavitev in ponovitev bo izbrisana.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Odstrani tudi metapodatke in skrite podatke (naslov, avtor, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Ta PDF ima digitalne podpise: {names}. Podpisi ostanejo veljavni za podpisano različico, pregledovalniki pa bodo prikazali spremembe po podpisu.
+	Saving may violate the certification's allowed-changes policy.	Shranjevanje lahko krši pravila dovoljenih sprememb potrdila.
+	This certification allows no changes. Use Save a copy… to save to another file.	To potrdilo ne dovoljuje sprememb. Uporabite Shrani kopijo… za shranjevanje v drugo datoteko.
+	Save changes after signing?	Shranim spremembe po podpisu?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Odprto v varčnem načinu samo za branje. Urejanje in velike sličice so onemogočeni.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Ta PDF presega omejitev pomnilnika. Zaprite druge dokumente ali odprite manjši PDF.

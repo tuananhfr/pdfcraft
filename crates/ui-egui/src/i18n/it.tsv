@@ -2418,3 +2418,9 @@ animation effects	Off	Disattivati
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Questa operazione è irreversibile. Tutta la cronologia precedente di annullamento e ripristino verrà cancellata.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Rimuovi anche metadati e dati nascosti (titolo, autore, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Questo PDF contiene firme digitali: {names}. Le firme restano valide per la revisione firmata, ma i visualizzatori mostreranno modifiche successive alla firma.
+	Saving may violate the certification's allowed-changes policy.	Il salvataggio potrebbe violare le modifiche consentite dalla certificazione.
+	This certification allows no changes. Use Save a copy… to save to another file.	Questa certificazione non consente modifiche. Usa Salva una copia… per salvare in un altro file.
+	Save changes after signing?	Salvare le modifiche successive alla firma?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Aperto in modalità leggera di sola lettura per limitare la memoria. Modifica e miniature grandi disattivate.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Questo PDF supera il limite di memoria. Chiudi altri documenti o apri un PDF più piccolo.

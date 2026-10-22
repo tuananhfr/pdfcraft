@@ -1,10 +1,11 @@
 //! Signed files in the real shell: a save its certification (DocMDP) or a field lock (FieldMDP)
 //! does not permit is held and offered as a copy, the original's bytes untouched; a level-1
 //! certification refuses editing tools when they are picked, levels 2 and 3 grey the tools they
-//! forbid; a locked field takes no input; an approval signature never blocks.
+//! forbid; a locked field takes no input; any other change to a signed file is saved only after the
+//! user confirms it. A file over the memory budget opens read-only in light mode, or not at all.
 //!
-//! `PDFCRAFT_SHOTS=<dir>` also writes the guard dialog, the level-1 bar, a locked field's tooltip
-//! and the tools a level-2 certification greys, in Vietnamese.
+//! `PDFCRAFT_SHOTS=<dir>` also writes the guard and confirmation dialogs, the level-1 bar, a locked
+//! field's tooltip, the tools a level-2 certification greys and the light-mode notice, in Vietnamese.
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -180,7 +181,11 @@ fn permitted_edits_save_in_place_incrementally() {
     let mut h = harness(&dir, &certified, "en");
     h.state_mut().save_override = None;
     assert!(h.state_mut().apply_edit(fill("Amount", "1 250 000")));
-    assert!(h.state_mut().save_active(SaveTarget::InPlace), "form fill is permitted");
+    assert!(!h.state_mut().save_active(SaveTarget::InPlace));
+    h.run_steps(2);
+    h.get_by_label("Saving may violate the certification's allowed-changes policy.");
+    h.get_by_label("Save").click();
+    h.run_steps(3);
     assert!(h.state().held_save.is_none());
     let saved = std::fs::read(dir.join("contract.pdf")).unwrap();
     assert!(saved.starts_with(&certified) && saved.len() > certified.len());
@@ -195,7 +200,10 @@ fn a_locked_field_is_named_in_the_guard() {
     let mut h = harness(&dir, &signed, "en");
     h.state_mut().save_override = None;
     assert!(h.state_mut().apply_edit(fill("Notes", "Delivered")));
-    assert!(h.state_mut().save_active(SaveTarget::InPlace), "Notes is not locked");
+    assert!(!h.state_mut().save_active(SaveTarget::InPlace));
+    h.run_steps(2);
+    h.get_by_label("Save").click();
+    h.run_steps(3);
     assert!(h.state_mut().apply_edit(fill("Amount", "990 000")));
     assert!(!h.state_mut().save_active(SaveTarget::InPlace));
     h.run_steps(2);
@@ -235,7 +243,13 @@ fn an_approval_signature_saves_and_the_panel_reports_the_change() {
     let mut h = harness(&dir, &signed, "en");
     h.state_mut().save_override = None;
     assert!(h.state_mut().apply_edit(comment()));
-    assert!(h.state_mut().save_active(SaveTarget::InPlace), "an approval signature never blocks");
+    assert!(!h.state_mut().save_active(SaveTarget::InPlace));
+    h.run_steps(2);
+    h.get_by_label_contains("This PDF has digital signatures:");
+    shot(&mut h, "approval-save-confirmation");
+    assert_eq!(std::fs::read(dir.join("contract.pdf")).unwrap(), signed);
+    h.get_by_label("Save").click();
+    h.run_steps(3);
     assert!(std::fs::read(dir.join("contract.pdf")).unwrap().starts_with(&signed));
     h.state_mut().right = Some(RightPanel::Signatures);
     h.state_mut().sig_expanded = vec!["Approval".into()];
@@ -264,6 +278,34 @@ fn vietnamese_guard_and_no_changes_bar() {
     h.run_steps(2);
     assert_eq!(h.state().quick_tool, QuickTool::Select);
     shot(&mut h, "no-changes-bar-vi");
+}
+
+/// Saving a comment over an approval signature asks first, in Vietnamese, and writes nothing
+/// until confirmed; Save As of the same change asks too.
+#[test]
+fn vietnamese_signed_save_confirmation() {
+    let dir = dir();
+    let signed = signed(None, None);
+    let mut h = harness(&dir, &signed, "vi");
+    h.state_mut().save_override = None;
+    assert!(h.state_mut().apply_edit(comment()));
+    assert!(!h.state_mut().save_active(SaveTarget::InPlace));
+    h.run_steps(3);
+    h.get_by_label("Lưu thay đổi sau khi ký?");
+    h.get_by_label_contains("Tệp PDF này có chữ ký số:");
+    h.get_by_label_contains("trình xem sẽ cho biết tài liệu đã thay đổi sau khi ký.");
+    shot(&mut h, "signed-save-confirmation-vi");
+    assert_eq!(std::fs::read(dir.join("contract.pdf")).unwrap(), signed, "nothing is written before the confirmation");
+    h.get_by_label("Hủy").click();
+    h.run_steps(3);
+    assert!(h.state().held_save.is_none());
+    assert_eq!(std::fs::read(dir.join("contract.pdf")).unwrap(), signed);
+
+    h.state_mut().save_override = Some(dir.join("copy.pdf").to_string_lossy().into_owned());
+    assert!(!h.state_mut().save_active(SaveTarget::As));
+    h.run_steps(3);
+    assert!(h.state().held_save.is_some(), "Save As of a changed signed file asks too");
+    assert!(!dir.join("copy.pdf").exists());
 }
 
 fn settle(h: &mut Harness<'static, PdfCraftApp>) {
@@ -452,4 +494,34 @@ fn vietnamese_locked_field_and_greyed_tools() {
             h.render().unwrap().save(format!("{out}/p2-greyed-{}-vi.png", w as u32)).unwrap();
         }
     }
+}
+
+fn memory_fixture(side: i64) -> Vec<u8> {
+    use pdfcraft_cos::{Document, Object, SaveOptions, write_incremental};
+    let mut cos = Document::open(Arc::new(form(None))).unwrap();
+    let root = cos.root().unwrap();
+    let image = pdfcraft_cos::Dict::from_iter([
+        (b"Subtype".to_vec(), Object::Name(b"Image".to_vec())),
+        (b"Width".to_vec(), Object::Int(side)),
+        (b"Height".to_vec(), Object::Int(side)),
+    ]);
+    cos.update_dict(root, |catalog| catalog.set(b"UnusedImage".to_vec(), Object::Dict(image))).unwrap();
+    write_incremental(&cos, &SaveOptions::default()).unwrap()
+}
+
+#[test]
+fn vietnamese_light_mode_and_refusal_keep_the_existing_document() {
+    let dir = dir();
+    let bytes = memory_fixture(25000);
+    let mut h = harness(&dir, &bytes, "vi");
+    h.get_by_label("Đã mở ở chế độ chỉ đọc tiết kiệm bộ nhớ. Không thể chỉnh sửa hoặc dùng hình thu nhỏ lớn.");
+    let id = h.state().views[0].id;
+    assert!(!h.state().session.get(id).unwrap().editable());
+    assert_eq!(h.state().session.get(id).unwrap().bytes.as_slice(), bytes);
+    assert_eq!(std::fs::read(dir.join("contract.pdf")).unwrap(), bytes);
+    shot(&mut h, "memory-light-read-only-vi");
+    let refusal = h.state_mut().open_bytes("oversized.pdf", None, memory_fixture(50000)).unwrap_err();
+    assert_eq!(refusal, "Tệp PDF này vượt quá giới hạn bộ nhớ. Hãy đóng các tài liệu khác hoặc mở tệp PDF nhỏ hơn.");
+    assert_eq!(h.state().session.get(id).unwrap().bytes.as_slice(), bytes);
+    assert_eq!(h.state().views.len(), 1);
 }

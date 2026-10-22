@@ -44,7 +44,8 @@ let doc = s.get(id).ok_or("gone")?;                         // &Document: querie
 doc.can_undo(); doc.editable(); doc.allows_printing();
 doc.text_blocks(page); doc.page_boxes(page); doc.security_summary();
 
-let bytes = s.save_bytes(id)?;        // incremental: keeps signatures over earlier revisions valid
+let report = s.save_report(id, false)?; // incremental output plus signatures_affected
+let bytes = report.bytes;              // confirm affected signatures before writing
 let bytes = s.save_full_bytes(id)?;   // full rewrite, garbage-collected
 s.mark_saved(id, bytes.clone(), path)?;
 ```
@@ -59,6 +60,26 @@ flag, autosave and the automation tools consistent for free.
 `split_by_size`, `reduced_bytes`, `optimized_bytes`, `print_pdf`, `export_data`, and the signing
 family (`sign`, `sign_with_timestamp`, `timestamp_document`, `embed_ltv`).
 
+Signed full rewrites are refused. `save_report(id, false)` refuses modifying incremental saves
+under DocMDP P=1. An explicitly chosen copy uses `save_report(id, true)`, preserves the signed
+revision and certification dictionaries, and does not claim certification compliance. The UI
+confirms later changes for every signature; automation requires `acknowledgeSignatures: true`
+and the CLI `--acknowledge-signatures`. No-op saves return an empty affected list. Recovery
+drafts keep signed documents; a restored draft reports its signatures again when saved.
+
+Opening admission lives in `memory`: wasm uses a 1 GiB budget; desktop defaults to 4 GiB and
+accepts `PDFCRAFT_MEMORY_MIB` (64–16384). Above three quarters of the budget, opening uses light
+read-only mode; above the budget, opening refuses without replacing existing documents or
+recovery files. The bounded preflight estimates three input copies, declared pages, the largest
+direct image and the cache/history reserves; compressed objects and indirect dimensions are not
+decoded during preflight. Light mode keeps no decoded-image cache between renders, caps a page
+raster and the canvas at 64 MiB, disables organize-grid thumbnails, and has no edit history.
+Canvas rasters keep their per-kind allowances and share a 256 MiB total (least recently
+requested first, on-screen pages never evicted); undo/redo share 512 MiB on desktop and 128 MiB
+on the web, with source buffers charged once. Other UI textures (signature previews,
+accessibility previews and the combine grid) are created elsewhere and are outside this total.
+This admission estimate is not an allocator limit.
+
 ## Modules
 
 | Module | What it holds |
@@ -67,6 +88,7 @@ family (`sign`, `sign_with_timestamp`, `timestamp_document`, `embed_ltv`).
 | `catalog` | Acrobat's "All tools" information architecture as data — groups, sections, icons, hues, and an `Availability` of `Ready`, `Planned(milestone)` or `Provider`. The UI renders what is *not* built yet, honestly |
 | `actions` | PDF action dispatch (go-to, URI, named, set-layer-state, JavaScript) |
 | `links` | Link creation, properties, and finding URLs in page text |
+| `memory` | The platform memory budget: opening admission (normal, light read-only, refused) and the canvas and history byte allowances |
 | `js` | The bridge to `pdfcraft-js`. `forms` never depends on `js` directly; the engine injects it, so a build without JavaScript is possible |
 | `xfa`, `ocr`, `compare`, `export` | Façades over the L3/L4 crates of the same names |
 
@@ -75,7 +97,7 @@ family (`sign`, `sign_with_timestamp`, `timestamp_document`, `embed_ltv`).
 - **Rendering is still borrowed.** `pdfcraft-render` wraps `hayro` and inspects through `lopdf`
   (ADR-0004). The engine only sees `inspect() -> DocInfo`, `RenderPool` and `text::PageText`, and
   that API stays frozen while M2 replaces what is behind it.
-- Performance budgets (`misc.performance-budgets`) are not set or enforced.
+- Opening, canvas raster and history budgets are enforced; other performance budgets remain unset.
 - Some shipped features are still reachable only from the UI, not through an `automation` tool;
   `cargo xtask parity` lists them; closing that gap is tracked in the execution plan (D4).
 

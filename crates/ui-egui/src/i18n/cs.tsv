@@ -2483,3 +2483,9 @@ animation effects	Off	Vypnuto
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Tuto akci nelze vrátit zpět. Celá předchozí historie vrácení a opakování bude vymazána.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Odstranit také metadata a skrytá data (název, autor, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Tento PDF má digitální podpisy: {names}. Podpisy zůstávají platné pro podepsanou revizi, ale prohlížeče zobrazí změny po podpisu.
+	Saving may violate the certification's allowed-changes policy.	Uložení může porušit zásady povolených změn certifikace.
+	This certification allows no changes. Use Save a copy… to save to another file.	Tato certifikace nepovoluje změny. Pomocí Uložit kopii… uložte do jiného souboru.
+	Save changes after signing?	Uložit změny po podpisu?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Otevřeno v úsporném režimu jen pro čtení. Úpravy a velké miniatury jsou vypnuté.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Tento PDF překračuje limit paměti. Zavřete jiné dokumenty nebo otevřete menší PDF.

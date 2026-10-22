@@ -2423,3 +2423,9 @@ animation effects	Off	Desativados
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Esta operação não pode ser desfeita. Todo o histórico anterior de desfazer e refazer será apagado.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Remover também metadados e dados ocultos (título, autor, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Este PDF tem assinaturas digitais: {names}. As assinaturas continuam válidas para a revisão assinada, mas os visualizadores mostrarão alterações posteriores à assinatura.
+	Saving may violate the certification's allowed-changes policy.	Salvar pode violar a política de alterações permitidas pela certificação.
+	This certification allows no changes. Use Save a copy… to save to another file.	Esta certificação não permite alterações. Use Salvar uma cópia… para salvar em outro arquivo.
+	Save changes after signing?	Salvar alterações após a assinatura?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Aberto no modo leve de somente leitura para limitar a memória. Edição e miniaturas grandes desativadas.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Este PDF excede o limite de memória. Feche outros documentos ou abra um PDF menor.

@@ -45,6 +45,9 @@ const THUMB_H: f32 = 320.0;
 const THUMB_BYTES: usize = 24 * 1024 * 1024;
 const PAGE_BYTES: usize = 128 * 1024 * 1024;
 const TILE_BYTES: usize = 128 * 1024 * 1024;
+/// A retained raster: (category, page, tag, tile x, tile y); category 0 tile, 1 print preview, 2 organize
+/// grid, 3 thumbnail, 4 page.
+type RasterKey = (u8, usize, u64, u32, u32);
 const UPLOAD_BYTES_PER_FRAME: usize = 16 * 1024 * 1024;
 const RESULTS_PER_FRAME: usize = 8;
 /// A defensive ceiling for unusually large viewports / n-up previews.
@@ -372,6 +375,10 @@ pub struct DocView {
     last_press_time: f64,
     last_press_pos: Option<Pos2>,
     last_queue: Vec<RenderRequest>,
+    raster_clock: u64,
+    /// When each retained raster was last requested, for the shared allowance.
+    raster_used: HashMap<RasterKey, u64>,
+    light_memory: bool,
     viewport_w: f32,
     viewport_h: f32,
     page_count: usize,
@@ -635,6 +642,9 @@ impl DocView {
             last_press_time: 0.0,
             last_press_pos: None,
             last_queue: Vec::new(),
+            raster_clock: 0,
+            raster_used: HashMap::new(),
+            light_memory: false,
             viewport_w: 800.0,
             viewport_h: 600.0,
             page_count: info.pages.len(),
@@ -1416,6 +1426,25 @@ impl DocView {
     /// the allowance, so an evicted page can be requested again without a permanent done set.
     fn prepare_render_queue(&mut self, info: &DocInfo, ppp: f32) -> Vec<RenderRequest> {
         let requests = std::mem::take(&mut self.frame_queue);
+        self.raster_used = std::mem::take(&mut self.raster_used)
+            .into_iter()
+            .filter(|(key, _)| match *key {
+                (0, page, tag, x, y) => self.tiles.contains_key(&(page, tag, x, y)),
+                (1, page, ..) => self.print_pages.contains_key(&page),
+                (2, page, ..) => self.grid_pages.contains_key(&page),
+                (3, page, ..) => self.thumbs.contains_key(&page),
+                (_, page, ..) => self.pages.contains_key(&page),
+            })
+            .collect();
+        self.raster_clock = self.raster_clock.saturating_add(1);
+        for req in requests.iter().filter(|r| r.kind == RequestKind::Pixels) {
+            self.raster_used.insert(Self::raster_key(*req), self.raster_clock);
+        }
+        if self.light_memory {
+            self.pages.retain(|p, _| self.frame_visible.contains(p));
+            self.tiles.retain(|k, _| self.frame_visible.contains(&k.0));
+            self.grid_pages.clear();
+        }
         let mut queue = Vec::new();
         let mut pages = HashSet::new();
         let mut tiles = HashSet::new();
@@ -1426,7 +1455,9 @@ impl DocView {
             let Some(p) = info.pages.get(req.page) else { continue };
             // Organize-grid renders: only the cells in view that need one (organize_grid).
             if req.tag & GRID_TAG != 0 {
-                grid.push(*req);
+                if !self.light_memory {
+                    grid.push(*req);
+                }
                 continue;
             }
             // Print-preview rasters: a few sheets at the pane's size (the dialog bounds them).
@@ -1497,7 +1528,7 @@ impl DocView {
             // Caches are kept; demand is re-evaluated next frame once pixels arrive.
             return queue;
         }
-        let thumbs = self.thumbnail_requests(info, ppp);
+        let thumbs = self.thumbnail_requests(info, if self.light_memory { 1.0 } else { ppp });
         let mut thumb_bytes = 0usize;
         let mut admitted = HashSet::new();
         for req in thumbs {
@@ -1655,6 +1686,48 @@ impl DocView {
         bytes
     }
 
+    pub(crate) fn set_light_memory(&mut self, light: bool) {
+        self.light_memory = light;
+    }
+
+    fn raster_key(req: RenderRequest) -> RasterKey {
+        if let Some(t) = req.tile {
+            (0, req.page, req.tag, t.x, t.y)
+        } else {
+            let kind = if req.tag & PRINT_TAG != 0 {
+                1
+            } else if req.tag & GRID_TAG != 0 {
+                2
+            } else if req.tag & THUMB_TAG != 0 {
+                3
+            } else {
+                4
+            };
+            (kind, req.page, 0, 0, 0)
+        }
+    }
+
+    fn remove_raster(&mut self, key: RasterKey) {
+        match key {
+            (0, page, tag, x, y) => {
+                self.tiles.remove(&(page, tag, x, y));
+            }
+            (1, page, ..) => {
+                self.print_pages.remove(&page);
+            }
+            (2, page, ..) => {
+                self.grid_pages.remove(&page);
+            }
+            (3, page, ..) => {
+                self.thumbs.remove(&page);
+            }
+            (_, page, ..) => {
+                self.pages.remove(&page);
+            }
+        }
+        self.raster_used.remove(&key);
+    }
+
     /// Check real dimensions before conversion, including stale textures kept during edits.
     /// Dropping an old handle releases its backend allocation after the current frame.
     fn admit_texture(&mut self, req: RenderRequest, bytes: usize) -> bool {
@@ -1663,10 +1736,9 @@ impl DocView {
         let visible = req.tag & THUMB_TAG == 0 && self.frame_visible.contains(&req.page);
         // Organize-grid renders are bounded by the cells in view (organize_grid). Print
         // previews are the sheets around the one on screen.
-        if req.tag & (GRID_TAG | PRINT_TAG) != 0 {
-            return true;
-        }
-        if let Some(t) = req.tile {
+        let in_category = if req.tag & (GRID_TAG | PRINT_TAG) != 0 {
+            true
+        } else if let Some(t) = req.tile {
             let key = (req.page, req.tag, t.x, t.y);
             self.tiles.remove(&key);
             let retained = self.tiles.values().fold(0usize, |n, tex| n.saturating_add(texture_bytes(tex)));
@@ -1686,7 +1758,41 @@ impl DocView {
                 }
             }
             visible || bytes <= limit.saturating_sub(retained)
+        };
+        in_category && self.admit_total(req, bytes, visible)
+    }
+
+    /// The per-category allowances above also share one total (the memory budget's canvas share):
+    /// least recently requested rasters go first, on-screen pages and tiles never.
+    fn admit_total(&mut self, req: RenderRequest, bytes: usize, visible: bool) -> bool {
+        let limit = if self.light_memory { pdfcraft_engine::memory::LIGHT_CACHE_BYTES } else { pdfcraft_engine::memory::CACHE_BYTES };
+        let key = Self::raster_key(req);
+        self.remove_raster(key);
+        let on_screen = |k: &RasterKey| matches!(k.0, 0 | 4) && self.frame_visible.contains(&k.1);
+        let mut entries: Vec<(RasterKey, usize)> = self
+            .tiles
+            .iter()
+            .map(|(&(p, t, x, y), tex)| ((0, p, t, x, y), texture_bytes(tex)))
+            .chain(self.print_pages.iter().map(|(&p, (_, tex))| ((1, p, 0, 0, 0), texture_bytes(tex))))
+            .chain(self.grid_pages.iter().map(|(&p, (_, tex))| ((2, p, 0, 0, 0), texture_bytes(tex))))
+            .chain(self.thumbs.iter().map(|(&p, tex)| ((3, p, 0, 0, 0), texture_bytes(&tex.tex))))
+            .chain(self.pages.iter().map(|(&p, tex)| ((4, p, 0, 0, 0), texture_bytes(&tex.tex))))
+            .collect();
+        let mut retained = entries.iter().fold(0usize, |n, (_, b)| n.saturating_add(*b));
+        entries.retain(|(k, _)| !on_screen(k));
+        entries.sort_by_key(|(k, _)| self.raster_used.get(k).copied().unwrap_or(0));
+        for (old, size) in entries {
+            if retained.saturating_add(bytes) <= limit {
+                break;
+            }
+            self.remove_raster(old);
+            retained = retained.saturating_sub(size);
         }
+        let admitted = visible || retained.saturating_add(bytes) <= limit;
+        if admitted {
+            self.raster_used.insert(key, self.raster_clock);
+        }
+        admitted
     }
 
     /// The horizontal gutter either side of the pages.
@@ -3917,7 +4023,13 @@ fn notices(
     // A form whose scripts were turned off no longer calculates or answers its buttons: that
     // comes before what else there is to say about the document.
     let scripts_off = doc.xfa_scripts_off();
-    let msg = if scripts_off {
+    let msg = if doc.light_memory() {
+        Some((
+            "triangle-alert",
+            tl!("Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.").to_string(),
+            false,
+        ))
+    } else if scripts_off {
         Some(("triangle-alert", crate::js_ui::scripts_off_notice(), true))
     } else if secured {
         Some(("lock", tl!("This document is secured. Some changes are restricted by its security settings.").to_string(), false))
@@ -4986,6 +5098,43 @@ trailer << /Root 1 0 R >>
         v.page_changed(0);
         assert_eq!(v.prepare_render_queue(&info, 1.0), vec![req]);
         assert_eq!(v.pages.get(&0).unwrap().tag, STALE_TAG);
+    }
+
+    #[test]
+    fn raster_categories_share_one_budget_and_evict_least_recently_used() {
+        let ctx = egui::Context::default();
+        let info = thumbnail_info(5);
+        let mut view = DocView::new(DocId(1), &info, ViewDefaults::default());
+        let page = RenderRequest { page: 0, tag: 1, ..Default::default() };
+        let thumb = RenderRequest { page: 1, tag: THUMB_TAG | 1, ..Default::default() };
+        view.last_queue = vec![page, thumb];
+        view.raster_clock = 1;
+        view.receive_result(&ctx, solid_result(page, 10, 10));
+        view.raster_clock = 2;
+        view.receive_result(&ctx, solid_result(thumb, 10, 10));
+        let next = RenderRequest { page: 2, tag: GRID_TAG, ..Default::default() };
+        assert!(view.admit_texture(next, pdfcraft_engine::memory::CACHE_BYTES - 400));
+        assert!(view.pages.is_empty(), "the oldest page is evicted before the newer thumbnail");
+        assert_eq!(view.thumbs.len(), 1);
+        view.set_light_memory(true);
+        assert!(!view.admit_texture(next, pdfcraft_engine::memory::LIGHT_CACHE_BYTES + 1));
+    }
+
+    #[test]
+    fn the_shared_allowance_never_evicts_or_refuses_an_on_screen_page() {
+        let ctx = egui::Context::default();
+        let info = thumbnail_info(5);
+        let mut view = DocView::new(DocId(1), &info, ViewDefaults::default());
+        view.set_light_memory(true);
+        let page = RenderRequest { page: 0, tag: 1, ..Default::default() };
+        view.last_queue = vec![page];
+        view.frame_visible.insert(0);
+        view.receive_result(&ctx, solid_result(page, 10, 10));
+        let grid = RenderRequest { page: 2, tag: GRID_TAG, ..Default::default() };
+        assert!(!view.admit_texture(grid, pdfcraft_engine::memory::LIGHT_CACHE_BYTES));
+        assert_eq!(view.pages.len(), 1, "the on-screen page stays");
+        let sharper = RenderRequest { page: 0, tag: 2, ..Default::default() };
+        assert!(view.admit_texture(sharper, pdfcraft_engine::memory::LIGHT_CACHE_BYTES + 1), "an on-screen page is never refused");
     }
 
     #[test]

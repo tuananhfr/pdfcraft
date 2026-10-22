@@ -2409,3 +2409,9 @@ animation effects	Off	オフ
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	この操作は取り消せません。以前の元に戻す・やり直しの履歴はすべて消去されます。
 
 	Also remove metadata and hidden data (title, author, XMP, …)	メタデータと非表示データも削除（タイトル、作成者、XMP、…）
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	このPDFには電子署名があります: {names}。署名済みの版の署名は有効なままですが、ビューアーには署名後の変更が表示されます。
+	Saving may violate the certification's allowed-changes policy.	保存すると証明で許可された変更のポリシーに違反する場合があります。
+	This certification allows no changes. Use Save a copy… to save to another file.	この証明では変更できません。「コピーを保存…」で別のファイルに保存してください。
+	Save changes after signing?	署名後の変更を保存しますか？
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	メモリ使用量を抑えるため軽量の読み取り専用モードで開きました。編集と大きなサムネイルは無効です。
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	このPDFはメモリの上限を超えています。他の文書を閉じるか、より小さなPDFを開いてください。

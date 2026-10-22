@@ -2431,3 +2431,9 @@ animation effects	Off	Вимкнено
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Цю дію неможливо скасувати. Усю попередню історію скасування й повторення буде очищено.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Також видалити метадані та приховані дані (назву, автора, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Цей PDF містить цифрові підписи: {names}. Підписи залишаються чинними для підписаної версії, але переглядачі покажуть зміни після підписання.
+	Saving may violate the certification's allowed-changes policy.	Збереження може порушити політику дозволених змін сертифікації.
+	This certification allows no changes. Use Save a copy… to save to another file.	Ця сертифікація забороняє зміни. Скористайтеся «Зберегти копію…», щоб зберегти в інший файл.
+	Save changes after signing?	Зберегти зміни після підписання?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Відкрито в полегшеному режимі лише для читання для економії пам’яті. Редагування та великі мініатюри вимкнено.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Цей PDF перевищує ліміт пам’яті. Закрийте інші документи або відкрийте менший PDF.

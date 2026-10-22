@@ -189,3 +189,101 @@ fn a_field_lock_names_the_locked_field_that_changed() {
     fill(&mut s, id, "Notes", "x").unwrap();
     assert_eq!(breaches(&s, id), vec![CertificationBreach::LockedField("Notes".into())]);
 }
+
+#[test]
+fn incremental_save_reports_signatures_and_preserves_signed_revision() {
+    for level in [None, Some(2), Some(3)] {
+        let (mut s, id, original) = signed(level, None);
+        assert!(s.save_report(id, false).unwrap().signatures_affected.is_empty());
+        fill(&mut s, id, "Notes", "Reviewed").unwrap();
+        let report = s.save_report(id, false).unwrap();
+        assert_eq!(report.signatures_affected.len(), 1);
+        assert_eq!(report.signatures_affected[0].doc_mdp, level);
+        assert!(!report.signatures_affected[0].field.is_empty());
+        assert!(report.bytes.starts_with(&original));
+        assert!(s.save_full_bytes(id).is_err());
+        s.mark_saved(id, report.bytes, None).unwrap();
+        assert!(s.save_report(id, false).unwrap().signatures_affected.is_empty());
+    }
+}
+
+#[test]
+fn no_changes_signature_refuses_modifying_save_but_keeps_copy_certification() {
+    let (mut s, id, original) = signed(Some(1), None);
+    assert!(s.save_report(id, false).unwrap().signatures_affected.is_empty());
+    s.mark_recovered(id, None);
+    assert!(s.save_report(id, false).unwrap().signatures_affected.is_empty(), "recovering identical signed bytes is a no-op");
+    let mut cos = pdfcraft_cos::Document::open(original.clone()).unwrap();
+    let root = cos.root().unwrap();
+    cos.update_dict(root, |d| d.set(b"SyntheticChange".to_vec(), pdfcraft_cos::Object::Bool(true))).unwrap();
+    let changed = Arc::new(pdfcraft_cos::write_incremental(&cos, &Default::default()).unwrap());
+    let id = s.open("recovered.pdf", None, changed.clone(), None).unwrap();
+    s.mark_recovered(id, None);
+    assert!(s.save_bytes(id).unwrap_err().to_string().contains("Save a copy"));
+    let copy = s.save_report(id, true).unwrap();
+    assert_eq!(copy.signatures_affected[0].doc_mdp, Some(1));
+    assert_eq!(copy.bytes, changed);
+    assert!(copy.bytes.starts_with(&original));
+}
+
+#[test]
+fn byte_range_signature_fields_warn_even_when_the_cms_is_invalid() {
+    use pdfcraft_cos::{Dict, Document, ObjRef, Object, PdfString, SaveOptions, write_incremental};
+    for level in [None, Some(1), Some(2), Some(3)] {
+        let mut cos = Document::open(Arc::new(form(None))).unwrap();
+        let mut sig = Dict::new();
+        sig.set(b"Type".to_vec(), Object::Name(b"Sig".to_vec()));
+        sig.set(b"Name".to_vec(), Object::String(PdfString::literal(b"Synthetic signer".to_vec())));
+        sig.set(b"ByteRange".to_vec(), Object::Array(vec![Object::Int(0), Object::Int(10), Object::Int(20), Object::Int(10)]));
+        sig.set(b"Contents".to_vec(), Object::String(PdfString::literal(vec![0])));
+        if let Some(level) = level {
+            let mut params = Dict::new();
+            params.set(b"P".to_vec(), Object::Int(level));
+            let mut reference = Dict::new();
+            reference.set(b"TransformMethod".to_vec(), Object::Name(b"DocMDP".to_vec()));
+            reference.set(b"TransformParams".to_vec(), Object::Dict(params));
+            sig.set(b"Reference".to_vec(), Object::Array(vec![Object::Dict(reference)]));
+        }
+        let sig = cos.add(sig);
+        cos.update_dict(ObjRef::new(8, 0), |field| field.set(b"V".to_vec(), Object::Ref(sig))).unwrap();
+        let original = Arc::new(write_incremental(&cos, &SaveOptions::default()).unwrap());
+        let mut session = Session::new();
+        let id = session.open("synthetic.pdf", None, original.clone(), None).unwrap();
+        assert!(session.save_report(id, false).unwrap().signatures_affected.is_empty());
+        session.apply(id, Edit::SetInfo { key: "Title".into(), value: "Changed".into() }).unwrap();
+        let report = session.save_report(id, true).unwrap();
+        assert_eq!(report.signatures_affected.len(), 1);
+        assert_eq!(report.signatures_affected[0].doc_mdp, level.map(|v| v as u8));
+        assert_eq!(report.signatures_affected[0].field, "Approval");
+        assert!(report.bytes.starts_with(&original));
+        if level == Some(1) {
+            assert!(session.save_report(id, false).is_err());
+        }
+    }
+}
+
+#[test]
+fn undoing_all_signed_edits_is_a_noop_save() {
+    let (mut session, id, original) = signed(None, None);
+    fill(&mut session, id, "Notes", "Changed").unwrap();
+    session.undo(id).unwrap();
+    let report = session.save_report(id, false).unwrap();
+    assert!(report.signatures_affected.is_empty());
+    assert_eq!(report.bytes, original);
+}
+
+#[test]
+fn a_recovered_signed_draft_still_reports_its_signatures_on_save() {
+    let (mut session, id, original) = signed(None, None);
+    fill(&mut session, id, "Notes", "Changed").unwrap();
+    let snapshot = session.autosave_snapshots().pop().expect("signed documents keep crash recovery");
+    assert!(snapshot.bytes.starts_with(&original) && snapshot.bytes.len() > original.len());
+    let mut restored = Session::new();
+    let draft = restored.open("contract.pdf", None, snapshot.bytes.clone(), None).unwrap();
+    assert!(restored.save_report(draft, false).unwrap().signatures_affected.is_empty(), "not yet marked as unsaved work");
+    restored.mark_recovered(draft, None);
+    let report = restored.save_report(draft, false).unwrap();
+    assert_eq!(report.signatures_affected.len(), 1);
+    assert_eq!(report.signatures_affected[0].field, "Approval");
+    assert!(report.bytes.starts_with(&original));
+}

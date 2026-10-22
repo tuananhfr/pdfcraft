@@ -204,7 +204,6 @@ pub const MAX_REMOTE_DOCUMENT_BYTES: u64 = 1 << 30;
 /// as `/dev/zero` or a FIFO is refused before it is opened, and a file that grows past the cap
 /// while it is read is refused too.
 pub fn read_remote_document(path: &Path) -> Result<Vec<u8>, RemoteDocumentPathError> {
-    use std::io::Read;
     let is_pdf = path.extension().is_some_and(|e| e.eq_ignore_ascii_case("pdf"));
     if !is_pdf {
         return Err(RemoteDocumentPathError::NotPdf);
@@ -216,9 +215,7 @@ pub fn read_remote_document(path: &Path) -> Result<Vec<u8>, RemoteDocumentPathEr
     if meta.len() > MAX_REMOTE_DOCUMENT_BYTES {
         return Err(RemoteDocumentPathError::TooLarge);
     }
-    let file = std::fs::File::open(path).map_err(|e| RemoteDocumentPathError::Read(e.to_string()))?;
-    let mut bytes = Vec::with_capacity(usize::try_from(meta.len()).unwrap_or(0));
-    file.take(MAX_REMOTE_DOCUMENT_BYTES.saturating_add(1)).read_to_end(&mut bytes).map_err(|e| RemoteDocumentPathError::Read(e.to_string()))?;
+    let bytes = crate::memory::read_file(path).map_err(RemoteDocumentPathError::Read)?;
     if u64::try_from(bytes.len()).map_or(true, |n| n > MAX_REMOTE_DOCUMENT_BYTES) {
         return Err(RemoteDocumentPathError::TooLarge);
     }

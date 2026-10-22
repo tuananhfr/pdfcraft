@@ -152,6 +152,7 @@ pub fn tools() -> Vec<ToolDef> {
                 "doc": doc(),
                 "path": { "type": "string", "description": "Save as this file. Omit to save in place." },
                 "full": { "type": "boolean", "description": "Force a full rewrite (or, with false, an incremental update)." },
+                "acknowledgeSignatures": { "type": "boolean", "description": "Required for signed documents with changes. Signed revisions remain intact; viewers show later changes and certification policies may be violated." },
                 "flatten_fill_sign": { "type": "boolean", "description": "Bake Fill & Sign marks into the page before writing. Default false." }
             }),
             &["doc"],

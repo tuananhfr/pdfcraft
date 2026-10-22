@@ -2372,3 +2372,9 @@ animation effects	Off	Изключени
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Това действие не може да бъде отменено. Цялата предишна история за отмяна и повторение ще бъде изчистена.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Премахване и на метаданните и скритите данни (заглавие, автор, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Този PDF има цифрови подписи: {names}. Подписите остават валидни за подписаната версия, но програмите за преглед ще показват промени след подписването.
+	Saving may violate the certification's allowed-changes policy.	Запазването може да наруши правилата за разрешени промени на сертифицирането.
+	This certification allows no changes. Use Save a copy… to save to another file.	Това сертифициране не позволява промени. Използвайте Запазване на копие… за запазване в друг файл.
+	Save changes after signing?	Запазване на промените след подписването?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Отворено в олекотен режим само за четене за пестене на памет. Редактирането и големите миниатюри са изключени.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Този PDF надвишава лимита на паметта. Затворете други документи или отворете по-малък PDF.

@@ -646,6 +646,7 @@ pub struct PdfCraftApp {
     pub close_request: Option<CloseRequest>,
     /// A save held because it would invalidate a signature (see `cert_guard`).
     pub held_save: Option<HeldSave>,
+    signature_save_ack: Option<(DocId, u64)>,
     pending_word_export: Option<office_export::PendingWordExport>,
     /// Save to this path instead of asking (tests and automation).
     pub save_override: Option<String>,
@@ -997,6 +998,7 @@ impl PdfCraftApp {
             web_save: None,
             close_request: None,
             held_save: None,
+            signature_save_ack: None,
             pending_word_export: None,
             save_override: None,
             props_draft: None,
@@ -1234,13 +1236,13 @@ impl PdfCraftApp {
     fn finish_pending_open(&mut self, pending: PendingOpen, kind: open_worker::ResultKind) {
         match kind {
             open_worker::ResultKind::ReadFailed(reason) => {
-                self.notify_fmt("Couldn't read {name}: {e}", &[("name", &pending.name), ("e", &reason)]);
+                self.notify_fmt("Couldn't read {name}: {e}", &[("name", &pending.name), ("e", &memory_message(&reason))]);
             }
             open_worker::ResultKind::RemoteFailed(reason) => {
                 self.notify_fmt("Couldn't follow linked PDF: {reason}", &[("reason", &reason)]);
             }
             open_worker::ResultKind::RecoveryFailed(reason) => {
-                self.notify_fmt("Couldn't recover {name}: {e}", &[("name", &pending.name), ("e", &reason)]);
+                self.notify_fmt("Couldn't recover {name}: {e}", &[("name", &pending.name), ("e", &memory_message(&reason))]);
             }
             open_worker::ResultKind::Failed(reason) => {
                 self.notify_fmt("Couldn't open {name}: {reason}", &[("name", &pending.name), ("reason", &reason)]);
@@ -1289,7 +1291,7 @@ impl PdfCraftApp {
                         after_open: pending.after_open,
                     });
                 }
-                Err(error) => self.notify_fmt("Couldn't open {name}: {e}", &[("name", &pending.name), ("e", &error.to_string())]),
+                Err(error) => self.notify_fmt("Couldn't open {name}: {e}", &[("name", &pending.name), ("e", &memory_message(&error.to_string()))]),
             },
         }
     }
@@ -1325,7 +1327,7 @@ impl PdfCraftApp {
                 });
                 return Ok(());
             }
-            Err(e) => return Err(e.to_string()),
+            Err(e) => return Err(memory_message(&e.to_string())),
         };
         self.finish_open(name, path, bytes.len(), prepared, activate).map(|_| ())
     }
@@ -1792,7 +1794,7 @@ impl PdfCraftApp {
                         }
                     }
                 }
-                Err(error) => self.notify_fmt("Couldn't read {name}: {e}", &[("name", &name), ("e", &error.to_string())]),
+                Err(error) => self.notify_fmt("Couldn't read {name}: {e}", &[("name", &name), ("e", &memory_message(&error.to_string()))]),
             }
             return;
         }
@@ -3125,9 +3127,18 @@ impl PdfCraftApp {
         if let Some(view) = self.active.and_then(|i| self.views.get_mut(i))
             && let Some(doc) = self.session.get(view.id)
         {
+            view.set_light_memory(doc.light_memory());
             view.finish_render_frame(ctx, &doc.info, &doc.renderer);
         }
         // Last, so the drafts and the hidden-page flush include this frame's edits.
         self.drafts_tick(ctx);
+    }
+}
+
+fn memory_message(message: &str) -> String {
+    if message == pdfcraft_engine::memory::REFUSE_NOTICE {
+        tl!("This PDF exceeds the memory budget. Close other documents or open a smaller PDF.").into()
+    } else {
+        message.into()
     }
 }

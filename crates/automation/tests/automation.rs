@@ -4119,7 +4119,7 @@ fn digital_ids_signing_and_validation_through_tools() {
     assert_eq!((s["status"].as_str(), s["modification"].as_str()), (Some("valid"), Some("allowed")));
     // A full rewrite is refused for a signed document.
     assert!(matches!(a.call("doc_save", &json!({ "doc": doc, "path": "copy.pdf", "full": true })), Err(ToolError::Failed(_))));
-    ok(&mut a, "doc_save", json!({ "doc": doc }));
+    ok(&mut a, "doc_save", json!({ "doc": doc, "acknowledgeSignatures": true }));
     // Three revisions: the original, the signature, the comment; the middle one is signed.
     let revs = ok(&mut a, "doc_revisions", json!({ "doc": doc }))["revisions"].as_array().cloned().unwrap();
     assert_eq!(revs.len(), 3, "{revs:?}");
@@ -5784,7 +5784,7 @@ fn doc_save_keeps_a_certified_original_intact() {
     let refused = err(&mut a, "doc_save", json!({ "doc": doc })).to_string();
     assert!(refused.contains("certification signature") && refused.contains("page content") && refused.contains("another path"), "{refused}");
     assert_eq!(std::fs::read(dir.join("certified.pdf")).unwrap(), certified.as_slice());
-    let copy = ok(&mut a, "doc_save", json!({ "doc": doc, "path": "copy.pdf", "full": false }));
+    let copy = ok(&mut a, "doc_save", json!({ "doc": doc, "path": "copy.pdf", "full": false, "acknowledgeSignatures": true }));
     assert_eq!(copy["incremental"], true);
     assert!(std::fs::read(dir.join("copy.pdf")).unwrap().starts_with(&certified));
     assert_eq!(std::fs::read(dir.join("certified.pdf")).unwrap(), certified.as_slice());
@@ -5827,4 +5827,26 @@ fn redaction_tools_can_keep_metadata_but_cannot_undo() {
     assert!(!page_text(&mut a, doc).join("\n").contains("SECRET-123"));
     let reopened = ok(&mut a, "doc_open", json!({ "path": "kept.pdf" }))["doc"].clone();
     assert_eq!(ok(&mut a, "doc_info", json!({ "doc": reopened }))["title"], "SECRET-123");
+}
+
+#[test]
+fn signed_incremental_save_requires_acknowledgement_and_reports_affected() {
+    let dir = workdir("approval-save");
+    let p12 = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/../sign/tests/data/ec-p256.p12")).unwrap();
+    let signer = pdfcraft_engine::sign::pkcs12::open(&p12, "test").unwrap();
+    let mut session = pdfcraft_engine::Session::new();
+    let id = session.open("signed.pdf", None, std::sync::Arc::new(fixture(1)), None).unwrap();
+    let signed = session.sign(id, &signer, pdfcraft_engine::SignOptions { page: 0, ..Default::default() }).unwrap();
+    std::fs::write(dir.join("signed.pdf"), &*signed).unwrap();
+    let mut a = auto(&dir);
+    let doc = ok(&mut a, "doc_open", json!({ "path": "signed.pdf" }))["doc"].as_u64().unwrap();
+    assert_eq!(ok(&mut a, "doc_save", json!({ "doc": doc }))["signaturesAffected"], json!([]));
+    ok(&mut a, "page_rotate", json!({ "doc": doc, "pages": [1], "degrees": 90 }));
+    assert!(err(&mut a, "doc_save", json!({ "doc": doc })).to_string().contains("acknowledgeSignatures"));
+    assert_eq!(std::fs::read(dir.join("signed.pdf")).unwrap(), *signed);
+    let saved = ok(&mut a, "doc_save", json!({ "doc": doc, "acknowledgeSignatures": true }));
+    assert_eq!(saved["signaturesAffected"].as_array().unwrap().len(), 1);
+    assert!(saved["signaturesAffected"][0]["field"].is_string());
+    assert_eq!(saved["incremental"], true);
+    assert!(std::fs::read(dir.join("signed.pdf")).unwrap().starts_with(&signed));
 }

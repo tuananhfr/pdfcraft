@@ -4673,3 +4673,18 @@ fn history_transaction_ids_survive_reload_and_fail_safely_at_exhaustion() {
     assert_eq!(s.get(id).unwrap().bytes, bytes);
     assert_eq!(s.get(id).unwrap().undo_history().len(), 1);
 }
+
+#[test]
+fn history_byte_cap_evicts_old_snapshots_and_keeps_shared_sources_once() {
+    let (mut session, id) = session_with(1);
+    for n in 0..5 {
+        session.apply(id, Edit::SetInfo { key: "Title".into(), value: format!("{n}{}", "x".repeat(4096)) }).unwrap();
+    }
+    let editor = session.docs.iter_mut().find(|d| d.id == id).unwrap().editor.as_mut().unwrap();
+    let before = memory::retained_history_bytes(editor.undo.iter().map(|e| &e.1), &editor.cos);
+    assert!(before >= 4 * 4096);
+    editor.trim_history(9000);
+    assert!(editor.undo.len() < 5);
+    assert!(memory::retained_history_bytes(editor.undo.iter().chain(&editor.redo).map(|e| &e.1), &editor.cos) <= 9000);
+    assert!(!editor.undo.is_empty());
+}

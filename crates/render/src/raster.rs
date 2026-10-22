@@ -53,6 +53,8 @@ impl Stopwatch {
 /// Per-document rendering configuration.
 #[derive(Clone, Debug, Default)]
 pub struct RenderConfig {
+    /// Avoid retaining rendering caches between requests in memory-constrained documents.
+    pub light_memory: bool,
     /// User or owner password for encrypted documents.
     pub password: Option<Arc<str>>,
     /// Layer (optional content group) visibility overrides: (object number, generation, visible).
@@ -125,6 +127,9 @@ fn japanese_face(name: &str, serif: bool, bold: bool) -> JapaneseFace {
         JapaneseFace::Mincho
     }
 }
+
+/// Largest whole-page raster of a document opened in light mode (one 4096-pixel square tile).
+pub const LIGHT_RASTER_BYTES: usize = 64 * 1024 * 1024;
 
 /// Hard cap on a rendered side, to bound memory at extreme zoom levels (tiling arrives in M3.3).
 pub const MAX_SIDE: f32 = 8192.0;
@@ -296,6 +301,29 @@ pub fn device_pixels(pt: f32, scale: f32) -> u32 {
 /// and reported as `Err((message, panicked))`.
 type Output = (u32, u32, Pixels, Option<Arc<crate::text::PageText>>);
 
+/// Light documents (opened under memory pressure) keep no decoded-image cache between requests
+/// and cap a whole-page raster at [`LIGHT_RASTER_BYTES`]; tiles are bounded by construction.
+fn render_budgeted<'a>(
+    pdf: &'a Pdf,
+    cache: &RenderCache<'a>,
+    settings: &InterpreterSettings,
+    config: &RenderConfig,
+    mut req: RenderRequest,
+) -> Result<Output, (String, bool)> {
+    if !config.light_memory {
+        return render_page(pdf, cache, settings, config.reject_oversize, request_reading(config, &req), req);
+    }
+    if req.kind == RequestKind::Pixels
+        && req.tile.is_none()
+        && let Some(page) = pdf.pages().get(req.page)
+    {
+        let (w, h) = page.render_dimensions();
+        let budget_scale = ((LIGHT_RASTER_BYTES / 4) as f32 / (w.max(1.0) * h.max(1.0))).sqrt();
+        req.scale = req.scale.min(budget_scale);
+    }
+    render_page(pdf, &RenderCache::new(), settings, config.reject_oversize, request_reading(config, &req), req)
+}
+
 fn render_page<'a>(
     pdf: &'a Pdf,
     cache: &RenderCache<'a>,
@@ -455,7 +483,7 @@ impl PageRenderer {
         let cache = RenderCache::new();
         let warnings = Arc::new(Mutex::new(Vec::new()));
         let settings = warning_settings(&self.settings, warnings.clone());
-        let r = render_page(pdf, &cache, &settings, self.config.reject_oversize, request_reading(&self.config, &req), req);
+        let r = render_budgeted(pdf, &cache, &settings, &self.config, req);
         let warnings = take_warnings(&warnings);
         if matches!(r, Err((_, true))) {
             self.pdf = parse(&self.bytes, self.config.password.as_deref());
@@ -1183,7 +1211,7 @@ fn worker(
                         panic!("injected page panic");
                     }
                     match pdf {
-                        Some(pdf) => render_page(pdf, cache, &settings, config.reject_oversize, request_reading(&config, &req), req),
+                        Some(pdf) => render_budgeted(pdf, cache, &settings, &config, req),
                         None => Err(("the document could not be parsed".into(), false)),
                     }
                 }))
@@ -6029,5 +6057,17 @@ trailer << /Root 1 0 R >>
             }
             assert!(render(glyph, 3).as_chunks::<4>().0.iter().all(|p| p[..3] == [255, 255, 255]), "{glyph}: 3 Tr hides the glyph");
         }
+    }
+
+    /// A document opened in light mode caps a whole-page raster at its byte allowance instead of
+    /// the general pixel cap.
+    #[test]
+    fn light_memory_caps_whole_page_rasters() {
+        let pdf = Arc::new(one_page_pdf(b"", ""));
+        let config = RenderConfig { light_memory: true, ..RenderConfig::default() };
+        let page = PageRenderer::new(pdf, config).render(RenderRequest { page: 0, kind: RequestKind::Pixels, scale: 110.0, ..Default::default() });
+        assert!(page.error.is_none(), "{:?}", page.error);
+        assert!(page.width < 4400 && page.width >= 4000, "{}", page.width);
+        assert!((page.width as usize) * (page.height as usize) * 4 <= LIGHT_RASTER_BYTES);
     }
 }

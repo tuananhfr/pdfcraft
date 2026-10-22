@@ -236,7 +236,7 @@ pub fn recognize_file(
     if s.apply_ocr(id, &pages).map_err(|e| e.to_string())? == 0 {
         return Ok(FileResult { bytes, pages });
     }
-    Ok(FileResult { bytes: s.save_bytes(id).map_err(|e| e.to_string())?, pages })
+    Ok(FileResult { bytes: s.save_copy_bytes(id).map_err(|e| e.to_string())?, pages })
 }
 
 #[cfg(test)]

@@ -604,7 +604,7 @@ impl PdfCraftApp {
         }
         let Some(id) = self.views.get(index).map(|v| v.id) else { return false };
         let after = if guard {
-            match self.hold_breaking_save(id, after) {
+            match self.hold_breaking_save(id, target, after) {
                 Some(after) => after,
                 None => return false,
             }
@@ -628,18 +628,12 @@ impl PdfCraftApp {
                     let dialog = rfd::AsyncFileDialog::new().add_filter("PDF", &["pdf"]).set_file_name(name);
                     // The bytes are taken once the user has chosen, so edits made meanwhile are saved too.
                     self.ask_one(crate::pickers::Ask::Save(dialog), None, move |app, dest| {
-                        if app.save_doc_to(id, &dest.to_string_lossy()) {
-                            after(app);
-                        }
+                        app.save_doc_to_then(id, &dest.to_string_lossy(), after);
                     });
                     return false;
                 }
             };
-            let saved = self.save_doc_to(id, &destination);
-            if saved {
-                after(self);
-            }
-            saved
+            self.save_doc_to_then(id, &destination, after)
         }
         #[cfg(target_arch = "wasm32")]
         {
@@ -647,7 +641,7 @@ impl PdfCraftApp {
             if !self.flatten_fill_sign_for_save(id) {
                 return false;
             }
-            let bytes = match self.session.save_bytes(id) {
+            let bytes = match self.session.save_copy_bytes(id) {
                 Ok(b) => b,
                 Err(e) => {
                     self.save_failed(id, "Couldn't save {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
@@ -690,10 +684,14 @@ impl PdfCraftApp {
 
     /// Write document `id` to `dest` and make it the document's file. Returns `true` if written.
     #[cfg(not(target_arch = "wasm32"))]
-    fn save_doc_to(&mut self, id: pdfcraft_engine::DocId, dest: &str) -> bool {
+    fn save_doc_to_then(&mut self, id: pdfcraft_engine::DocId, dest: &str, after: crate::cert_guard::After) -> bool {
         // Save As answers on a later frame: commit what was typed meanwhile, too (#166), even
         // if another tab is active by then.
         if !self.commit_typing_in(id) || !self.flatten_fill_sign_for_save(id) {
+            return false;
+        }
+        if !self.signature_write_confirmed(id) {
+            self.hold_breaking_save(id, SaveTarget::As, after);
             return false;
         }
         let Some(name) = self.session.get(id).map(|d| d.name.clone()) else {
@@ -705,7 +703,7 @@ impl PdfCraftApp {
             self.notify(tl!("Choose another file: saving these changes over the signed original would invalidate its signature.").to_string());
             return false;
         }
-        let bytes = match self.session.save_bytes(id).and_then(|b| self.session.check_save(id, &b).map(|()| b)) {
+        let bytes = match self.session.save_copy_bytes(id).and_then(|b| self.session.check_save(id, &b).map(|()| b)) {
             Ok(b) => b,
             Err(e) => {
                 self.save_failed(id, "Couldn't save {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
@@ -728,7 +726,9 @@ impl PdfCraftApp {
                     // Saving over a version that changed on disk keeps this one: nothing to ask.
                     view.disk_changed = false;
                 }
+                self.signature_save_ack = None;
                 self.notify_fmt("Saved {name}", &[("name", &short_name(dest))]);
+                after(self);
                 true
             }
             Err(e) => {

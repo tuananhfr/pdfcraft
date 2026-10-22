@@ -53,6 +53,7 @@ pdfcraft-cli render <file.pdf> --page N [--dpi 96] --out x.png   (.png, .jpg, .t
 pdfcraft-cli text   <file.pdf> [--page N]                  extracted text (pages separated by form feeds)
 pdfcraft-cli edit   <in.pdf> --out out.pdf [--rotate 1,3:90] [--delete 2,4] [--move 5:1]
                       [--insert-blank 1] [--title T] [--author A] [--full]
+                      [--acknowledge-signatures]  (required to save changes to a signed PDF)
                       (options run in order; page numbers refer to the document after the earlier options)
 pdfcraft-cli combine <a.pdf> <b.pdf> … --out combined.pdf
 pdfcraft-cli extract <in.pdf> --pages 1,3,5 --out out.pdf
@@ -273,7 +274,7 @@ fn positional(args: &[String]) -> Vec<&str> {
 }
 
 fn read(path: &str) -> Result<Arc<Vec<u8>>, String> {
-    std::fs::read(path).map(Arc::new).map_err(|e| format!("{path}: {e}"))
+    pdfcraft_engine::memory::read_file(Path::new(path)).map(Arc::new).map_err(|e| format!("{path}: {e}"))
 }
 
 fn info(args: &[String]) -> Result<(), CliError> {
@@ -380,7 +381,7 @@ fn page_list(s: &str) -> Result<Vec<usize>, String> {
 }
 
 /// The options `edit` understands, for its "unknown option" message.
-const EDIT_OPTIONS: &str = "--out, --password, --full, --rotate, --delete, --move, --insert-blank, --title, --author";
+const EDIT_OPTIONS: &str = "--out, --password, --full, --acknowledge-signatures, --rotate, --delete, --move, --insert-blank, --title, --author";
 
 /// Apply page and metadata edits through the engine and save (incrementally unless `--full`).
 ///
@@ -393,6 +394,7 @@ fn edit(args: &[String]) -> Result<(), CliError> {
     let mut out: Option<&str> = None;
     let mut password: Option<&str> = None;
     let mut full = false;
+    let mut acknowledge_signatures = false;
     let mut edits = Vec::new();
     let mut i = 0;
     while let Some(arg) = args.get(i).map(String::as_str) {
@@ -400,6 +402,11 @@ fn edit(args: &[String]) -> Result<(), CliError> {
         match arg {
             "--full" => {
                 full = true;
+                i += 1;
+                continue;
+            }
+            "--acknowledge-signatures" => {
+                acknowledge_signatures = true;
                 i += 1;
                 continue;
             }
@@ -466,8 +473,23 @@ fn edit(args: &[String]) -> Result<(), CliError> {
         }
         session.apply(id, e).map_err(|e| e.to_string())?;
     }
-    let bytes = if full { session.save_full_bytes(id) } else { session.save_bytes(id) }.map_err(|e| e.to_string())?;
-    std::fs::write(out, bytes.as_slice()).map_err(|e| format!("{out}: {e}").into())
+    let affected = session.signatures_affected(id);
+    let names =
+        affected.iter().map(|s| s.signer.as_ref().map_or_else(|| s.field.clone(), |n| format!("{n} ({})", s.field))).collect::<Vec<_>>().join(", ");
+    if !affected.is_empty() && !acknowledge_signatures {
+        return Err(format!(
+            "edit: this PDF has digital signatures ({names}); viewers will show these changes as made after signing. Pass --acknowledge-signatures to save them"
+        )
+        .into());
+    }
+    // Like `doc_save`: another file is a copy, which a no-changes certification does not refuse.
+    let same_file = out == path || matches!((std::fs::canonicalize(out), std::fs::canonicalize(path)), (Ok(a), Ok(b)) if a == b);
+    let bytes = if full { session.save_full_bytes(id) } else { session.save_report(id, !same_file).map(|r| r.bytes) }.map_err(|e| e.to_string())?;
+    std::fs::write(out, bytes.as_slice()).map_err(|e| format!("{out}: {e}"))?;
+    if !affected.is_empty() {
+        let _ = writeln!(std::io::stderr(), "warning: signed by {names}; the saved changes follow the signed revision");
+    }
+    Ok(())
 }
 
 fn file_stem(path: &str) -> String {

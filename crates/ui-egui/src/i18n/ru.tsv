@@ -2322,3 +2322,9 @@ animation effects	Off	Выкл
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Это действие нельзя отменить. Вся предыдущая история отмены и повтора будет очищена.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Также удалить метаданные и скрытые данные (название, автор, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Этот PDF содержит цифровые подписи: {names}. Они остаются действительными для подписанной версии, но программы просмотра покажут изменения после подписания.
+	Saving may violate the certification's allowed-changes policy.	Сохранение может нарушить политику разрешённых изменений сертификации.
+	This certification allows no changes. Use Save a copy… to save to another file.	Эта сертификация запрещает изменения. Используйте «Сохранить копию…» для сохранения в другой файл.
+	Save changes after signing?	Сохранить изменения после подписания?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Открыто в облегчённом режиме только для чтения для экономии памяти. Редактирование и крупные миниатюры отключены.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Этот PDF превышает лимит памяти. Закройте другие документы или откройте PDF меньшего размера.

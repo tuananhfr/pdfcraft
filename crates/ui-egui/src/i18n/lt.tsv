@@ -2661,3 +2661,9 @@ key	Space	Tarpas
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Šio veiksmo atšaukti negalima. Visa ankstesnė atšaukimo ir grąžinimo istorija bus išvalyta.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Taip pat pašalinti metaduomenis ir paslėptus duomenis (pavadinimą, autorių, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Šiame PDF yra skaitmeninių parašų: {names}. Parašai lieka galioti pasirašytai versijai, bet peržiūros programos rodys pakeitimus po pasirašymo.
+	Saving may violate the certification's allowed-changes policy.	Įrašymas gali pažeisti sertifikavimo leidžiamų pakeitimų taisykles.
+	This certification allows no changes. Use Save a copy… to save to another file.	Šis sertifikavimas neleidžia pakeitimų. Pasirinkite Įrašyti kopiją… ir įrašykite į kitą failą.
+	Save changes after signing?	Įrašyti pakeitimus po pasirašymo?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Atverta taupiuoju tik skaitymo režimu. Redagavimas ir didelės miniatiūros išjungti.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Šis PDF viršija atminties ribą. Užverkite kitus dokumentus arba atverkite mažesnį PDF.

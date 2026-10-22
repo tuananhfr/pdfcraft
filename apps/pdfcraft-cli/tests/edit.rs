@@ -239,3 +239,30 @@ fn a_page_past_the_end_after_earlier_edits_names_that_option() {
     assert!(err.contains("--move: page 3 does not exist") && err.contains("has 2 pages"), "{err}");
     assert!(!output.exists());
 }
+
+#[test]
+fn editing_a_signed_pdf_requires_acknowledging_its_signatures() {
+    let p12 = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/../../crates/sign/tests/data/ec-p256.p12")).unwrap();
+    let signer = pdfcraft_engine::sign::pkcs12::open(&p12, "test").unwrap();
+    let mut session = pdfcraft_engine::Session::new();
+    let id = session.open("signed.pdf", None, std::sync::Arc::new(fixture()), None).unwrap();
+    let signed = session.sign(id, &signer, pdfcraft_engine::SignOptions { page: 0, ..Default::default() }).unwrap();
+    let input = tmp("signed", "signed.pdf");
+    std::fs::write(&input, &*signed).unwrap();
+    let output = tmp("signed", "out.pdf");
+    let edit = |extra: &[&str]| {
+        let mut args = vec!["edit", input.to_str().unwrap(), "--out", output.to_str().unwrap(), "--title", "Changed"];
+        args.extend(extra);
+        Command::new(BIN).args(&args).output().unwrap()
+    };
+    let refused = edit(&[]);
+    assert!(!refused.status.success());
+    assert!(String::from_utf8_lossy(&refused.stderr).contains("--acknowledge-signatures"), "{}", String::from_utf8_lossy(&refused.stderr));
+    assert!(!output.exists(), "nothing is written without the acknowledgement");
+    let saved = edit(&["--acknowledge-signatures"]);
+    assert!(saved.status.success(), "{}", String::from_utf8_lossy(&saved.stderr));
+    assert!(String::from_utf8_lossy(&saved.stderr).contains("warning: signed by"));
+    let bytes = std::fs::read(&output).unwrap();
+    assert!(bytes.starts_with(&signed) && bytes.len() > signed.len(), "the signed revision is kept byte for byte");
+    assert_eq!(std::fs::read(&input).unwrap(), *signed);
+}

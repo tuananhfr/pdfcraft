@@ -2408,3 +2408,9 @@ animation effects	Off	Ki
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Ez a művelet nem vonható vissza. Minden korábbi visszavonási és ismétlési előzmény törlődik.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	A metaadatok és rejtett adatok törlése is (cím, szerző, XMP, …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	Ez a PDF digitális aláírásokat tartalmaz: {names}. Az aláírt változat aláírásai érvényesek maradnak, de a megjelenítők jelzik az aláírás utáni módosításokat.
+	Saving may violate the certification's allowed-changes policy.	A mentés sértheti a hitelesítés által engedélyezett módosítások szabályait.
+	This certification allows no changes. Use Save a copy… to save to another file.	Ez a hitelesítés nem enged módosításokat. A Másolat mentése… paranccsal menthet másik fájlba.
+	Save changes after signing?	Menti az aláírás utáni módosításokat?
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Memóriatakarékos, csak olvasható módban megnyitva. A szerkesztés és a nagy bélyegképek le vannak tiltva.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Ez a PDF meghaladja a memóriakeretet. Zárjon be más dokumentumokat, vagy nyisson meg kisebb PDF-et.

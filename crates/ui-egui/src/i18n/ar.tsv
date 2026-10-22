@@ -2430,3 +2430,9 @@ animation effects	Off	معطّلة
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	لا يمكن التراجع عن هذا الإجراء. سيتم مسح سجل التراجع والإعادة السابق بالكامل.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	إزالة البيانات الوصفية والمخفية أيضاً (العنوان، المؤلف، XMP، …)
+	This PDF has digital signatures: {names}. Signatures remain valid for the signed revision, but viewers will show changes after signing.	يحتوي ملف PDF هذا على توقيعات رقمية: {names}. تظل التوقيعات صالحة للنسخة الموقعة، لكن برامج العرض ستُظهر التغييرات بعد التوقيع.
+	Saving may violate the certification's allowed-changes policy.	قد يخالف الحفظ سياسة التغييرات المسموح بها في التصديق.
+	This certification allows no changes. Use Save a copy… to save to another file.	لا يسمح هذا التصديق بإجراء تغييرات. استخدم حفظ نسخة… للحفظ في ملف آخر.
+	Save changes after signing?	حفظ التغييرات بعد التوقيع؟
+	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	فُتح في وضع خفيف للقراءة فقط لتقليل استخدام الذاكرة. تم تعطيل التحرير والصور المصغرة الكبيرة.
+	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	يتجاوز ملف PDF هذا حد الذاكرة. أغلق المستندات الأخرى أو افتح ملف PDF أصغر.

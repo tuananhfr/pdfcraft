@@ -27,6 +27,7 @@ pub mod dates;
 pub mod export;
 pub mod js;
 pub mod links;
+pub mod memory;
 pub mod ocr;
 pub mod optimizer;
 pub mod printcheck;
@@ -253,6 +254,20 @@ pub struct HistoryEntry {
     pub timestamp: u64,
 }
 
+/// A signature covering an earlier revision of a document being saved.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SignatureAffected {
+    pub field: String,
+    pub signer: Option<String>,
+    pub doc_mdp: Option<u8>,
+}
+
+/// Incremental output and the signatures viewers will show as changed after signing.
+pub struct SaveReport {
+    pub bytes: Arc<Vec<u8>>,
+    pub signatures_affected: Vec<SignatureAffected>,
+}
+
 /// Editing state of a document (absent when the document cannot be edited yet, e.g. encrypted).
 #[derive(Clone)]
 struct Editor {
@@ -286,6 +301,18 @@ impl Clone for TextBlocksCache {
 }
 
 impl Editor {
+    fn trim_history(&mut self, limit: usize) {
+        while memory::retained_history_bytes(self.undo.iter().chain(&self.redo).map(|e| &e.1), &self.cos) > limit {
+            if !self.undo.is_empty() {
+                self.undo.remove(0);
+            } else if !self.redo.is_empty() {
+                self.redo.remove(0);
+            } else {
+                break;
+            }
+        }
+    }
+
     /// The text blocks on `page` (0-based), from the cache when the document hasn't changed.
     fn text_blocks(&self, page: usize) -> Result<Arc<Vec<pdfcraft_edit::TextBlock>>, EditError> {
         let source = (!self.cos.is_modified()).then(|| self.cos.source_identity());
@@ -327,8 +354,10 @@ pub struct Document {
     next_transaction_id: u64,
     /// The generation last handed out by `autosave_snapshots`.
     snapshot_generation: u64,
+    unsaved_snapshot: bool,
     /// Why the document cannot be edited (e.g. encryption), if so.
     pub read_only_reason: Option<String>,
+    read_only_permissions: Option<pdfcraft_cos::Permissions>,
     /// Interactive form fields of the current state (empty without a form).
     pub form: Arc<Vec<pdfcraft_forms::Field>>,
     /// Page marks present (headers and footers, watermarks, backgrounds), for Update/Remove.
@@ -583,6 +612,11 @@ impl Document {
         self.editor.as_ref().map(|e| pdfcraft_organize::initial_view(&e.cos)).unwrap_or_default()
     }
 
+    /// Opened in light read-only mode because the memory budget was tight (see [`memory`]).
+    pub fn light_memory(&self) -> bool {
+        self.config.light_memory
+    }
+
     /// Signed: at least one signature field holds a signature.
     pub fn is_signed(&self) -> bool {
         self.signatures.iter().any(|s| s.signed)
@@ -656,7 +690,7 @@ impl Document {
 
     /// What the opening password allows; `None` when the document is not encrypted.
     pub fn permissions(&self) -> Option<pdfcraft_cos::Permissions> {
-        self.editor.as_ref().and_then(|e| e.cos.permissions())
+        self.editor.as_ref().and_then(|e| e.cos.permissions()).or(self.read_only_permissions)
     }
 
     /// Printing is allowed (Table 22, bit 3).
@@ -2749,6 +2783,7 @@ pub struct Session {
 /// Immutable session state needed while a document is prepared away from its owning thread.
 #[derive(Clone)]
 pub struct OpenContext {
+    budget: memory::Budget,
     now: Option<i64>,
     js_off: bool,
     trust: Arc<TrustStore>,
@@ -2760,6 +2795,12 @@ pub struct PreparedDocument {
 }
 
 impl OpenContext {
+    /// Override admission limits for a host with a known memory allowance.
+    pub fn with_memory_budget(mut self, budget: memory::Budget) -> Self {
+        self.budget = budget;
+        self
+    }
+
     /// Prepare a document without mutating the session that supplied this context.
     pub fn prepare_open(
         &self,
@@ -3087,7 +3128,7 @@ impl Session {
 
     /// Snapshot the session state that affects open-time scripts, dates and signature trust.
     pub fn open_context(&self) -> OpenContext {
-        OpenContext { now: self.now(), js_off: self.js_off, trust: self.trust.clone() }
+        OpenContext { budget: memory::Budget::platform(), now: self.now(), js_off: self.js_off, trust: self.trust.clone() }
     }
 
     /// Prepare a document without adding it to this session.
@@ -3124,6 +3165,7 @@ impl Session {
         bytes: Arc<Vec<u8>>,
         password: Option<&str>,
     ) -> Result<PreparedDocument, OpenError> {
+        let admission = context.budget.admit(bytes.len() as u64, &bytes)?;
         let cos = std::panic::catch_unwind(|| pdfcraft_cos::Document::open_with_password(bytes.clone(), password));
         // The renderer authenticates on its own. It cannot use the owner password of R2–R4
         // files, so give it the user password that owner authentication recovers.
@@ -3139,6 +3181,16 @@ impl Session {
             }
             Err(e) => return Err(e),
         };
+        if admission == memory::Admission::Light {
+            let mut document = Self::build_document(&context.trust, name, path, bytes, info, cos, render_password, password, None);
+            document.read_only_permissions = document.permissions();
+            document.editor = None;
+            document.display = document.bytes.clone();
+            document.config.light_memory = true;
+            document.renderer = RenderPool::new(document.bytes.clone(), 1, document.config.clone());
+            document.read_only_reason = Some(memory::LIGHT_NOTICE.into());
+            return Ok(PreparedDocument { document });
+        }
         // A dynamic XFA form is a shell around an XML template; lay the template out into real
         // pages and fields so the rest of the engine works on it. The original bytes stay: the
         // laid-out form is one appended revision.
@@ -3342,7 +3394,9 @@ impl Session {
             generation: 0,
             next_transaction_id: 1,
             snapshot_generation: 0,
+            unsaved_snapshot: false,
             read_only_reason,
+            read_only_permissions: None,
             form: Arc::new(form),
             marks,
             added,
@@ -3559,6 +3613,9 @@ impl Session {
             }
             return Err(e);
         }
+        if let Some(editor) = doc.editor.as_mut() {
+            editor.trim_history(memory::HISTORY_BYTES);
+        }
         // Keep the rollback snapshot until refresh succeeds, then discard every pre-apply state.
         if irreversible && let Some(editor) = doc.editor.as_mut() {
             editor.undo.clear();
@@ -3590,6 +3647,7 @@ impl Session {
         let current = std::mem::replace(&mut editor.cos, prev);
         let current_keys = std::mem::replace(&mut editor.keys, keys);
         editor.redo.push((label.clone(), current, current_keys, scope, entry));
+        editor.trim_history(memory::HISTORY_BYTES);
         Self::adopt_keys(doc);
         Self::refresh_scoped(doc, scope).inspect_err(|_| Self::show_released(doc))?;
         doc.dirty = true;
@@ -3605,6 +3663,7 @@ impl Session {
         let current = std::mem::replace(&mut editor.cos, next);
         let current_keys = std::mem::replace(&mut editor.keys, keys);
         editor.undo.push((label.clone(), current, current_keys, scope, entry));
+        editor.trim_history(memory::HISTORY_BYTES);
         Self::adopt_keys(doc);
         Self::refresh_scoped(doc, scope).inspect_err(|_| Self::show_released(doc))?;
         doc.dirty = true;
@@ -3852,9 +3911,39 @@ impl Session {
         }
     }
 
+    /// Signatures affected by unsaved edits, including already invalid signatures.
+    pub fn signatures_affected(&self, id: DocId) -> Vec<SignatureAffected> {
+        let Some(doc) = self.get(id).filter(|d| d.dirty) else { return Vec::new() };
+        let changed = doc.editor.as_ref().is_some_and(|e| e.cos.is_modified())
+            || (doc.unsaved_snapshot && doc.signatures.iter().any(|s| s.signed && s.signed_len < doc.bytes.len()));
+        if !changed {
+            return Vec::new();
+        }
+        doc.signatures
+            .iter()
+            .filter(|s| s.signed)
+            .map(|s| SignatureAffected { field: s.field.clone(), signer: s.signer.clone(), doc_mdp: s.certify })
+            .collect()
+    }
+
+    /// A copy preserves certification dictionaries and the signed revision. It does not claim
+    /// that later changes comply with certification or field locks.
+    pub fn save_report(&self, id: DocId, copy: bool) -> Result<SaveReport, EditError> {
+        let affected = self.signatures_affected(id);
+        if !copy && affected.iter().any(|s| s.doc_mdp == Some(1)) {
+            return Err(EditError::BreaksSignatures("certification allows no changes; use Save a copy… at another destination".into()));
+        }
+        Ok(SaveReport { bytes: self.save_copy_bytes(id)?, signatures_affected: affected })
+    }
+
     /// The bytes to write for Save: an incremental update of the file as opened/last saved,
     /// with `/ModDate` stamped. Call `mark_saved` after writing them successfully.
     pub fn save_bytes(&self, id: DocId) -> Result<Arc<Vec<u8>>, EditError> {
+        self.save_report(id, false).map(|r| r.bytes)
+    }
+
+    /// Incremental bytes for an explicitly chosen copy, bypassing certification restrictions.
+    pub fn save_copy_bytes(&self, id: DocId) -> Result<Arc<Vec<u8>>, EditError> {
         let doc = self.get(id).ok_or(EditError::NoDocument)?;
         let Some(editor) = doc.editor.as_ref() else { return Ok(doc.bytes.clone()) };
         if !editor.cos.is_modified() {
@@ -3900,6 +3989,7 @@ impl Session {
             doc.path = Some(p);
         }
         doc.dirty = false;
+        doc.unsaved_snapshot = false;
         doc.generation += 1;
         Self::refresh(doc).inspect_err(|_| Self::show_released(doc))
     }
@@ -3965,6 +4055,7 @@ impl Session {
         editor.redo.clear();
         Self::adopt_keys(doc);
         doc.dirty = false;
+        doc.unsaved_snapshot = false;
         doc.generation += 1;
         Self::refresh(doc).inspect_err(|_| Self::show_released(doc))
     }
@@ -4396,6 +4487,7 @@ impl Session {
         let id = self.open(name, None, bytes, None)?;
         if let Some(d) = self.docs.iter_mut().find(|d| d.id == id) {
             d.dirty = true;
+            d.unsaved_snapshot = true;
             // Unsaved work with no edit yet still needs its first recovery snapshot.
             d.generation += 1;
         }
@@ -4437,6 +4529,7 @@ impl Session {
         if let Some(d) = self.docs.iter_mut().find(|d| d.id == id) {
             d.path = path;
             d.dirty = true;
+            d.unsaved_snapshot = true;
             d.generation += 1;
             d.snapshot_generation = d.generation; // its bytes are already in the recovery store
         }
@@ -4449,6 +4542,7 @@ impl Session {
         if let Some(d) = self.docs.iter_mut().find(|d| d.id == id) {
             d.path = path;
             d.dirty = true;
+            d.unsaved_snapshot = true;
             d.generation += 1;
         }
     }

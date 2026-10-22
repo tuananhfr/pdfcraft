@@ -205,7 +205,11 @@ impl PdfCraftApp {
         if !self.flatten_fill_sign_for_save(id) {
             return false;
         }
-        let bytes = match self.session.save_bytes(id) {
+        if !self.signature_write_confirmed(id) {
+            self.hold_breaking_save(id, SaveTarget::As, after);
+            return false;
+        }
+        let bytes = match self.session.save_copy_bytes(id) {
             Ok(b) => b,
             Err(e) => {
                 self.save_failed(id, "Couldn't save {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
