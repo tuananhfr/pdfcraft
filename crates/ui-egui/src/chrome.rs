@@ -1035,7 +1035,7 @@ mod history_tests {
                     events: vec![egui::Event::PointerMoved(egui::pos2(30.0, 30.0))],
                     ..Default::default()
                 };
-                let _ = ctx.run_ui(input, |ui| {
+                let mut output = ctx.run_ui(input, |ui| {
                     egui::CentralPanel::default().show(ui, |ui| {
                         ui.horizontal(|ui| {
                             let buttons = history_buttons(app, ui);
@@ -1052,6 +1052,8 @@ mod history_tests {
                         });
                     });
                 });
+                // Debug builds panic when a frame's texture deltas are dropped unapplied.
+                output.textures_delta.clear();
             };
             draw(&mut app, [false, false]);
             let rotate = || pdfcraft_engine::Edit::RotatePages { pages: vec![0], degrees: 90 };
