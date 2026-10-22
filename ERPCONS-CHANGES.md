@@ -2,6 +2,7 @@
 
 This branch (`erpcons`) is the ERPCons Văn phòng fork of [PdfCraft](https://github.com/storytold/pdfcraft), based on PdfCraft by the ArtCraft team, licensed MIT OR Apache-2.0 (see `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`). Changes from upstream `main` (Apache-2.0 §4b):
 
+- (both) Add accessible 44-point Undo/Redo toolbar controls and transaction ids/timestamps in history summaries, preserve history across draft/save, and brand the web app as PDF – ERPCons.
 - Point the website links (About, installers, release notes) to https://office.erpcons.ai; app ids keep the `vn.erpcons.*` form.
 - (desktop) Translate native self-update messages in all catalogues required by UI coverage tests, preserving placeholders and the product name.
 - (desktop) Check signed ERPCons updates at startup, offer verified self-updates with save/cancel protection, and remember automatic-check and skipped-version preferences; explain the Windows MSI installation permission prompt before restarting and wait for explicit MSI installation confirmation.

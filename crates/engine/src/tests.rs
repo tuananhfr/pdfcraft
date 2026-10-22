@@ -4634,3 +4634,42 @@ fn redaction_metadata_opt_out_still_blocks_history_in_a_batch() {
         session.mark_saved(id, saved, None).unwrap();
     }
 }
+
+#[test]
+fn history_transactions_are_outermost_monotonic_and_keep_metadata_on_redo() {
+    let (s, id) = session_with(1);
+    let mut s = s.with_history_clock(|| 1_700_000_000_123);
+    let other = s.open("other.pdf", None, Arc::new(fixture(1)), None).unwrap();
+    let rotate = || Edit::RotatePages { pages: vec![0], degrees: 90 };
+    s.apply(id, Edit::Batch { label: "Gesture".into(), edits: vec![rotate(), Edit::Batch { label: "Nested".into(), edits: vec![rotate()] }] })
+        .unwrap();
+    let entry = s.get(id).unwrap().undo_history();
+    assert_eq!(entry.len(), 1);
+    assert_eq!(entry[0].transaction_id, 1);
+    assert_eq!(entry[0].timestamp, 1_700_000_000_123);
+    s.undo(id).unwrap();
+    assert_eq!(s.get(id).unwrap().redo_history(), entry);
+    s.redo(id).unwrap();
+    assert_eq!(s.get(id).unwrap().undo_history(), entry);
+    s.undo(id).unwrap();
+    s.apply(id, rotate()).unwrap();
+    assert!(s.get(id).unwrap().redo_history().is_empty());
+    assert_eq!(s.get(id).unwrap().undo_history()[0].transaction_id, 2);
+    s.apply(other, rotate()).unwrap();
+    assert_eq!(s.get(other).unwrap().undo_history()[0].transaction_id, 1);
+}
+
+#[test]
+fn history_transaction_ids_survive_reload_and_fail_safely_at_exhaustion() {
+    let (mut s, id) = session_with(1);
+    let rotate = || Edit::RotatePages { pages: vec![0], degrees: 90 };
+    s.apply(id, rotate()).unwrap();
+    s.reload(id, Arc::new(fixture(1))).unwrap();
+    s.apply(id, rotate()).unwrap();
+    assert_eq!(s.get(id).unwrap().undo_history()[0].transaction_id, 2);
+    s.doc_mut(id).unwrap().next_transaction_id = u64::MAX;
+    let bytes = s.get(id).unwrap().bytes.clone();
+    assert!(s.apply(id, rotate()).is_err());
+    assert_eq!(s.get(id).unwrap().bytes, bytes);
+    assert_eq!(s.get(id).unwrap().undo_history().len(), 1);
+}

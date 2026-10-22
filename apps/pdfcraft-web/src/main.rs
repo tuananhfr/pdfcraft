@@ -3,10 +3,29 @@
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
+#[cfg(any(target_arch = "wasm32", test))]
+fn web_app() -> pdfcraft_ui_egui::PdfCraftApp {
+    let mut app = pdfcraft_ui_egui::PdfCraftApp::new();
+    app.branding = Some(pdfcraft_ui_egui::branding::erpcons());
+    app
+}
+
+#[cfg(test)]
+mod branding_tests {
+    #[test]
+    fn web_startup_installs_product_publisher_and_website() {
+        let app = super::web_app();
+        assert_eq!(app.product_name(), "PDF – ERPCons");
+        let branding = app.branding.unwrap();
+        assert_eq!(branding.publisher, "ERPCons");
+        assert_eq!(branding.website, "https://office.erpcons.ai");
+        assert!(include_str!("../index.html").contains("<title>PDF – ERPCons</title>"));
+    }
+}
+
 #[cfg(target_arch = "wasm32")]
 fn main() {
     use eframe::wasm_bindgen::JsCast;
-    use pdfcraft_ui_egui::PdfCraftApp;
 
     let options = eframe::WebOptions { renderer: eframe::Renderer::Glow, ..Default::default() };
     wasm_bindgen_futures::spawn_local(async move {
@@ -22,7 +41,7 @@ fn main() {
                 canvas,
                 options,
                 Box::new(|cc| {
-                    let mut app = PdfCraftApp::new();
+                    let mut app = web_app();
                     app.clipboard = Some(clipboard::install(cc.egui_ctx.clone()));
                     // "printcraft": settings saved under the app's former name, PrintCraft.
                     if let Some(json) = cc.storage.and_then(|s| s.get_string("pdfcraft").or_else(|| s.get_string("printcraft"))) {

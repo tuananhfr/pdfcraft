@@ -686,6 +686,30 @@ mod tests {
     }
 
     #[test]
+    fn draft_autosave_and_explicit_save_preserve_undo() {
+        let fake = Fake::default();
+        let (mut app, _) = app_with(&fake);
+        app.open_bytes("Report", None, FORM.to_vec()).unwrap();
+        let id = app.views[0].id;
+        let before = app.session.get(id).unwrap().info.fields.iter().find(|f| f.name == "name").unwrap().value.clone();
+        edit(&mut app, "Ada");
+        app.drafts_step();
+        fake.at(3500.0);
+        app.drafts_step();
+        assert_eq!(fake.0.borrow().puts.len(), 1);
+        let history = app.session.get(id).unwrap().undo_history();
+        assert_eq!(history.len(), 1);
+        assert_eq!(app.session.autosave_snapshots().len(), 1);
+        let bytes = app.session.save_bytes(id).unwrap();
+        app.session.mark_saved(id, bytes, None).unwrap();
+        assert!(!app.session.get(id).unwrap().dirty);
+        assert_eq!(app.session.get(id).unwrap().undo_history(), history);
+        app.session.undo(id).unwrap();
+        assert_eq!(app.session.get(id).unwrap().info.fields.iter().find(|f| f.name == "name").unwrap().value.clone(), before);
+        assert!(app.session.get(id).unwrap().dirty);
+    }
+
+    #[test]
     fn closing_without_saving_removes_the_draft() {
         let fake = Fake::default();
         let (mut app, _) = app_with(&fake);

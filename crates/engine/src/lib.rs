@@ -243,7 +243,15 @@ fn scope_of(edit: &Edit) -> Scope {
 }
 
 /// One undo/redo step: its label, the document state, its passwords, and what it changed.
-type Snapshot = (Label, pdfcraft_cos::Document, Keys, Scope);
+type Snapshot = (Label, pdfcraft_cos::Document, Keys, Scope, HistoryEntry);
+
+/// Stable identity and creation time of one outermost edit, preserved through Undo and Redo.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct HistoryEntry {
+    pub transaction_id: u64,
+    /// Unix milliseconds.
+    pub timestamp: u64,
+}
 
 /// Editing state of a document (absent when the document cannot be edited yet, e.g. encrypted).
 #[derive(Clone)]
@@ -316,6 +324,7 @@ pub struct Document {
     pub dirty: bool,
     /// Bumped on every change to the working file (edit, undo, redo, save); autosave compares it.
     generation: u64,
+    next_transaction_id: u64,
     /// The generation last handed out by `autosave_snapshots`.
     snapshot_generation: u64,
     /// Why the document cannot be edited (e.g. encryption), if so.
@@ -629,6 +638,16 @@ impl Document {
     /// What Redo would redo, in parts.
     pub fn redo_label(&self) -> Option<&Label> {
         self.editor.as_ref().and_then(|e| e.redo.last()).map(|(l, ..)| l)
+    }
+
+    /// Undo entries in creation order (newest last).
+    pub fn undo_history(&self) -> Vec<HistoryEntry> {
+        self.editor.as_ref().map(|e| e.undo.iter().map(|s| s.4).collect()).unwrap_or_default()
+    }
+
+    /// Redo entries in stack order (next to redo last).
+    pub fn redo_history(&self) -> Vec<HistoryEntry> {
+        self.editor.as_ref().map(|e| e.redo.iter().map(|s| s.4).collect()).unwrap_or_default()
     }
 
     pub fn editable(&self) -> bool {
@@ -2716,6 +2735,7 @@ pub struct Session {
     next_id: u64,
     /// Seconds since the Unix epoch, injected so saves are deterministic in tests.
     clock: Option<fn() -> i64>,
+    history_clock: Option<fn() -> u64>,
     /// Certificates trusted for signing (Acrobat: Trusted Certificates).
     trust: Arc<TrustStore>,
     /// Preferences ▸ JavaScript ▸ Enable Acrobat JavaScript, inverted (on by default).
@@ -2996,6 +3016,25 @@ impl Session {
     pub fn with_clock(mut self, clock: fn() -> i64) -> Self {
         self.clock = Some(clock);
         self
+    }
+
+    /// Inject the history clock in Unix milliseconds.
+    pub fn with_history_clock(mut self, clock: fn() -> u64) -> Self {
+        self.history_clock = Some(clock);
+        self
+    }
+
+    fn history_timestamp(&self) -> u64 {
+        if let Some(clock) = self.history_clock {
+            return clock();
+        }
+        if let Some(clock) = self.clock {
+            return u64::try_from(clock()).unwrap_or(0).saturating_mul(1000);
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        return std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).ok().and_then(|d| u64::try_from(d.as_millis()).ok()).unwrap_or(0);
+        #[cfg(target_arch = "wasm32")]
+        return js_sys::Date::now().max(0.0) as u64;
     }
 
     /// Seconds since the Unix epoch from the session clock (0 when unknown).
@@ -3301,6 +3340,7 @@ impl Session {
             password: render_password,
             dirty: false,
             generation: 0,
+            next_transaction_id: 1,
             snapshot_generation: 0,
             read_only_reason,
             form: Arc::new(form),
@@ -3328,6 +3368,7 @@ impl Session {
 
     /// Apply an edit and refresh the view. Applying redactions clears all earlier history.
     pub fn apply(&mut self, id: DocId, edit: Edit) -> Result<(), EditError> {
+        let timestamp = self.history_timestamp();
         let now = self.now();
         let today = self.today();
         let js_off = self.js_off;
@@ -3486,11 +3527,17 @@ impl Session {
             }
             found
         };
+        let next_transaction_id = doc
+            .next_transaction_id
+            .checked_add(1)
+            .ok_or_else(|| EditError::Write("The document has exhausted its transaction identifiers.".into()))?;
         let previous = std::mem::replace(&mut editor.cos, next);
         let keys = keys_after(&edit).unwrap_or_else(|| editor.keys.clone());
         let previous_keys = std::mem::replace(&mut editor.keys, keys);
         let scope = scope_of(&edit);
-        editor.undo.push((label, previous, previous_keys, scope));
+        let entry = HistoryEntry { transaction_id: doc.next_transaction_id, timestamp };
+        doc.next_transaction_id = next_transaction_id;
+        editor.undo.push((label, previous, previous_keys, scope, entry));
         if editor.undo.len() > MAX_UNDO {
             editor.undo.remove(0);
         }
@@ -3501,7 +3548,7 @@ impl Session {
         if let Err(e) = refreshed {
             // Roll back: the edit produced something we cannot display.
             if let Some(ed) = doc.editor.as_mut()
-                && let Some((_, prev, keys, _)) = ed.undo.pop()
+                && let Some((_, prev, keys, _, _)) = ed.undo.pop()
             {
                 ed.cos = prev;
                 ed.keys = keys;
@@ -3539,10 +3586,10 @@ impl Session {
         let doc = self.doc_mut(id)?;
         doc.edit_notices.clear();
         let editor = doc.editor.as_mut().ok_or(EditError::NothingToUndo)?;
-        let (label, prev, keys, scope) = editor.undo.pop().ok_or(EditError::NothingToUndo)?;
+        let (label, prev, keys, scope, entry) = editor.undo.pop().ok_or(EditError::NothingToUndo)?;
         let current = std::mem::replace(&mut editor.cos, prev);
         let current_keys = std::mem::replace(&mut editor.keys, keys);
-        editor.redo.push((label.clone(), current, current_keys, scope));
+        editor.redo.push((label.clone(), current, current_keys, scope, entry));
         Self::adopt_keys(doc);
         Self::refresh_scoped(doc, scope).inspect_err(|_| Self::show_released(doc))?;
         doc.dirty = true;
@@ -3554,10 +3601,10 @@ impl Session {
         let doc = self.doc_mut(id)?;
         doc.edit_notices.clear();
         let editor = doc.editor.as_mut().ok_or(EditError::NothingToRedo)?;
-        let (label, next, keys, scope) = editor.redo.pop().ok_or(EditError::NothingToRedo)?;
+        let (label, next, keys, scope, entry) = editor.redo.pop().ok_or(EditError::NothingToRedo)?;
         let current = std::mem::replace(&mut editor.cos, next);
         let current_keys = std::mem::replace(&mut editor.keys, keys);
-        editor.undo.push((label.clone(), current, current_keys, scope));
+        editor.undo.push((label.clone(), current, current_keys, scope, entry));
         Self::adopt_keys(doc);
         Self::refresh_scoped(doc, scope).inspect_err(|_| Self::show_released(doc))?;
         doc.dirty = true;
@@ -3889,7 +3936,7 @@ impl Session {
         reopen_as_owner(&editor.cos, &mut editor.keys);
         // Other states with the same restricted access are unlocked too; states opened with
         // other passwords (protection changed and saved since) stay as they are.
-        for (_, cos, keys, _) in editor.undo.iter_mut().chain(editor.redo.iter_mut()) {
+        for (_, cos, keys, _, _) in editor.undo.iter_mut().chain(editor.redo.iter_mut()) {
             if cos.permissions().is_some_and(|p| !p.owner) && cos.unlock(password).is_ok() {
                 reopen_as_owner(cos, keys);
             }
@@ -3931,11 +3978,13 @@ impl Session {
         let old = self.docs.iter().position(|d| d.id == id).ok_or_else(|| OpenError::Invalid("the document is not open".into()))?;
         let doc = &self.docs[old];
         let (name, path, generation) = (doc.name.clone(), doc.path.clone(), doc.generation);
+        let next_transaction_id = doc.next_transaction_id;
         let password = doc.editor.as_ref().and_then(|e| e.keys.reopen.clone()).or_else(|| doc.password.clone());
         let new_id = self.open(name, path, bytes, password.as_deref())?;
         let at = self.docs.iter().position(|d| d.id == new_id).ok_or_else(|| OpenError::Invalid("the new version was not kept".into()))?;
         let mut doc = self.docs.remove(at);
         doc.id = id;
+        doc.next_transaction_id = doc.next_transaction_id.max(next_transaction_id);
         // Caches keyed by the edit generation (edit lines, images, measurements) must see a new
         // one; there is nothing new to autosave.
         doc.generation = generation + 1;

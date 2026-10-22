@@ -2144,6 +2144,8 @@ fn summary(d: &Document) -> Value {
         "encrypted": d.info.encrypted,
         "undo": d.can_undo(),
         "redo": d.can_redo(),
+        "undo_history": d.undo_history().iter().map(|e| json!({ "transaction_id": e.transaction_id, "timestamp": e.timestamp })).collect::<Vec<_>>(),
+        "redo_history": d.redo_history().iter().map(|e| json!({ "transaction_id": e.transaction_id, "timestamp": e.timestamp })).collect::<Vec<_>>(),
     })
 }
 
@@ -2737,6 +2739,24 @@ mod tests {
             }
             std::fs::remove_dir_all(dir).unwrap();
         }
+    }
+
+    #[test]
+    fn history_metadata_is_reported_by_tools_and_survives_save() {
+        let dir = staging_dir("history-metadata");
+        let mut a = Automation::new().with_root(&dir).unwrap();
+        a.session = Session::new().with_history_clock(|| 1234567890123);
+        let id = search_document(&mut a, 1);
+        let edited = json(&mut a, "page_rotate", json!({"doc": id.0, "pages": [1], "degrees": 90}));
+        assert_eq!(edited["undo_history"], json!([{"transaction_id": 1, "timestamp": 1234567890123u64}]));
+        let saved = json(&mut a, "doc_save", json!({"doc": id.0, "path": "out.pdf"}));
+        assert_eq!(saved["document"]["undo_history"], edited["undo_history"]);
+        let undone = json(&mut a, "edit_undo", json!({"doc": id.0}));
+        assert_eq!(undone["document"]["redo_history"], edited["undo_history"]);
+        assert_eq!(undone["document"]["dirty"], true);
+        assert_eq!(a.session.get(id).unwrap().info.pages[0].rotation, 0);
+        assert!(matches!(a.call("page_render", &json!({"doc": id.0, "page": 1})).unwrap().first(), Some(Content::Png { .. })));
+        std::fs::remove_dir_all(dir).unwrap();
     }
 
     #[test]

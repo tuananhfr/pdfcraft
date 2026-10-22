@@ -515,14 +515,45 @@ fn tab(
     theme::hand(resp).on_hover_ui(|ui| crate::widgets::fitted_tip(ui, &tip))
 }
 
+pub(crate) fn history_buttons(app: &mut PdfCraftApp, ui: &mut egui::Ui) -> Vec<egui::Response> {
+    ["edit.undo", "edit.redo"]
+        .into_iter()
+        .filter_map(|id| {
+            let spec = pdfcraft_engine::commands::COMMANDS.iter().find(|spec| spec.id == id)?;
+            let tip = format!("{} ({})", tl!(spec.label), crate::commands::command_shortcut_label(ui.ctx(), id));
+            let response = ui.add_enabled_ui(app.command_enabled(spec), |ui| icons::button(ui, spec.icon, 44.0, false, &tip)).inner;
+            if response.clicked() {
+                app.run_command(id);
+            }
+            Some(response)
+        })
+        .collect()
+}
+
 pub fn mode_bar(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
+    let narrow = ui.available_width() < 600.0;
+    // Combine files has its own Undo/Redo in its toolbar; Home has no history.
+    let history = app.active.is_some() && !app.combine_showing();
+    if history && narrow {
+        egui::Panel::top("history_bar").exact_size(48.0).frame(egui::Frame::NONE.fill(t.chrome).inner_margin(egui::Margin::symmetric(10, 0))).show(
+            ui,
+            |ui| {
+                ui.horizontal_centered(|ui| {
+                    history_buttons(app, ui);
+                });
+            },
+        );
+    }
     egui::Panel::top("mode_bar")
         .exact_size(48.0)
         .frame(egui::Frame::NONE.fill(t.chrome).inner_margin(egui::Margin::symmetric(10, 0)).stroke(Stroke::new(1.0, t.divider)))
         .show(ui, |ui| {
             ui.horizontal_centered(|ui| {
                 ui.spacing_mut().item_spacing.x = 2.0;
+                if history && !narrow {
+                    history_buttons(app, ui);
+                }
                 let (fit, picker_room, search_width) = mode_bar_fit(app, ui);
                 main_menu(app, ui, fit.menu_icon);
                 ui.add_space(6.0);
@@ -981,5 +1012,75 @@ mod tab_widths {
         assert_eq!(MAC_CONTENT_LEFT - lights_end, margin);
         // `egui::Margin` is in `i8`.
         assert!(MAC_CONTENT_LEFT <= f32::from(i8::MAX));
+    }
+}
+
+#[cfg(test)]
+mod history_tests {
+    use super::*;
+
+    #[test]
+    fn history_toolbar_tracks_current_document_and_has_disabled_touch_targets() {
+        for width in [320.0, 375.0, 390.0] {
+            let mut app = PdfCraftApp::new();
+            let bytes = app.session.create_blank(200.0, 300.0, 1).unwrap().as_ref().clone();
+            app.open_bytes("first.pdf", None, bytes.clone()).unwrap();
+            let id = app.views[0].id;
+            let ctx = egui::Context::default();
+            crate::theme::install_fonts(&ctx);
+            crate::theme::apply(&ctx, crate::theme::ThemeKind::Light);
+            let draw = |app: &mut PdfCraftApp, expected: [bool; 2]| {
+                let input = egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, vec2(width, 200.0))),
+                    events: vec![egui::Event::PointerMoved(egui::pos2(30.0, 30.0))],
+                    ..Default::default()
+                };
+                let _ = ctx.run_ui(input, |ui| {
+                    egui::CentralPanel::default().show(ui, |ui| {
+                        ui.horizontal(|ui| {
+                            let buttons = history_buttons(app, ui);
+                            assert_eq!(buttons.len(), 2);
+                            for (button, enabled) in buttons.iter().zip(expected) {
+                                assert_eq!(button.enabled(), enabled);
+                                assert!(button.rect.width() >= 44.0 && button.rect.height() >= 44.0);
+                                assert!(ui.clip_rect().contains_rect(button.rect));
+                                if !enabled {
+                                    assert!(!button.hovered() && !button.is_pointer_button_down_on());
+                                }
+                            }
+                            assert!(!buttons[0].rect.intersects(buttons[1].rect));
+                        });
+                    });
+                });
+            };
+            draw(&mut app, [false, false]);
+            let rotate = || pdfcraft_engine::Edit::RotatePages { pages: vec![0], degrees: 90 };
+            app.session.apply(id, rotate()).unwrap();
+            draw(&mut app, [true, false]);
+            app.session.undo(id).unwrap();
+            draw(&mut app, [false, true]);
+            app.open_bytes("second.pdf", None, bytes).unwrap();
+            draw(&mut app, [false, false]);
+            app.active = Some(0);
+            draw(&mut app, [false, true]);
+            app.session.apply(id, rotate()).unwrap();
+            draw(&mut app, [true, false]);
+            use pdfcraft_engine::{Edit, NewAnnotation, Shape, Style, rect_quad};
+            let shape = Shape::Redact { quads: vec![rect_quad([10.0, 10.0, 20.0, 20.0])], overlay: String::new(), look: Default::default() };
+            app.session
+                .apply(
+                    id,
+                    Edit::AddAnnotation(NewAnnotation {
+                        page: 0,
+                        style: Style::default_for(&shape),
+                        shape,
+                        contents: String::new(),
+                        author: String::new(),
+                    }),
+                )
+                .unwrap();
+            app.session.apply(id, Edit::ApplyRedactions { pages: None, remove_hidden: true }).unwrap();
+            draw(&mut app, [false, false]);
+        }
     }
 }

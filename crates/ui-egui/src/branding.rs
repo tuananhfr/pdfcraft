@@ -1,4 +1,4 @@
-//! Host branding, applied after localisation so catalog keys and the web default stay stable.
+//! Host branding, applied after localisation so catalog keys stay stable.
 
 use std::cell::Cell;
 use std::collections::HashMap;
@@ -30,6 +30,12 @@ impl Branding {
     }
 }
 
+/// ERPCons identity shared by native and web hosts.
+pub fn erpcons() -> &'static Branding {
+    static BRANDING: std::sync::OnceLock<Branding> = std::sync::OnceLock::new();
+    BRANDING.get_or_init(|| Branding::new("PDF – ERPCons", "ERPCons", "https://office.erpcons.ai"))
+}
+
 thread_local! {
     static CURRENT: Cell<Option<&'static Branding>> = const { Cell::new(None) };
 }
@@ -47,7 +53,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn host_branding_preserves_web_default_and_translates_desktop_names() {
+    fn host_branding_preserves_unbranded_default_and_translates_product_names() {
         static DESKTOP: std::sync::OnceLock<Branding> = std::sync::OnceLock::new();
         let branding = DESKTOP.get_or_init(|| Branding::new("PDF – ERPCons", "ERPCons", "https://office.erpcons.ai"));
         let mut app = crate::PdfCraftApp::new();
@@ -68,5 +74,25 @@ mod tests {
         set_current(None);
         assert_eq!(crate::i18n::tr(crate::i18n::Lang::EN, "About PdfCraft"), "About PdfCraft");
         assert_eq!(crate::PdfCraftApp::new().product_name(), "PdfCraft");
+    }
+}
+
+#[cfg(test)]
+mod web_tests {
+    #[test]
+    fn web_branding_uses_erpcons_product_and_title() {
+        let branding = super::erpcons();
+        assert_eq!(branding.product_name, "PDF – ERPCons");
+        assert_eq!(branding.publisher, "ERPCons");
+        assert_eq!(branding.website, "https://office.erpcons.ai");
+        assert!(include_str!("../../../apps/pdfcraft-web/index.html").contains("<title>PDF – ERPCons</title>"));
+        super::set_current(Some(branding));
+        for (lang, expected) in [
+            (crate::i18n::Lang::EN, "Welcome to PDF – ERPCons"),
+            (crate::i18n::Lang::from_code("vi").unwrap(), "Chào mừng bạn đến với PDF – ERPCons"),
+        ] {
+            assert_eq!(crate::i18n::tr(lang, "Welcome to PdfCraft"), expected);
+        }
+        super::set_current(None);
     }
 }

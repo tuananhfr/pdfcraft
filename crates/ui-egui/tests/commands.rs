@@ -6,7 +6,7 @@ mod support;
 use egui::os::OperatingSystem;
 use egui::{Key, Modifiers};
 use egui_kittest::Harness;
-use egui_kittest::kittest::Queryable;
+use egui_kittest::kittest::{NodeT as _, Queryable};
 use pdfcraft_engine::commands::COMMANDS;
 use pdfcraft_ui_egui::{Dialog, PdfCraftApp};
 
@@ -740,5 +740,69 @@ fn ctrl_tab_steps_through_the_tabs_in_order_and_wraps_around() {
     assert!(h.state().combine_showing());
     for doc in h.state().session.docs() {
         assert!(!doc.dirty, "switching tabs changes no document");
+    }
+}
+
+#[test]
+fn document_history_toolbar_stays_reachable_with_redo_at_phone_widths() {
+    for width in [320.0, 375.0, 390.0, 1400.0] {
+        let mut h = harness();
+        h.state_mut().branding = Some(pdfcraft_ui_egui::branding::erpcons());
+        h.set_size(egui::vec2(width, 700.0));
+        h.run_steps(3);
+        let dir = std::path::PathBuf::from(std::env::var("HOME").unwrap()).join("erpcons-workspace/d2-shots/pdfcraft");
+        std::fs::create_dir_all(&dir).unwrap();
+        assert!(h.get_by_label("Undo (Ctrl+Z)").accesskit_node().is_disabled());
+        assert!(h.get_by_label("Redo (Ctrl+Shift+Z)").accesskit_node().is_disabled());
+        h.render().unwrap().save(dir.join(format!("history-{width}-empty.png"))).unwrap();
+        h.state_mut().run_command("page.rotate");
+        h.run_steps(2);
+        assert!(!h.get_by_label("Undo (Ctrl+Z)").accesskit_node().is_disabled());
+        h.render().unwrap().save(dir.join(format!("history-{width}-edited.png"))).unwrap();
+        h.get_by_label("Undo (Ctrl+Z)").click();
+        h.run_steps(2);
+        let undo = h.get_by_label("Undo (Ctrl+Z)");
+        let redo = h.get_by_label("Redo (Ctrl+Shift+Z)");
+        assert!(undo.accesskit_node().is_disabled());
+        assert!(!redo.accesskit_node().is_disabled());
+        for rect in [undo.rect(), redo.rect()] {
+            assert!(rect.width() >= 44.0 && rect.height() >= 44.0);
+            assert!(rect.left() >= 0.0 && rect.right() <= width);
+        }
+        assert!(!undo.rect().intersects(redo.rect()));
+        for button in h.get_all_by_role(egui::accesskit::Role::Button) {
+            if button.rect() != undo.rect() && button.rect() != redo.rect() {
+                assert!(!button.rect().intersects(undo.rect()), "Undo overlaps {:?}", button.accesskit_node().label());
+                assert!(!button.rect().intersects(redo.rect()), "Redo overlaps {:?}", button.accesskit_node().label());
+            }
+        }
+        h.render().unwrap().save(dir.join(format!("history-{width}-undone.png"))).unwrap();
+        h.get_by_label("Redo (Ctrl+Shift+Z)").click();
+        h.run_steps(2);
+        assert!(!h.get_by_label("Undo (Ctrl+Z)").accesskit_node().is_disabled());
+        assert!(h.get_by_label("Redo (Ctrl+Shift+Z)").accesskit_node().is_disabled());
+    }
+}
+
+#[test]
+fn web_branding_welcome_and_about_show_erpcons() {
+    for (language, welcome) in [("en", "Welcome to PDF – ERPCons"), ("vi", "Chào mừng bạn đến với PDF – ERPCons")] {
+        let mut h = Harness::builder().with_size(egui::vec2(1000.0, 750.0)).build_eframe(|_cc| {
+            let mut app = PdfCraftApp::new();
+            app.branding = Some(pdfcraft_ui_egui::branding::erpcons());
+            app.set_option("language", language).unwrap();
+            app
+        });
+        h.run_steps(4);
+        h.get_by_label(welcome);
+        let dir = std::path::PathBuf::from(std::env::var("HOME").unwrap()).join("erpcons-workspace/d2-shots/pdfcraft");
+        std::fs::create_dir_all(&dir).unwrap();
+        h.render().unwrap().save(dir.join(format!("web-welcome-{language}.png"))).unwrap();
+        h.state_mut().run_command("help.about");
+        h.run_steps(3);
+        h.get_by_label("PDF – ERPCons");
+        h.get_by_label("ERPCons");
+        h.get_by_label("https://office.erpcons.ai");
+        h.render().unwrap().save(dir.join(format!("web-about-{language}.png"))).unwrap();
     }
 }
