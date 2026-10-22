@@ -7,7 +7,7 @@ use pdfcraft_ui_egui::{Dialog, PdfCraftApp, branding::Branding};
 #[test]
 fn desktop_branding_renders_title_welcome_and_about_without_changing_default() {
     static DESKTOP: OnceLock<Branding> = OnceLock::new();
-    let desktop = DESKTOP.get_or_init(|| Branding::new("PDF – ERPCons", "ERPCons", "https://office.erpcons.vn"));
+    let desktop = DESKTOP.get_or_init(|| Branding::new("PDF – ERPCons", "ERPCons", "https://office.erpcons.ai"));
     for branding in [None, Some(desktop)] {
         let mut h = Harness::builder().with_size(egui::vec2(1200.0, 900.0)).build_eframe(move |_| {
             let mut app = PdfCraftApp::new();
@@ -27,7 +27,7 @@ fn desktop_branding_renders_title_welcome_and_about_without_changing_default() {
         h.get_by_label(name);
         if branding.is_some() {
             h.get_by_label("ERPCons");
-            h.get_by_label("https://office.erpcons.vn");
+            h.get_by_label("https://office.erpcons.ai");
             save_shot(&mut h, "about.png");
         }
         h.get_by_label("ERPCons Văn phòng — dựa trên PdfCraft của nhóm ArtCraft. MIT OR Apache-2.0.");

@@ -1,6 +1,6 @@
 <h1 align="center">PdfCraft</h1>
 
-> **ERPCons fork.** This is the ERPCons Văn phòng fork of PdfCraft, based on PdfCraft by the ArtCraft team (MIT OR Apache-2.0). It runs at https://office.erpcons.vn/pdf/. ArtCraft names and logos are removed as their brand terms require; see [ERPCONS-CHANGES.md](ERPCONS-CHANGES.md).
+> **ERPCons fork.** This is the ERPCons Văn phòng fork of PdfCraft, based on PdfCraft by the ArtCraft team (MIT OR Apache-2.0). It runs at https://office.erpcons.ai/pdf/. ArtCraft names and logos are removed as their brand terms require; see [ERPCONS-CHANGES.md](ERPCONS-CHANGES.md).
 
 <p align="center">
   <b>The PDF workbench; an open-source, clean-room reimplementation of Adobe Acrobat, rebuilt in pure Rust.</b><br>

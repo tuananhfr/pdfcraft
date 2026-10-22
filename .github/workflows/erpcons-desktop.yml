@@ -240,7 +240,7 @@ jobs:
             ERPCons-PDF-linux-x86_64.AppImage erpcons-pdf_amd64.deb erpcons-pdf.x86_64.rpm \
             ERPCons-PDF-macos-universal.dmg > SHA256SUMS.txt
           cat > "$RUNNER_TEMP/release-notes.md" <<'NOTES'
-          PDF – ERPCons dành cho máy tính. Bản trực tuyến: https://office.erpcons.vn.
+          PDF – ERPCons dành cho máy tính. Bản trực tuyến: https://office.erpcons.ai.
 
           - Windows x64: tải `ERPCons-PDF-windows-x64.msi` để cài đặt, hoặc `ERPCons-PDF-windows-x64-portable.zip` để chạy bản di động.
           - Linux x86_64: tải `ERPCons-PDF-linux-x86_64.AppImage` (cấp quyền thực thi trước khi chạy), `erpcons-pdf_amd64.deb` cho Debian/Ubuntu, hoặc `erpcons-pdf.x86_64.rpm` cho Fedora/openSUSE.

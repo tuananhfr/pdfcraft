@@ -50,7 +50,7 @@ const PRODUCT_NAME: &str = "PDF – ERPCons";
 
 fn desktop_branding() -> &'static pdfcraft_ui_egui::branding::Branding {
     static BRANDING: std::sync::OnceLock<pdfcraft_ui_egui::branding::Branding> = std::sync::OnceLock::new();
-    BRANDING.get_or_init(|| pdfcraft_ui_egui::branding::Branding::new(PRODUCT_NAME, "ERPCons", "https://office.erpcons.vn"))
+    BRANDING.get_or_init(|| pdfcraft_ui_egui::branding::Branding::new(PRODUCT_NAME, "ERPCons", "https://office.erpcons.ai"))
 }
 
 /// Freedesktop app id: the `.desktop` file name and the hicolor icon name.
@@ -1339,7 +1339,7 @@ mod branding_tests {
         assert_eq!(super::PRODUCT_NAME, app.product_name());
         assert_eq!(super::APP_ID, "vn.erpcons.pdf");
         assert_eq!(super::desktop_branding().publisher, "ERPCons");
-        assert_eq!(super::desktop_branding().website, "https://office.erpcons.vn");
+        assert_eq!(super::desktop_branding().website, "https://office.erpcons.ai");
     }
 
     #[test]

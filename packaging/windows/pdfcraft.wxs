@@ -36,7 +36,7 @@
          Add/Remove Programs show a blank icon (#57). -->
     <Icon Id="PdfcraftIcon.ico" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="PdfcraftIcon.ico" />
-    <Property Id="ARPURLINFOABOUT" Value="https://office.erpcons.vn" />
+    <Property Id="ARPURLINFOABOUT" Value="https://office.erpcons.ai" />
     <Property Id="ARPURLUPDATEINFO" Value="https://github.com/tuananhfr/pdfcraft/releases" />
     <Property Id="ARPHELPLINK" Value="https://github.com/tuananhfr/pdfcraft/issues" />
     <!-- Desktop shortcut (#143): on by default for a first install, a checkbox in the full-UI

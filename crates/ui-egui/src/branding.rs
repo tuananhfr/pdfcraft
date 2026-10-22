@@ -49,7 +49,7 @@ mod tests {
     #[test]
     fn host_branding_preserves_web_default_and_translates_desktop_names() {
         static DESKTOP: std::sync::OnceLock<Branding> = std::sync::OnceLock::new();
-        let branding = DESKTOP.get_or_init(|| Branding::new("PDF – ERPCons", "ERPCons", "https://office.erpcons.vn"));
+        let branding = DESKTOP.get_or_init(|| Branding::new("PDF – ERPCons", "ERPCons", "https://office.erpcons.ai"));
         let mut app = crate::PdfCraftApp::new();
         assert_eq!(app.product_name(), "PdfCraft");
         set_current(None);
