@@ -2403,3 +2403,5 @@ animation effects	Off	オフ
 	Retry	再試行
 	Could not start updater: {reason}	更新プログラムを起動できませんでした: {reason}
 	The updater failed; restart the app and try again	更新プログラムでエラーが発生しました。アプリを再起動して再試行してください
+	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	アプリが終了し、Windows がインストールの許可を求めます — Yes を選択してください — その後アプリが自動的に再起動します
+	Install now	今すぐインストール

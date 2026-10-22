@@ -41,6 +41,7 @@ mod native {
         pub version: String,
         pub notes_url: String,
         pub download_page_only: bool,
+        pub windows_msi: bool,
     }
 
     #[derive(Clone, Debug, PartialEq, Eq)]
@@ -200,8 +201,16 @@ mod native {
                         match result {
                             Ok(()) => {
                                 self.updates.ready = true;
-                                self.updates.ready_at = Some(std::time::Instant::now() + std::time::Duration::from_millis(800));
-                                self.updates.message = Some(tl!("The app will close and reopen after updating").into());
+                                self.updates.ready_at = if self.updates.offer.as_ref().is_some_and(|offer| offer.windows_msi) {
+                                    None
+                                } else {
+                                    Some(std::time::Instant::now() + std::time::Duration::from_millis(800))
+                                };
+                                self.updates.message = Some(if self.updates.offer.as_ref().is_some_and(|offer| offer.windows_msi) {
+                                    tl!("The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically").into()
+                                } else {
+                                    tl!("The app will close and reopen after updating").into()
+                                });
                             }
                             Err(error) => {
                                 self.updates.message = Some(error);
@@ -215,6 +224,7 @@ mod native {
 
         pub(crate) fn cancel_update_prompt(&mut self) {
             self.updates.ready = false;
+            self.updates.ready_at = None;
             self.updates.message = None;
         }
 
@@ -370,7 +380,12 @@ mod native {
                                 retry = ui.button(tl!("Retry")).clicked();
                                 later = ui.button(tl!("Close")).clicked();
                             } else if app.updates.ready {
-                                if app.updates.ready_at.is_none() {
+                                if app.updates.offer.as_ref().is_some_and(|offer| offer.windows_msi) {
+                                    if app.close_request.is_none() {
+                                        update = crate::widgets::pill_button(ui, tl!("Install now"), true).clicked();
+                                        later = ui.button(tl!("Cancel")).clicked();
+                                    }
+                                } else if app.updates.ready_at.is_none() {
                                     update = ui.button(tl!("Retry")).clicked();
                                 }
                             } else if let Some(offer) = &app.updates.offer {
@@ -403,6 +418,10 @@ mod native {
             app.open_url(&url);
         }
         if later {
+            if app.updates.ready {
+                app.cancel_update_prompt();
+                app.updates.offer = None;
+            }
             app.updates.open = false;
         }
         if skip {

@@ -2401,3 +2401,5 @@ animation effects	Off	Өшірулі
 	Retry	Қайталау
 	Could not start updater: {reason}	Жаңарту құралын іске қосу мүмкін болмады: {reason}
 	The updater failed; restart the app and try again	Жаңарту құралы сәтсіз аяқталды; қолданбаны қайта іске қосып, қайталап көріңіз
+	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	Қолданба жабылады, Windows орнатуға рұқсат сұрайды — Yes таңдаңыз — содан кейін қолданба автоматты түрде қайта ашылады
+	Install now	Қазір орнату

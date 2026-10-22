@@ -13,12 +13,14 @@ use pdfcraft_ui_egui::{
 
 struct Fake {
     page_only: bool,
+    msi: bool,
     auto: AtomicBool,
     calls: AtomicUsize,
     forced: AtomicBool,
     skipped: Mutex<Option<String>>,
     downloads: AtomicUsize,
     installed: AtomicBool,
+    installs: AtomicUsize,
     fail_download: AtomicBool,
     wait_download: AtomicBool,
     check_error: AtomicBool,
@@ -30,12 +32,14 @@ impl Default for Fake {
     fn default() -> Self {
         Self {
             page_only: false,
+            msi: false,
             auto: AtomicBool::new(true),
             calls: AtomicUsize::new(0),
             forced: AtomicBool::new(false),
             skipped: Mutex::new(None),
             downloads: AtomicUsize::new(0),
             installed: AtomicBool::new(false),
+            installs: AtomicUsize::new(0),
             fail_download: AtomicBool::new(false),
             wait_download: AtomicBool::new(false),
             check_error: AtomicBool::new(false),
@@ -59,6 +63,7 @@ impl UpdateHook for Fake {
             version: "99.0.0".into(),
             notes_url: format!("{RELEASES_PAGE}/tag/erpcons-v99.0.0"),
             download_page_only: self.page_only,
+            windows_msi: self.msi,
         }))
     }
     fn download(&self, progress: &dyn Fn(u64, u64), cancel: &AtomicBool) -> Result<(), String> {
@@ -73,6 +78,7 @@ impl UpdateHook for Fake {
         if cancel.load(Ordering::Relaxed) { Err("cancelled".into()) } else { Ok(()) }
     }
     fn install_and_restart(&self) -> Result<(), String> {
+        self.installs.fetch_add(1, Ordering::SeqCst);
         self.installed.store(true, Ordering::SeqCst);
         Ok(())
     }
@@ -344,4 +350,69 @@ fn discarding_unsaved_changes_allows_download() {
     wait_for(&mut h, "test download failure");
     assert!(h.state().first_dirty().is_none());
     assert_eq!(fake.downloads.load(Ordering::SeqCst), 1);
+}
+
+#[test]
+fn windows_msi_waits_for_explicit_install_once() {
+    let fake = Arc::new(Fake { msi: true, ..Fake::default() });
+    let mut h = harness(fake.clone());
+    wait_for(&mut h, "Update now");
+    h.get_by_label("Update now").click();
+    wait_for(&mut h, "Windows will ask for installation permission");
+    h.state_mut().set_option("theme", "light").unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(900));
+    h.run_steps(5);
+    assert!(!fake.installed.load(Ordering::SeqCst));
+    if let Some(dir) = std::env::var_os("PDFCRAFT_UPDATE_SCREENSHOTS") {
+        let dir = std::path::PathBuf::from(dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        h.render().unwrap().save(dir.join("update-windows-msi-ready.png")).unwrap();
+    }
+    h.get_by_label("Install now").click();
+    h.get_by_label("Install now").click();
+    h.run_steps(10);
+    assert_eq!(fake.installs.load(Ordering::SeqCst), 1);
+}
+
+#[test]
+fn windows_msi_cancel_allows_forced_check_and_download_again() {
+    let fake = Arc::new(Fake { msi: true, ..Fake::default() });
+    let mut h = harness(fake.clone());
+    wait_for(&mut h, "Update now");
+    h.get_by_label("Update now").click();
+    wait_for(&mut h, "Install now");
+    h.get_by_label("Cancel").click();
+    h.run_steps(5);
+    assert!(h.query_by_label("Install now").is_none());
+    h.state_mut().check_for_updates();
+    wait_for(&mut h, "Update now");
+    assert!(fake.forced.load(Ordering::SeqCst));
+    h.get_by_label("Update now").click();
+    wait_for(&mut h, "Install now");
+    assert_eq!(fake.downloads.load(Ordering::SeqCst), 2);
+    drop(h);
+    assert_eq!(fake.installs.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn windows_msi_install_click_guards_edits_made_during_download() {
+    let fake = Arc::new(Fake { msi: true, ..Fake::default() });
+    fake.wait_download.store(true, Ordering::SeqCst);
+    let mut h = harness(fake.clone());
+    h.state_mut().open_bytes("doc.pdf", None, one_page()).unwrap();
+    wait_for(&mut h, "Update now");
+    h.get_by_label("Update now").click();
+    wait_for(&mut h, "Cancel");
+    assert!(h.state_mut().apply_edit(pdfcraft_engine::Edit::RotatePages { pages: vec![0], degrees: 90 }));
+    fake.wait_download.store(false, Ordering::SeqCst);
+    wait_for(&mut h, "Install now");
+    assert!(h.state().close_request.is_none());
+    h.get_by_label("Install now").click();
+    wait_for(&mut h, "Save changes to");
+    assert_eq!(fake.installs.load(Ordering::SeqCst), 0);
+    h.get_by_label("Cancel").click();
+    h.run_steps(5);
+    assert!(h.state().first_dirty().is_some());
+    assert!(h.state().close_request.is_none());
+    assert_eq!(fake.installs.load(Ordering::SeqCst), 0);
 }

@@ -2367,3 +2367,5 @@ animation effects	Off	关
 	Retry	重试
 	Could not start updater: {reason}	无法启动更新程序：{reason}
 	The updater failed; restart the app and try again	更新程序失败，请重启应用后重试
+	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	应用将关闭，Windows 将请求安装权限 — 请选择 Yes — 随后应用将自动重新打开
+	Install now	立即安装

@@ -2477,3 +2477,5 @@ animation effects	Off	Vypnuto
 	Retry	Zkusit znovu
 	Could not start updater: {reason}	Aktualizační program nelze spustit: {reason}
 	The updater failed; restart the app and try again	Aktualizační program selhal; restartujte aplikaci a zkuste to znovu
+	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	Aplikace se zavře, Windows požádá o oprávnění k instalaci — zvolte Yes — a aplikace se automaticky znovu otevře
+	Install now	Nainstalovat nyní

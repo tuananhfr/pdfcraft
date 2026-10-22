@@ -2399,3 +2399,5 @@ animation effects	Off	Kapalı
 	Retry	Yeniden dene
 	Could not start updater: {reason}	Güncelleyici başlatılamadı: {reason}
 	The updater failed; restart the app and try again	Güncelleyici başarısız oldu; uygulamayı yeniden başlatıp tekrar deneyin
+	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	Uygulama kapanacak, Windows kurulum izni isteyecek — Yes seçin — ardından uygulama otomatik olarak yeniden açılacak
+	Install now	Şimdi yükle

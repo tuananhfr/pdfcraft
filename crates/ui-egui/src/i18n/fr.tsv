@@ -2403,3 +2403,5 @@ animation effects	Off	Désactivés
 	Retry	Réessayer
 	Could not start updater: {reason}	Impossible de démarrer le programme de mise à jour : {reason}
 	The updater failed; restart the app and try again	Le programme de mise à jour a échoué ; redémarrez l’application et réessayez
+	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	L’application va se fermer, Windows demandera l’autorisation d’installation — choisissez Yes — puis l’application se rouvrira automatiquement
+	Install now	Installer maintenant

@@ -2417,3 +2417,5 @@ animation effects	Off	Desativados
 	Retry	Tentar novamente
 	Could not start updater: {reason}	Não foi possível iniciar o atualizador: {reason}
 	The updater failed; restart the app and try again	O atualizador falhou; reinicie o aplicativo e tente novamente
+	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	O aplicativo será fechado, o Windows pedirá permissão para instalar — escolha Yes — e o aplicativo reabrirá automaticamente
+	Install now	Instalar agora

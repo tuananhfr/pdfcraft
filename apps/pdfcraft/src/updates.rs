@@ -56,6 +56,7 @@ impl UpdateHook for DesktopUpdates {
                     version: offer.version.clone(),
                     notes_url: offer.notes_url.clone(),
                     download_page_only: offer.install == InstallMode::DownloadPageOnly,
+                    windows_msi: windows_msi(),
                 };
                 state.offer = Some(offer);
                 state.ready = None;
@@ -100,6 +101,19 @@ impl UpdateHook for DesktopUpdates {
             PreviousResult::Failed { version, reason } => UiPrevious::Failed { version, reason },
         })
     }
+}
+
+fn windows_msi() -> bool {
+    if !cfg!(target_os = "windows") {
+        return false;
+    }
+    let Ok(exe) = std::env::current_exe() else { return false };
+    let exe = exe.to_string_lossy().replace('\\', "/").to_lowercase();
+    // Match v0.1.0's MSI detection; its public InstallMode only distinguishes automatic and page-only.
+    ["ProgramFiles", "ProgramW6432"].iter().filter_map(std::env::var_os).any(|path| {
+        let prefix = path.to_string_lossy().replace('\\', "/").trim_end_matches('/').to_lowercase();
+        !prefix.is_empty() && exe.starts_with(&format!("{prefix}/"))
+    })
 }
 
 fn message(error: Error) -> String {

@@ -2424,3 +2424,5 @@ animation effects	Off	معطّلة
 	Retry	إعادة المحاولة
 	Could not start updater: {reason}	تعذّر بدء أداة التحديث: {reason}
 	The updater failed; restart the app and try again	فشلت أداة التحديث؛ أعد تشغيل التطبيق وحاول مجددًا
+	The app will close, Windows will ask for installation permission — choose Yes — then the app will reopen automatically	سيُغلق التطبيق، وسيطلب Windows إذن التثبيت — اختر Yes — ثم سيُفتح التطبيق تلقائيًا
+	Install now	ثبّت الآن
