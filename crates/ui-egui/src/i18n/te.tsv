@@ -2277,3 +2277,6 @@ animation effects	Off	ఆఫ్
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	ఈ చర్యను రద్దు చేయలేరు. మునుపటి చర్యల రద్దు మరియు పునరావృత చరిత్ర మొత్తం తొలగించబడుతుంది.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	మెటాడేటా మరియు దాచిన డేటాను కూడా తొలగించు (శీర్షిక, రచయిత, XMP, …)
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	వియత్నామీస్ గుర్తింపు ఇన్‌స్టాల్ కాలేదు. వియత్నామీస్ OCR మోడల్‌ను ఇన్‌స్టాల్ చేయమని నిర్వాహకుడిని అడగండి.

@@ -123,6 +123,9 @@ pub struct Bundled {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Fetched {
+    /// Optional deployment URL; unset leaves this model unavailable.
+    #[serde(default)]
+    pub url_env: Option<String>,
     pub file: String,
     pub url: String,
     pub title: String,
@@ -314,7 +317,20 @@ pub fn fetch_all(m: &Manifest, dir: &Path, kind: &str) -> Result<Vec<PathBuf>> {
     let mut out = Vec::new();
     for f in m.fetched.iter().filter(|f| f.kind == kind) {
         let path = dir.join(&f.file);
-        fetch_verified(&f.url, &path, &f.sha256)?;
+        let url = match &f.url_env {
+            Some(key) => match std::env::var(key).ok().filter(|v| !v.trim().is_empty()) {
+                Some(url) => url,
+                None => {
+                    println!("models: {} unavailable ({key} is unset)", f.file);
+                    continue;
+                }
+            },
+            None => f.url.clone(),
+        };
+        if f.url_env.is_some() && !url.starts_with("https://") {
+            bail!("{} must be an HTTPS URL", f.url_env.as_deref().unwrap_or("model URL"));
+        }
+        fetch_verified(&url, &path, &f.sha256)?;
         let licence = dir.join(format!("{}.LICENCE.txt", f.file));
         fetch_verified(&f.licence_url, &licence, &f.licence_sha256)?;
         out.push(path);
@@ -357,7 +373,7 @@ pub fn models(args: &[String]) -> Result<()> {
 
 /// The credits shipped beside the models (their licences require attribution).
 fn models_attribution(m: &Manifest) -> String {
-    let mut s = String::from("PdfCraft's text recognition (Scan & OCR) uses these models, unmodified.\n");
+    let mut s = String::from("PdfCraft's text recognition (Scan & OCR) uses these models (EasyOCR converted to RTen; trained weights unchanged).\n");
     for f in m.fetched.iter().filter(|f| f.kind == "model") {
         let _ = write!(
             s,

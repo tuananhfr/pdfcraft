@@ -2436,3 +2436,6 @@ animation effects	Off	معطّلة
 	Save changes after signing?	حفظ التغييرات بعد التوقيع؟
 	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	فُتح في وضع خفيف للقراءة فقط لتقليل استخدام الذاكرة. تم تعطيل التحرير والصور المصغرة الكبيرة.
 	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	يتجاوز ملف PDF هذا حد الذاكرة. أغلق المستندات الأخرى أو افتح ملف PDF أصغر.
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	التعرف على النص الفيتنامي غير مثبت. اطلب من المسؤول تثبيت نموذج OCR الفيتنامي.

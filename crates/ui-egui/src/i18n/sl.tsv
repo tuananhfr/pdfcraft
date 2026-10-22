@@ -2420,3 +2420,6 @@ animation effects	Off	Izklopljeni
 	Save changes after signing?	Shranim spremembe po podpisu?
 	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Odprto v varčnem načinu samo za branje. Urejanje in velike sličice so onemogočeni.
 	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Ta PDF presega omejitev pomnilnika. Zaprite druge dokumente ali odprite manjši PDF.
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Prepoznavanje vietnamščine ni nameščeno. Prosite skrbnika, naj namesti vietnamski model OCR.

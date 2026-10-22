@@ -2667,3 +2667,6 @@ key	Space	Tarpas
 	Save changes after signing?	Įrašyti pakeitimus po pasirašymo?
 	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Atverta taupiuoju tik skaitymo režimu. Redagavimas ir didelės miniatiūros išjungti.
 	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Šis PDF viršija atminties ribą. Užverkite kitus dokumentus arba atverkite mažesnį PDF.
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Vietnamiečių teksto atpažinimas neįdiegtas. Paprašykite administratoriaus įdiegti vietnamiečių OCR modelį.

@@ -34,15 +34,26 @@ pub struct OcrDraft {
 
 impl Default for OcrDraft {
     fn default() -> Self {
-        OcrDraft { pages: OcrPages::All, from: 1, to: 1, language: "en".into(), dpi: 300, text_pages: false }
+        OcrDraft { pages: OcrPages::All, from: 1, to: 1, language: String::new(), dpi: 300, text_pages: false }
     }
 }
 
 impl OcrDraft {
+    fn initialize_language(&mut self, ui_language: &str) {
+        if self.language.is_empty() {
+            self.language = default_language(ui_language).into();
+        }
+    }
+
     /// The recognition settings these choices make.
     pub fn settings(&self) -> OcrSettings {
-        OcrSettings { dpi: self.dpi as f32, language: self.language.clone(), skip_text_pages: !self.text_pages }
+        let language = if self.language.is_empty() { default_language(crate::i18n::current().code()).into() } else { self.language.clone() };
+        OcrSettings { dpi: self.dpi as f32, language, skip_text_pages: !self.text_pages }
     }
+}
+
+fn default_language(ui_language: &str) -> &'static str {
+    if ui_language == "vi" { "vi" } else { "en" }
 }
 
 /// Progress of a run: pages done, total, the result once finished, and a cancel request.
@@ -77,8 +88,9 @@ pub(crate) fn unavailable_message(web: bool) -> &'static str {
 
 pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> (bool, bool) {
     let pages = app.active_ids().and_then(|(_, id)| app.session.get(id)).map_or(1, |d| d.info.pages.len().max(1));
-    let available = !cfg!(target_arch = "wasm32") && pdfcraft_engine::ocr::available();
     let d = &mut app.ocr_draft;
+    d.initialize_language(crate::i18n::Lang::from_pref(&app.language).code());
+    let available = !cfg!(target_arch = "wasm32") && pdfcraft_engine::ocr::available_for_language(&d.language);
     d.to = d.to.clamp(1, pages);
     d.from = d.from.clamp(1, d.to);
     ui.label(egui::RichText::new(tl!("Recognize Text")).font(theme::semibold(18.0)));
@@ -132,7 +144,15 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> (boo
             .on_hover_text(tl!("Pictures on those pages are recognized too; words already in the page's text are not added again"));
     });
     if !available {
-        ui.label(egui::RichText::new(tl!(unavailable_message(cfg!(target_arch = "wasm32")))).small().color(t.text_muted));
+        ui.label(
+            egui::RichText::new(tl!(if !cfg!(target_arch = "wasm32") && d.language == "vi" {
+                "Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model."
+            } else {
+                unavailable_message(cfg!(target_arch = "wasm32"))
+            }))
+            .small()
+            .color(t.text_muted),
+        );
         ui.add_space(6.0);
     }
     ui.add_space(6.0);
@@ -166,6 +186,7 @@ impl PdfCraftApp {
             self.notify(why);
             return;
         }
+        self.ocr_draft.initialize_language(crate::i18n::Lang::from_pref(&self.language).code());
         let d = &self.ocr_draft;
         let pages: Vec<usize> = match d.pages {
             OcrPages::All => Vec::new(),
@@ -177,7 +198,7 @@ impl PdfCraftApp {
         let progress = Arc::new(Mutex::new(OcrProgress { total: job.pages.len(), ..Default::default() }));
         let p = progress.clone();
         let work = move || {
-            let result = pdfcraft_engine::ocr::engine().map(|ocr| {
+            let result = pdfcraft_engine::ocr::engine_for_language(&job.settings.language).map(|ocr| {
                 job.run(&ocr, |done, total| {
                     let Ok(mut s) = p.lock() else { return false };
                     s.done = done;
@@ -213,6 +234,7 @@ impl PdfCraftApp {
             return;
         }
         // The settings showing now, not when the folder arrives.
+        self.ocr_draft.initialize_language(crate::i18n::Lang::from_pref(&self.language).code());
         let settings = self.ocr_draft.settings();
         #[cfg(not(target_arch = "wasm32"))]
         match self.export_dir_override.clone() {
@@ -242,8 +264,8 @@ impl PdfCraftApp {
             crate::i18n::set_current(lang);
             crate::branding::set_current(branding);
             let (mut ok, mut words, mut failed) = (0, 0, Vec::new());
-            match pdfcraft_engine::ocr::engine() {
-                Err(e) => failed.push(e),
+            match pdfcraft_engine::ocr::engine_for_language(&settings.language) {
+                Err(e) => failed.push(tl!(&e).to_string()),
                 Ok(ocr) => {
                     for (i, (name, bytes)) in files.into_iter().enumerate() {
                         if let Ok(mut s) = p.lock() {
@@ -348,7 +370,7 @@ impl PdfCraftApp {
         let found = match result {
             Ok(f) => f,
             Err(e) => {
-                self.notify_error(e);
+                self.notify_tr(&e);
                 return;
             }
         };
@@ -384,7 +406,27 @@ impl PdfCraftApp {
 
 #[cfg(test)]
 mod tests {
-    use super::unavailable_message;
+    use super::{OcrDraft, unavailable_message};
+
+    #[test]
+    fn vietnamese_ocr_default_and_missing_model_notice_are_localized() {
+        let previous = crate::i18n::current();
+        crate::i18n::set_current(crate::i18n::Lang::from_code("vi").unwrap());
+        assert_eq!(OcrDraft::default().settings().language, "vi");
+        crate::i18n::set_current(crate::i18n::Lang::from_code("en").unwrap());
+        let mut draft = OcrDraft::default();
+        assert_eq!(draft.settings().language, "en");
+        crate::i18n::set_current(crate::i18n::Lang::from_code("vi").unwrap());
+        assert_eq!(draft.settings().language, "vi");
+        draft.language = "en".into();
+        assert_eq!(draft.settings().language, "en");
+        crate::i18n::set_current(previous);
+        let message = "Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.";
+        for lang in crate::i18n::Lang::all().filter(|l| l.code() != "en") {
+            assert!(crate::i18n::has(lang, message), "{} lacks model notice", lang.code());
+            assert!(crate::i18n::has(lang, "Tiếng Việt"), "{} lacks Vietnamese name", lang.code());
+        }
+    }
 
     #[test]
     fn web_ocr_notice_is_localized_and_does_not_mention_models() {

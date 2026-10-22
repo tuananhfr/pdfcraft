@@ -47,6 +47,8 @@ icu_properties = "2.3"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 
 [dev-dependencies]
+ab_glyph = "0.2"
+unicode-normalization = "0.1"
 lopdf = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

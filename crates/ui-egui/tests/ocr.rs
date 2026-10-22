@@ -162,3 +162,33 @@ fn an_ocr_word_opens_for_editing_and_stays_open() {
     h.run_steps(4);
     assert_eq!(opened(&h).as_deref(), Some("Recognize"), "moving the pointer away keeps the word open");
 }
+
+#[test]
+fn vietnamese_ocr_picker_defaults_to_the_interface_language_and_keeps_a_choice() {
+    let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|_cc| {
+        let mut app = PdfCraftApp::new();
+        app.set_option("language", "vi").unwrap();
+        app.open_bytes("scan.pdf", None, scan()).unwrap();
+        app
+    });
+    h.run_steps(4);
+    assert!(h.state_mut().execute("ocr.recognize"));
+    h.run_steps(3);
+    assert_eq!(h.state().ocr_draft.language, "vi");
+    h.get_by_value("Tiếng Việt").click();
+    h.run_steps(2);
+    h.get_by_label("Tiếng Anh");
+    if let Some(dir) = std::env::var_os("PDFCRAFT_OCR_TEST_ARTIFACTS") {
+        let dir = std::path::PathBuf::from(dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let file = if pdfcraft_engine::ocr::available_for_language("vi") { "vietnamese-ocr-picker.png" } else { "vietnamese-ocr-unavailable.png" };
+        h.render().unwrap().save(dir.join(file)).unwrap();
+    }
+    h.get_by_label("Tiếng Anh").click();
+    h.run_steps(2);
+    assert_eq!(h.state().ocr_draft.language, "en");
+    h.state_mut().dialog = None;
+    assert!(h.state_mut().execute("ocr.recognize"));
+    h.run_steps(2);
+    assert_eq!(h.state().ocr_draft.language, "en");
+}

@@ -2379,3 +2379,6 @@ animation effects	Off	关
 	Save changes after signing?	保存签署后的更改？
 	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	已在轻量只读模式下打开以限制内存使用。编辑和大缩略图已禁用。
 	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	此 PDF 超出内存预算。请关闭其他文档或打开较小的 PDF。
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	未安装越南语文字识别。请联系管理员安装越南语 OCR 模型。

@@ -1,30 +1,36 @@
 //! pdfcraft-ocr — Scan & OCR ▸ Recognize text (L4).
 //!
-//! Recognition runs the ocrs engine (MIT/Apache-2.0) with its pre-trained models (CC-BY-SA-4.0,
-//! fetched by `cargo xtask models`; see ATTRIBUTION.toml). The caller renders a page to pixels;
+//! Detection and English recognition use ocrs (MIT/Apache-2.0) and its CC-BY-SA-4.0 models.
+//! Native Vietnamese recognition uses EasyOCR latin_g2 (Apache-2.0 under the lead-approved
+//! project-licence interpretation). Models are fetched by `cargo xtask models`; see ATTRIBUTION.toml.
+//! The caller renders a page to pixels;
 //! [`Ocr::recognize`] finds the words in them, and [`text_layer`] turns words placed in user space
 //! into page content: invisible text (rendering mode 3) over each word, so the page becomes a
 //! searchable image (Acrobat's "Searchable Image (Exact)": the image is left untouched).
 //!
-//! The models read the Latin alphabet (English and other languages written without accents).
+//! English uses ocrs recognition; Vietnamese uses EasyOCR latin_g2 on native desktops.
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 use std::path::{Path, PathBuf};
+
+#[cfg(not(target_arch = "wasm32"))]
+mod vietnamese;
 
 pub use pdfcraft_fonts::helvetica_width;
 
 /// The model files, as named in ATTRIBUTION.toml.
 pub const DETECTION_MODEL: &str = "text-detection.rten";
 pub const RECOGNITION_MODEL: &str = "text-recognition.rten";
+pub const VI_RECOGNITION_MODEL: &str = "text-recognition-vi.rten";
 
 /// The recognition model's alphabet, as it was trained (ocrs-models' `DEFAULT_ALPHABET`): its
 /// output classes follow this order. The ocrs crate's own copy has an `E` where the training had
 /// `€`, which made a scanned "€250" read as "E250".
 pub const ALPHABET: &str = " 0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~€ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-/// The languages the models read (ISO 639-1); all use the Latin alphabet without accents.
-pub const LANGUAGES: &[(&str, &str)] = &[("en", "English")];
+/// Supported recognition languages (ISO 639-1); availability depends on installed models.
+pub const LANGUAGES: &[(&str, &str)] = &[("en", "English"), ("vi", "Tiếng Việt")];
 
 #[derive(Debug, thiserror::Error)]
 pub enum OcrError {
@@ -32,6 +38,10 @@ pub enum OcrError {
     /// `cargo xtask models`). The UI catalogs key this exact text.
     #[error("the text recognition models are not installed (reinstall PdfCraft, or set PDFCRAFT_MODELS to the folder that holds them)")]
     NoModels,
+    #[error("Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.")]
+    NoVietnameseModel,
+    #[error("unsupported OCR language: {0} (allowed: en, vi)")]
+    Language(String),
     #[error("loading {0}: {1}")]
     Load(String, String),
     #[error("text recognition failed: {0}")]
@@ -52,6 +62,23 @@ impl Models {
     pub fn in_dir(dir: &Path) -> Option<Models> {
         let m = Models { detection: dir.join(DETECTION_MODEL), recognition: dir.join(RECOGNITION_MODEL) };
         (m.detection.is_file() && m.recognition.is_file()).then_some(m)
+    }
+
+    /// Find the detector and the selected language's recognizer in the same directory.
+    pub fn for_language(language: &str) -> Result<Models, OcrError> {
+        let file = match language {
+            "en" => RECOGNITION_MODEL,
+            "vi" if !cfg!(target_arch = "wasm32") => VI_RECOGNITION_MODEL,
+            "vi" => return Err(OcrError::NoVietnameseModel),
+            _ => return Err(OcrError::Language(language.into())),
+        };
+        Self::search_dirs()
+            .iter()
+            .find_map(|dir| {
+                let m = Models { detection: dir.join(DETECTION_MODEL), recognition: dir.join(file) };
+                (m.detection.is_file() && m.recognition.is_file()).then_some(m)
+            })
+            .ok_or(if language == "vi" { OcrError::NoVietnameseModel } else { OcrError::NoModels })
     }
 
     /// Look for the models: `$PDFCRAFT_MODELS`, then where the release packages install them
@@ -106,19 +133,31 @@ impl Line {
 /// A loaded recogniser. Loading takes a moment; keep one and reuse it.
 pub struct Ocr {
     engine: ocrs::OcrEngine,
+    #[cfg(not(target_arch = "wasm32"))]
+    vietnamese: Option<vietnamese::Recognizer>,
 }
 
 impl Ocr {
     pub fn load(models: &Models) -> Result<Ocr, OcrError> {
         let load = |p: &Path| rten::Model::load_file(p).map_err(|e| OcrError::Load(p.display().to_string(), e.to_string()));
+        let is_vi = models.recognition.file_name().is_some_and(|n| n == VI_RECOGNITION_MODEL);
+        #[cfg(not(target_arch = "wasm32"))]
+        let vietnamese = if is_vi { Some(vietnamese::Recognizer::load(&models.recognition)?) } else { None };
+        if is_vi && cfg!(target_arch = "wasm32") {
+            return Err(OcrError::NoVietnameseModel);
+        }
         let params = ocrs::OcrEngineParams {
             detection_model: Some(load(&models.detection)?),
-            recognition_model: Some(load(&models.recognition)?),
+            recognition_model: if is_vi { None } else { Some(load(&models.recognition)?) },
             alphabet: Some(ALPHABET.into()),
             ..Default::default()
         };
         let engine = ocrs::OcrEngine::new(params).map_err(|e| OcrError::Load("ocr engine".into(), e.to_string()))?;
-        Ok(Ocr { engine })
+        Ok(Ocr {
+            engine,
+            #[cfg(not(target_arch = "wasm32"))]
+            vietnamese,
+        })
     }
 
     /// Load the models found by [`Models::find`].
@@ -128,11 +167,24 @@ impl Ocr {
 
     /// Recognise the text in an RGBA (or RGB, or grey) image, `width` × `height` pixels.
     pub fn recognize(&self, pixels: &[u8], width: u32, height: u32) -> Result<Vec<Line>, OcrError> {
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| self.recognize_inner(pixels, width, height)))
+            .map_err(|_| OcrError::Recognize("the recognition worker failed; the document was not changed".into()))?
+    }
+
+    fn recognize_inner(&self, pixels: &[u8], width: u32, height: u32) -> Result<Vec<Line>, OcrError> {
         if width == 0 || height == 0 || pixels.is_empty() {
             return Err(OcrError::EmptyImage);
         }
+        let count = u64::from(width)
+            .checked_mul(u64::from(height))
+            .filter(|n| *n <= 64_000_000)
+            .and_then(|n| usize::try_from(n).ok())
+            .ok_or_else(|| OcrError::Recognize("image exceeds 64 million pixels".into()))?;
+        if ![Some(count), count.checked_mul(3), count.checked_mul(4)].into_iter().flatten().any(|n| n == pixels.len()) {
+            return Err(OcrError::Recognize("expected grayscale, RGB or RGBA pixels matching image dimensions".into()));
+        }
         // ocrs wants 1 or 3 channels.
-        let rgb: std::borrow::Cow<[u8]> = if pixels.len() == (width * height * 4) as usize {
+        let rgb: std::borrow::Cow<[u8]> = if Some(pixels.len()) == count.checked_mul(4) {
             pixels.as_chunks::<4>().0.iter().flat_map(|p| [p[0], p[1], p[2]]).collect::<Vec<u8>>().into()
         } else {
             pixels.into()
@@ -142,6 +194,24 @@ impl Ocr {
         let input = self.engine.prepare_input(source).map_err(|e| err(&e))?;
         let found = self.engine.detect_words(&input).map_err(|e| err(&e))?;
         let lines = self.engine.find_text_lines(&input, &found);
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(recognizer) = &self.vietnamese {
+            use rten_imageproc::BoundingRect;
+            let mut result = Vec::new();
+            for line in lines {
+                let rect = line.iter().map(|r| r.bounding_rect()).fold(None::<[f32; 4]>, |a, r| {
+                    let b = [r.left(), r.top(), r.right(), r.bottom()];
+                    Some(a.map_or(b, |a| [a[0].min(b[0]), a[1].min(b[1]), a[2].max(b[2]), a[3].max(b[3])]))
+                });
+                if let Some(rect) = rect {
+                    let words = recognizer.read(pixels, width, height, rect)?;
+                    if !words.is_empty() {
+                        result.push(Line { words });
+                    }
+                }
+            }
+            return Ok(result);
+        }
         let read = self.engine.recognize_text(&input, &lines).map_err(|e| err(&e))?;
         use ocrs::TextItem;
         Ok(read
@@ -237,6 +307,27 @@ pub fn text_layer(words: &[PlacedWord]) -> Vec<u8> {
     }
     out.extend_from_slice(b"ET\nEMC\n");
     out
+}
+
+/// Invisible Unicode text using the caller's registered Inter subset.
+pub fn unicode_text_layer(words: &[PlacedWord], font: &pdfcraft_fonts::cid_embed::InterFont, name: &str) -> Result<Vec<u8>, String> {
+    let mut out = format!("/OCR BMC\nBT\n3 Tr\n/{name} 1 Tf\n").into_bytes();
+    for w in words {
+        let width = pdfcraft_fonts::cid_embed::width(&w.text, 1.0);
+        let height = w.up[0].hypot(w.up[1]);
+        if !w.origin.iter().chain(&w.across).chain(&w.up).all(|v| v.is_finite()) || width <= 0.0 || height <= 0.0 {
+            return Err("invalid OCR word geometry".into());
+        }
+        let (top, bottom) = ink_extent(&w.text);
+        let em = [w.up[0] / (top - bottom), w.up[1] / (top - bottom)];
+        let matrix = [w.across[0] / width, w.across[1] / width, em[0], em[1], w.origin[0] - em[0] * bottom, w.origin[1] - em[1] * bottom];
+        out.extend_from_slice(matrix.map(num).join(" ").as_bytes());
+        out.extend_from_slice(b" Tm ");
+        out.extend(pdfcraft_fonts::literal(&font.encode(&w.text)?));
+        out.extend_from_slice(b" Tj\n");
+    }
+    out.extend_from_slice(b"ET\nEMC\n");
+    Ok(out)
 }
 
 #[cfg(test)]
@@ -342,6 +433,18 @@ mod tests {
     fn missing_models_message_is_for_end_users() {
         let message = OcrError::NoModels.to_string();
         assert!(!message.contains("cargo") && message.contains("PDFCRAFT_MODELS"), "{message}");
+    }
+
+    #[test]
+    fn rejects_hostile_image_shapes_without_panicking() {
+        let Some(models) = Models::find() else {
+            eprintln!("skipped: OCR models not installed");
+            return;
+        };
+        let ocr = Ocr::load(&models).unwrap();
+        assert!(ocr.recognize(&[0], u32::MAX, u32::MAX).is_err());
+        assert!(ocr.recognize(&[0; 7], 2, 2).is_err());
+        assert!(matches!(Models::for_language("xx"), Err(OcrError::Language(_))));
     }
 
     /// End to end on rendered text, when the models are installed (`cargo xtask models`).

@@ -2415,3 +2415,6 @@ animation effects	Off	Désactivés
 	Save changes after signing?	Enregistrer les modifications après signature ?
 	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Ouvert en mode léger en lecture seule pour limiter la mémoire. La modification et les grandes vignettes sont désactivées.
 	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Ce PDF dépasse le budget mémoire. Fermez les autres documents ou ouvrez un PDF plus petit.
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	La reconnaissance du vietnamien n’est pas installée. Demandez à votre administrateur d’installer le modèle OCR vietnamien.

@@ -361,6 +361,34 @@ pub fn stamp(doc: &mut Document, page: usize, tag: &str, content: Vec<u8>) -> Re
     place_tagged(doc, &p, tag, content, false)
 }
 
+/// Stamp text using a private font resource, preserving earlier stamps' subset mappings.
+pub fn stamp_with_font(
+    doc: &mut Document,
+    page: usize,
+    tag: &str,
+    font: &Dict,
+    content: impl FnOnce(&str) -> Result<Vec<u8>, String>,
+) -> Result<(), EditError> {
+    let all = page_list(doc);
+    let p = all.get(page).ok_or(EditError::NoSuchPage(page))?;
+    let mut res = p.dict.get(b"Resources").map(|r| doc.resolve(r)).and_then(|r| r.as_dict().cloned()).unwrap_or_default();
+    let mut fonts = res.get(b"Font").map(|f| doc.resolve(f)).and_then(|f| f.as_dict().cloned()).unwrap_or_default();
+    let mut index = 0usize;
+    let name = loop {
+        let name = format!("PCOcr{index}");
+        if !fonts.contains(name.as_bytes()) {
+            break name;
+        }
+        index = index.checked_add(1).ok_or_else(|| EditError::Invalid("OCR resource limit".into()))?;
+    };
+    let content = content(&name).map_err(EditError::Invalid)?;
+    let registered = pdfcraft_fonts::font_resources::register(doc, font).map_err(EditError::Invalid)?;
+    fonts.set(name.into_bytes(), registered);
+    res.set(b"Font".to_vec(), Object::Dict(fonts));
+    doc.update_dict(p.obj, |d| d.set(b"Resources".to_vec(), Object::Dict(res)))?;
+    place_tagged(doc, p, tag, content, false)
+}
+
 fn begin(kind: MarkKind, subtype: &str, matrix: [f64; 6]) -> String {
     format!(
         "q\n/Artifact <</Type /Pagination /Subtype /{subtype} /PCMark /{}>> BDC\n{} {} {} {} {} {} cm\n",

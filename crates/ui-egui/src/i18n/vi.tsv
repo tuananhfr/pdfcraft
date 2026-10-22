@@ -2670,3 +2670,6 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	Save changes after signing?	Lưu thay đổi sau khi ký?
 	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Đã mở ở chế độ chỉ đọc tiết kiệm bộ nhớ. Không thể chỉnh sửa hoặc dùng hình thu nhỏ lớn.
 	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Tệp PDF này vượt quá giới hạn bộ nhớ. Hãy đóng các tài liệu khác hoặc mở tệp PDF nhỏ hơn.
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Chưa cài nhận dạng tiếng Việt. Hãy nhờ quản trị viên cài mô hình OCR tiếng Việt.

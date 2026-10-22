@@ -2238,3 +2238,6 @@ animation effects	Off	關
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	此操作無法復原。先前的所有復原和重做歷程記錄都將清除。
 
 	Also remove metadata and hidden data (title, author, XMP, …)	同時刪除中繼資料和隱藏資料（標題、作者、XMP、…）
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	未安裝越南語文字辨識。請聯絡管理員安裝越南語 OCR 模型。

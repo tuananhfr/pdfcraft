@@ -2494,3 +2494,6 @@ animation effects	Off	Desactivados
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Esta operación no se puede deshacer. Se borrará todo el historial anterior de deshacer y rehacer.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Eliminar también metadatos y datos ocultos (título, autor, XMP, …)
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	El reconocimiento de vietnamita no está instalado. Pida al administrador que instale el modelo OCR vietnamita.

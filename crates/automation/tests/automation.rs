@@ -5850,3 +5850,28 @@ fn signed_incremental_save_requires_acknowledgement_and_reports_affected() {
     assert_eq!(saved["incremental"], true);
     assert!(std::fs::read(dir.join("signed.pdf")).unwrap().starts_with(&signed));
 }
+
+#[test]
+fn ocr_vietnamese_tool_selects_the_model_and_saves_searchable_unicode() {
+    let dir = workdir("ocr-vietnamese");
+    let mut a = auto(&dir);
+    let status = ok(&mut a, "ocr_status", json!({}));
+    let vi = status["languages"].as_array().unwrap().iter().find(|l| l["code"] == "vi").unwrap();
+    if vi["available"] != true {
+        assert!(vi["reason"].as_str().unwrap().contains("Vietnamese"));
+        eprintln!("skipped: Vietnamese OCR models not installed");
+        return;
+    }
+    let doc = ok(&mut a, "doc_create", json!({ "from": "blank", "width": 600, "height": 180 }))["doc"].as_u64().unwrap();
+    ok(&mut a, "page_add_text", json!({ "doc": doc, "page": 1, "text": "Nguyễn đường Ở ữ", "at": [30, 60], "size": 30 }));
+    ok(&mut a, "doc_export_images", json!({ "doc": doc, "folder": "scan", "dpi": 150, "pages": [1] }));
+    let png = std::fs::read_dir(dir.join("scan")).unwrap().next().unwrap().unwrap().path();
+    let scan = ok(&mut a, "doc_create", json!({ "from": "images", "paths": [png.to_string_lossy()] }))["doc"].as_u64().unwrap();
+    let r = ok(&mut a, "ocr_recognize", json!({ "doc": scan, "language": "vi" }));
+    assert!(r["pages"][0]["text"].as_str().unwrap().contains("Nguyễn"), "{r}");
+    assert_eq!(ok(&mut a, "text_find", json!({ "doc": scan, "query": "Nguyễn" }))["count"], 1);
+    ok(&mut a, "doc_save", json!({ "doc": scan, "path": "searchable.pdf" }));
+    let saved = ok(&mut a, "doc_open", json!({ "path": "searchable.pdf" }))["doc"].as_u64().unwrap();
+    assert_eq!(ok(&mut a, "text_find", json!({ "doc": saved, "query": "Nguyễn" }))["count"], 1);
+    assert_eq!(ok(&mut a, "edit_undo", json!({ "doc": scan }))["undone"], "Recognize text");
+}

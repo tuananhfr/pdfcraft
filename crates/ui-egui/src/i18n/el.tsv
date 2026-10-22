@@ -2374,3 +2374,6 @@ animation effects	Off	Ανενεργά
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Αυτή η ενέργεια δεν αναιρείται. Όλο το προηγούμενο ιστορικό αναίρεσης και επανάληψης θα διαγραφεί.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Αφαίρεση και μεταδεδομένων και κρυφών δεδομένων (τίτλος, δημιουργός, XMP, …)
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Η αναγνώριση βιετναμέζικων δεν είναι εγκατεστημένη. Ζητήστε από τον διαχειριστή να εγκαταστήσει το βιετναμέζικο μοντέλο OCR.

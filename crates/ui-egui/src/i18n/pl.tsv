@@ -2344,3 +2344,6 @@ animation effects	Off	Wyłączone
 	This cannot be undone. All earlier Undo and Redo history will be cleared.	Tej operacji nie można cofnąć. Cała wcześniejsza historia cofania i ponawiania zostanie wyczyszczona.
 
 	Also remove metadata and hidden data (title, author, XMP, …)	Usuń także metadane i ukryte dane (tytuł, autor, XMP, …)
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Rozpoznawanie tekstu wietnamskiego nie jest zainstalowane. Poproś administratora o zainstalowanie wietnamskiego modelu OCR.

@@ -2414,3 +2414,6 @@ animation effects	Off	Ki
 	Save changes after signing?	Menti az aláírás utáni módosításokat?
 	Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.	Memóriatakarékos, csak olvasható módban megnyitva. A szerkesztés és a nagy bélyegképek le vannak tiltva.
 	This PDF exceeds the memory budget. Close other documents or open a smaller PDF.	Ez a PDF meghaladja a memóriakeretet. Zárjon be más dokumentumokat, vagy nyisson meg kisebb PDF-et.
+
+	Tiếng Việt	Tiếng Việt
+	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	A vietnámi felismerés nincs telepítve. Kérje meg a rendszergazdát a vietnámi OCR-modell telepítésére.
