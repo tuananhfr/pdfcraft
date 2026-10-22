@@ -2,6 +2,7 @@
 
 This branch (`erpcons`) is the ERPCons Văn phòng fork of [PdfCraft](https://github.com/storytold/pdfcraft), based on PdfCraft by the ArtCraft team, licensed MIT OR Apache-2.0 (see `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`). Changes from upstream `main` (Apache-2.0 §4b):
 
+- (docs) Measure EasyOCR Vietnamese recognition on 200 synthetic lines with RTen 0.26, verify EasyOCR/VietOCR alphabet coverage, and document unresolved weight-licence gates.
 - (docs) Evaluate Vietnamese OCR model coverage, licensing and desktop/web costs; document the missing characters that block RTen integration and the recommended training route.
 - (web) Fix wasm clippy by identifying native-only render state and correcting UI lints without changing behaviour.
 - (web) Report per-document draft revisions, pending checkpoints, committed results and retry failures to the optional ERPCons shell v2 state bridge, preserving adopted restore keys and the active document.
