@@ -82,6 +82,13 @@ fn page_harness() -> (Harness<'static, PdfCraftApp>, usize, Pos2) {
     h.state_mut().set_option("left", "closed").unwrap();
     h.state_mut().set_option("panel", "none").unwrap();
     h.run_steps(8);
+    // Text arrives from render workers; simulated frame time cannot make them finish.
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+    while h.state().render_pending() {
+        assert!(std::time::Instant::now() < deadline, "page rendering finishes before the gesture");
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        h.run_steps(1);
+    }
     let view = h.state().active.unwrap();
     let page = h.state().views[view].page_screen_rect(0).unwrap();
     (h, view, egui::pos2(page.left() + page.width() * 0.11, page.top() + page.height() * 0.48))
@@ -215,8 +222,15 @@ fn a_long_press_selects_the_word_and_a_drag_extends_it() {
     let (mut h, view, start) = page_harness();
     let before = page_top(&h, view);
     finger_down(&h, start);
-    // egui turns a press held 0.8 s without moving into a long touch (4 frames of 0.25 s).
-    h.run_steps(5);
+    h.run_steps(1);
+    let pressed_at = h.ctx.input(|i| i.pointer.press_start_time()).unwrap();
+    // Keep the threshold check independent of how many frames queued events consume.
+    h.input_mut().time = Some(pressed_at + 0.75);
+    h.run_steps(1);
+    assert!(h.state().views[view].selected_text().is_none(), "a short hold does not select");
+    h.input_mut().time = Some(pressed_at + 1.0);
+    h.run_steps(1);
+    h.input_mut().time = None;
     assert_eq!(h.state().views[view].selected_text().as_deref(), Some("Page"), "the long-pressed word");
     assert!(!egui::Popup::is_any_open(&h.ctx), "the selection replaces the page's context menu");
     finger_move(&h, start + vec2(240.0, 0.0));
