@@ -788,6 +788,8 @@ fn files_and_quit_from_the_operating_system() {
     let queue = std::rc::Rc::new(std::cell::RefCell::new(vec![OsEvent::Open(vec![path.to_string_lossy().into_owned()])]));
     let q = queue.clone();
     let mut h = harness(move |app| app.os_events = Some(Box::new(move || q.borrow_mut().drain(..).collect())));
+    // The OS event schedules a background read, so keep the file until its tab is ready.
+    support::wait_until(&mut h, "OS-opened document", |app| app.views.len() == 1 && app.password_prompt.is_none());
     std::fs::remove_file(&path).ok();
     assert_eq!(h.state().views.len(), 1, "the file opens in a tab");
     h.get_by_label_contains(&name);
