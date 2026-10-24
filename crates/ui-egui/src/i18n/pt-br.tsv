@@ -2432,3 +2432,44 @@ animation effects	Off	Desativados
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	O reconhecimento de vietnamita não está instalado. Peça ao administrador para instalar o modelo OCR vietnamita.
+
+# Optional PI ID account (ERPCons)
+	Account	Conta
+	Sign in with PI ID	Entrar com PI ID
+	Signing in is optional: every feature works without an account.	Entrar é opcional: todos os recursos funcionam sem uma conta.
+	Continue in your browser…	Continue no navegador…
+	Sign in again	Entrar novamente
+	Organization	Organização
+	Personal	Pessoal
+	License	Licença
+	You will need to sign in again the next time you open the app.	Você precisará entrar novamente na próxima vez que abrir o aplicativo.
+	Connected to PI ID	Conectado ao PI ID
+	Offline. Your account syncs when you reconnect.	Offline. Sua conta será sincronizada quando você se reconectar.
+	Sign out	Sair
+	Plan: Free	Plano: Gratuito
+	This device is activated until {date}.	Este dispositivo está ativado até {date}.
+	Paid features are valid until {date}.	Os recursos pagos são válidos até {date}.
+	Paid features are active.	Os recursos pagos estão ativos.
+	Your license expired on {date}. Free features keep working.	Sua licença expirou em {date}. Os recursos gratuitos continuam funcionando.
+	This device was removed from your account. Free features keep working.	Este dispositivo foi removido da sua conta. Os recursos gratuitos continuam funcionando.
+	Your account has reached its device limit, so this device is not activated.	Sua conta atingiu o limite de dispositivos, então este dispositivo não está ativado.
+	Signed in for this session only: this computer has no credential store.	Conectado somente nesta sessão: este computador não tem um armazenamento de credenciais.
+	PI ID account	Conta PI ID
+	Signing in…	Entrando…
+	Sign in	Entrar
+	Paid features expire on {date}. Connect to the internet to renew them.	Os recursos pagos expiram em {date}. Conecte-se à internet para renová-los.
+	Could not reach PI ID. Check your connection and try again.	Não foi possível acessar o PI ID. Verifique sua conexão e tente novamente.
+	PI ID took too long to answer. Try again.	O PI ID demorou demais para responder. Tente novamente.
+	PI ID refused the request. Free features keep working.	O PI ID recusou a solicitação. Os recursos gratuitos continuam funcionando.
+	PI ID is busy. Try again in {minutes} min.	O PI ID está ocupado. Tente novamente em {minutes} min.
+	PI ID is busy. Try again in a few minutes.	O PI ID está ocupado. Tente novamente em alguns minutos.
+	Your account has reached its device limit. Remove a device in PI ID, then retry.	Sua conta atingiu o limite de dispositivos. Remova um dispositivo no PI ID e tente novamente.
+	Your PI ID account is suspended. Free features keep working.	Sua conta PI ID está suspensa. Os recursos gratuitos continuam funcionando.
+	This organization is not available to your account.	Esta organização não está disponível para sua conta.
+	Your session has expired. Sign in again.	Sua sessão expirou. Entre novamente.
+	This version of the app is too old for PI ID. Update the app, then try again.	Esta versão do aplicativo é antiga demais para o PI ID. Atualize o aplicativo e tente novamente.
+	PI ID is temporarily unavailable. Try again later.	O PI ID está temporariamente indisponível. Tente novamente mais tarde.
+	Something went wrong with PI ID. Try again.	Algo deu errado com o PI ID. Tente novamente.
+	Signed in to PI ID. You can close this tab and go back to the app.	Você entrou no PI ID. Pode fechar esta guia e voltar ao aplicativo.
+	Sign-in did not finish. Close this tab and try again in the app.	A entrada não foi concluída. Feche esta guia e tente novamente no aplicativo.
+	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	O PdfCraft funciona offline. Entrar com PI ID é opcional. Sem telemetria e sem processamento em nuvem, a menos que você adicione um provedor.

@@ -2417,3 +2417,44 @@ animation effects	Off	Ki
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	A vietnámi felismerés nincs telepítve. Kérje meg a rendszergazdát a vietnámi OCR-modell telepítésére.
+
+# Optional PI ID account (ERPCons)
+	Account	Fiók
+	Sign in with PI ID	Bejelentkezés PI ID-vel
+	Signing in is optional: every feature works without an account.	A bejelentkezés nem kötelező: minden funkció működik fiók nélkül is.
+	Continue in your browser…	Folytasd a böngészőben…
+	Sign in again	Bejelentkezés újra
+	Organization	Szervezet
+	Personal	Személyes
+	License	Licenc
+	You will need to sign in again the next time you open the app.	Az alkalmazás következő megnyitásakor újra be kell jelentkezned.
+	Connected to PI ID	Csatlakozva a PI ID-hez
+	Offline. Your account syncs when you reconnect.	Offline. A fiókod szinkronizálódik, amikor újra kapcsolódsz.
+	Sign out	Kijelentkezés
+	Plan: Free	Csomag: Ingyenes
+	This device is activated until {date}.	Ez az eszköz {date}-ig aktiválva van.
+	Paid features are valid until {date}.	A fizetős funkciók {date}-ig érvényesek.
+	Paid features are active.	A fizetős funkciók aktívak.
+	Your license expired on {date}. Free features keep working.	A licenced {date} napon lejárt. Az ingyenes funkciók továbbra is működnek.
+	This device was removed from your account. Free features keep working.	Ezt az eszközt eltávolították a fiókodból. Az ingyenes funkciók továbbra is működnek.
+	Your account has reached its device limit, so this device is not activated.	A fiókod elérte az eszközkorlátot, ezért ez az eszköz nincs aktiválva.
+	Signed in for this session only: this computer has no credential store.	Csak erre a munkamenetre vagy bejelentkezve: ezen a számítógépen nincs hitelesítőadat-tár.
+	PI ID account	PI ID-fiók
+	Signing in…	Bejelentkezés…
+	Sign in	Bejelentkezés
+	Paid features expire on {date}. Connect to the internet to renew them.	A fizetős funkciók {date} napon lejárnak. Csatlakozz az internethez a megújításukhoz.
+	Could not reach PI ID. Check your connection and try again.	Nem sikerült elérni a PI ID-t. Ellenőrizd a kapcsolatot, és próbáld újra.
+	PI ID took too long to answer. Try again.	A PI ID túl sokáig nem válaszolt. Próbáld újra.
+	PI ID refused the request. Free features keep working.	A PI ID elutasította a kérést. Az ingyenes funkciók továbbra is működnek.
+	PI ID is busy. Try again in {minutes} min.	A PI ID foglalt. Próbáld újra {minutes} perc múlva.
+	PI ID is busy. Try again in a few minutes.	A PI ID foglalt. Próbáld újra néhány perc múlva.
+	Your account has reached its device limit. Remove a device in PI ID, then retry.	A fiókod elérte az eszközkorlátot. Távolíts el egy eszközt a PI ID-ben, majd próbáld újra.
+	Your PI ID account is suspended. Free features keep working.	A PI ID-fiókod fel van függesztve. Az ingyenes funkciók továbbra is működnek.
+	This organization is not available to your account.	Ez a szervezet nem érhető el a fiókoddal.
+	Your session has expired. Sign in again.	A munkameneted lejárt. Jelentkezz be újra.
+	This version of the app is too old for PI ID. Update the app, then try again.	Az alkalmazás ezen verziója túl régi a PI ID-hez. Frissítsd az alkalmazást, majd próbáld újra.
+	PI ID is temporarily unavailable. Try again later.	A PI ID átmenetileg nem érhető el. Próbáld újra később.
+	Something went wrong with PI ID. Try again.	Hiba történt a PI ID-vel. Próbáld újra.
+	Signed in to PI ID. You can close this tab and go back to the app.	Bejelentkeztél a PI ID-be. Bezárhatod ezt a lapot, és visszatérhetsz az alkalmazásba.
+	Sign-in did not finish. Close this tab and try again in the app.	A bejelentkezés nem fejeződött be. Zárd be ezt a lapot, és próbáld újra az alkalmazásban.
+	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	A PdfCraft offline működik. A PI ID-s bejelentkezés nem kötelező. Nincs telemetria, és nincs felhőfeldolgozás, amíg nem adsz hozzá szolgáltatót.

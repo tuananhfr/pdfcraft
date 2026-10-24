@@ -2419,3 +2419,44 @@ animation effects	Off	Aus
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Vietnamesische Texterkennung ist nicht installiert. Bitten Sie Ihren Administrator, das vietnamesische OCR-Modell zu installieren.
+
+# Optional PI ID account (ERPCons)
+	Account	Konto
+	Sign in with PI ID	Mit PI ID anmelden
+	Signing in is optional: every feature works without an account.	Die Anmeldung ist optional: Alle Funktionen gehen auch ohne Konto.
+	Continue in your browser…	Fahre im Browser fort…
+	Sign in again	Erneut anmelden
+	Organization	Organisation
+	Personal	Persönlich
+	License	Lizenz
+	You will need to sign in again the next time you open the app.	Beim nächsten Öffnen der App musst du dich erneut anmelden.
+	Connected to PI ID	Mit PI ID verbunden
+	Offline. Your account syncs when you reconnect.	Offline. Dein Konto wird synchronisiert, sobald du wieder verbunden bist.
+	Sign out	Abmelden
+	Plan: Free	Tarif: Kostenlos
+	This device is activated until {date}.	Dieses Gerät ist bis {date} aktiviert.
+	Paid features are valid until {date}.	Bezahlfunktionen gelten bis {date}.
+	Paid features are active.	Bezahlfunktionen sind aktiv.
+	Your license expired on {date}. Free features keep working.	Deine Lizenz ist am {date} abgelaufen. Kostenlose Funktionen gehen weiterhin.
+	This device was removed from your account. Free features keep working.	Dieses Gerät wurde aus deinem Konto entfernt. Kostenlose Funktionen gehen weiterhin.
+	Your account has reached its device limit, so this device is not activated.	Dein Konto hat die Gerätegrenze erreicht, daher ist dieses Gerät nicht aktiviert.
+	Signed in for this session only: this computer has no credential store.	Nur für diese Sitzung angemeldet: Dieser Computer hat keinen Anmeldedatenspeicher.
+	PI ID account	PI-ID-Konto
+	Signing in…	Anmeldung läuft…
+	Sign in	Anmelden
+	Paid features expire on {date}. Connect to the internet to renew them.	Bezahlfunktionen laufen am {date} ab. Verbinde dich mit dem Internet, um sie zu verlängern.
+	Could not reach PI ID. Check your connection and try again.	PI ID ist nicht erreichbar. Prüfe deine Verbindung und versuch es noch einmal.
+	PI ID took too long to answer. Try again.	PI ID hat zu lange gebraucht. Versuch es noch einmal.
+	PI ID refused the request. Free features keep working.	PI ID hat die Anfrage abgelehnt. Kostenlose Funktionen gehen weiterhin.
+	PI ID is busy. Try again in {minutes} min.	PI ID ist ausgelastet. Versuch es in {minutes} Min. noch einmal.
+	PI ID is busy. Try again in a few minutes.	PI ID ist ausgelastet. Versuch es in ein paar Minuten noch einmal.
+	Your account has reached its device limit. Remove a device in PI ID, then retry.	Dein Konto hat die Gerätegrenze erreicht. Entferne ein Gerät in PI ID und versuch es dann erneut.
+	Your PI ID account is suspended. Free features keep working.	Dein PI-ID-Konto ist gesperrt. Kostenlose Funktionen gehen weiterhin.
+	This organization is not available to your account.	Diese Organisation ist für dein Konto nicht verfügbar.
+	Your session has expired. Sign in again.	Deine Sitzung ist abgelaufen. Melde dich erneut an.
+	This version of the app is too old for PI ID. Update the app, then try again.	Diese App-Version ist zu alt für PI ID. Aktualisiere die App und versuch es dann noch einmal.
+	PI ID is temporarily unavailable. Try again later.	PI ID ist vorübergehend nicht verfügbar. Versuch es später noch einmal.
+	Something went wrong with PI ID. Try again.	Bei PI ID ist etwas schiefgelaufen. Versuch es noch einmal.
+	Signed in to PI ID. You can close this tab and go back to the app.	Bei PI ID angemeldet. Du kannst diesen Tab schließen und zur App zurückkehren.
+	Sign-in did not finish. Close this tab and try again in the app.	Die Anmeldung wurde nicht abgeschlossen. Schließ diesen Tab und versuch es in der App noch einmal.
+	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft funktioniert offline. Die Anmeldung mit PI ID ist optional. Keine Telemetrie und keine Cloud-Verarbeitung, solange du keinen Anbieter hinzufügst.

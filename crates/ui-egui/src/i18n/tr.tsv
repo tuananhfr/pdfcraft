@@ -2414,3 +2414,44 @@ animation effects	Off	Kapalı
 
 	Tiếng Việt	Vietnamca
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Vietnamca tanıma yüklü değil. Yöneticinizden Vietnamca OCR modelini yüklemesini isteyin.
+
+# Optional PI ID account (ERPCons)
+	Account	Hesap
+	Sign in with PI ID	PI ID ile oturum aç
+	Signing in is optional: every feature works without an account.	Oturum açmak isteğe bağlıdır: tüm özellikler hesap olmadan da çalışır.
+	Continue in your browser…	Tarayıcınızda devam edin…
+	Sign in again	Yeniden oturum aç
+	Organization	Kuruluş
+	Personal	Kişisel
+	License	Lisans
+	You will need to sign in again the next time you open the app.	Uygulamayı bir sonraki açışınızda yeniden oturum açmanız gerekecek.
+	Connected to PI ID	PI ID'ye bağlı
+	Offline. Your account syncs when you reconnect.	Çevrimdışı. Hesabınız yeniden bağlandığınızda eşitlenir.
+	Sign out	Oturumu kapat
+	Plan: Free	Plan: Ücretsiz
+	This device is activated until {date}.	Bu cihaz {date} tarihine kadar etkin.
+	Paid features are valid until {date}.	Ücretli özellikler {date} tarihine kadar geçerli.
+	Paid features are active.	Ücretli özellikler etkin.
+	Your license expired on {date}. Free features keep working.	Lisansınızın süresi {date} tarihinde doldu. Ücretsiz özellikler çalışmaya devam eder.
+	This device was removed from your account. Free features keep working.	Bu cihaz hesabınızdan kaldırıldı. Ücretsiz özellikler çalışmaya devam eder.
+	Your account has reached its device limit, so this device is not activated.	Hesabınız cihaz sınırına ulaştığı için bu cihaz etkinleştirilmedi.
+	Signed in for this session only: this computer has no credential store.	Yalnızca bu oturum için oturum açıldı: bu bilgisayarda kimlik bilgisi deposu yok.
+	PI ID account	PI ID hesabı
+	Signing in…	Oturum açılıyor…
+	Sign in	Oturum aç
+	Paid features expire on {date}. Connect to the internet to renew them.	Ücretli özelliklerin süresi {date} tarihinde doluyor. Yenilemek için internete bağlanın.
+	Could not reach PI ID. Check your connection and try again.	PI ID'ye ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.
+	PI ID took too long to answer. Try again.	PI ID'nin yanıtı çok uzun sürdü. Tekrar deneyin.
+	PI ID refused the request. Free features keep working.	PI ID isteği reddetti. Ücretsiz özellikler çalışmaya devam eder.
+	PI ID is busy. Try again in {minutes} min.	PI ID meşgul. {minutes} dk sonra tekrar deneyin.
+	PI ID is busy. Try again in a few minutes.	PI ID meşgul. Birkaç dakika sonra tekrar deneyin.
+	Your account has reached its device limit. Remove a device in PI ID, then retry.	Hesabınız cihaz sınırına ulaştı. PI ID'den bir cihazı kaldırıp yeniden deneyin.
+	Your PI ID account is suspended. Free features keep working.	PI ID hesabınız askıya alındı. Ücretsiz özellikler çalışmaya devam eder.
+	This organization is not available to your account.	Bu kuruluş hesabınız için kullanılamıyor.
+	Your session has expired. Sign in again.	Oturumunuzun süresi doldu. Yeniden oturum açın.
+	This version of the app is too old for PI ID. Update the app, then try again.	Uygulamanın bu sürümü PI ID için çok eski. Uygulamayı güncelleyip tekrar deneyin.
+	PI ID is temporarily unavailable. Try again later.	PI ID geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.
+	Something went wrong with PI ID. Try again.	PI ID ile ilgili bir sorun oluştu. Tekrar deneyin.
+	Signed in to PI ID. You can close this tab and go back to the app.	PI ID'de oturum açıldı. Bu sekmeyi kapatıp uygulamaya dönebilirsiniz.
+	Sign-in did not finish. Close this tab and try again in the app.	Oturum açma tamamlanmadı. Bu sekmeyi kapatıp uygulamada tekrar deneyin.
+	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft çevrimdışı çalışır. PI ID ile oturum açmak isteğe bağlıdır. Bir sağlayıcı eklemediğiniz sürece telemetri yok ve bulut işleme yok.

@@ -4,6 +4,9 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 #[cfg(any(target_arch = "wasm32", test))]
+mod account;
+
+#[cfg(any(target_arch = "wasm32", test))]
 mod draft_state;
 
 #[cfg(any(target_arch = "wasm32", test))]
@@ -81,6 +84,10 @@ fn main() {
                     // an embedding host keeps the files itself, so not there.
                     if query_param("host").as_deref() != Some("parent") {
                         app.drafts = Some(drafts::install(cc.egui_ctx.clone()));
+                    }
+                    // The office shell's PI ID session, when it offers one here (not in embed mode).
+                    if let Some(account) = account::install() {
+                        app.account_hook = Some(std::sync::Arc::new(account));
                     }
                     // `?host=parent`: a same-origin page embedding PdfCraft in an iframe (such
                     // as the Nextcloud app) passes files in and takes saves back (`host` below).

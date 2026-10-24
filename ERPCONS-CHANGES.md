@@ -2,6 +2,7 @@
 
 This branch (`erpcons`) is the ERPCons Văn phòng fork of [PdfCraft](https://github.com/storytold/pdfcraft), based on PdfCraft by the ArtCraft team, licensed MIT OR Apache-2.0 (see `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`). Changes from upstream `main` (Apache-2.0 §4b):
 
+- (both) Optional PI ID account, off unless configured: an Account dialog (title-bar account button and Help › Account), a paid-feature lease notice under the mode bar and a home-screen privacy line appear only with an account hook: desktop builds made with `ERPCONS_PI_ISSUER` (`erpcons-account` v0.1.0 on a worker thread), and the web app when the office shell offers an enabled `window.erpAccount` v1. `PdfCraftApp::allowed(feature)` is in place for future gating; nothing is gated, and the account code never reads documents.
 - (desktop) Add optional EasyOCR Vietnamese recognition with per-language models, NFC text, a translated language picker and Unicode searchable PDF layers; keep web OCR unavailable.
 - (docs) Measure EasyOCR Vietnamese recognition on 200 synthetic lines with RTen 0.26, verify EasyOCR/VietOCR alphabet coverage, and document unresolved weight-licence gates.
 - (docs) Evaluate Vietnamese OCR model coverage, licensing and desktop/web costs; document the missing characters that block RTen integration and the recommended training route.

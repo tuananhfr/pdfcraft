@@ -2427,3 +2427,44 @@ animation effects	Off	Disattivati
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Il riconoscimento del vietnamita non è installato. Chiedi all’amministratore di installare il modello OCR vietnamita.
+
+# Optional PI ID account (ERPCons)
+	Account	Account
+	Sign in with PI ID	Accedi con PI ID
+	Signing in is optional: every feature works without an account.	L'accesso è facoltativo: tutte le funzioni sono disponibili anche senza account.
+	Continue in your browser…	Continua nel browser…
+	Sign in again	Accedi di nuovo
+	Organization	Organizzazione
+	Personal	Personale
+	License	Licenza
+	You will need to sign in again the next time you open the app.	Dovrai accedere di nuovo la prossima volta che apri l'app.
+	Connected to PI ID	Connesso a PI ID
+	Offline. Your account syncs when you reconnect.	Offline. L'account si sincronizza quando torni online.
+	Sign out	Esci
+	Plan: Free	Piano: Gratuito
+	This device is activated until {date}.	Questo dispositivo è attivato fino al {date}.
+	Paid features are valid until {date}.	Le funzioni a pagamento sono valide fino al {date}.
+	Paid features are active.	Le funzioni a pagamento sono attive.
+	Your license expired on {date}. Free features keep working.	La licenza è scaduta il {date}. Le funzioni gratuite continuano a funzionare.
+	This device was removed from your account. Free features keep working.	Questo dispositivo è stato rimosso dal tuo account. Le funzioni gratuite continuano a funzionare.
+	Your account has reached its device limit, so this device is not activated.	Il tuo account ha raggiunto il limite di dispositivi, quindi questo dispositivo non è attivato.
+	Signed in for this session only: this computer has no credential store.	Accesso valido solo per questa sessione: questo computer non ha un archivio delle credenziali.
+	PI ID account	Account PI ID
+	Signing in…	Accesso in corso…
+	Sign in	Accedi
+	Paid features expire on {date}. Connect to the internet to renew them.	Le funzioni a pagamento scadono il {date}. Connettiti a Internet per rinnovarle.
+	Could not reach PI ID. Check your connection and try again.	Impossibile raggiungere PI ID. Controlla la connessione e riprova.
+	PI ID took too long to answer. Try again.	PI ID ha impiegato troppo tempo a rispondere. Riprova.
+	PI ID refused the request. Free features keep working.	PI ID ha rifiutato la richiesta. Le funzioni gratuite continuano a funzionare.
+	PI ID is busy. Try again in {minutes} min.	PI ID è occupato. Riprova tra {minutes} min.
+	PI ID is busy. Try again in a few minutes.	PI ID è occupato. Riprova tra qualche minuto.
+	Your account has reached its device limit. Remove a device in PI ID, then retry.	Il tuo account ha raggiunto il limite di dispositivi. Rimuovi un dispositivo in PI ID, poi riprova.
+	Your PI ID account is suspended. Free features keep working.	Il tuo account PI ID è sospeso. Le funzioni gratuite continuano a funzionare.
+	This organization is not available to your account.	Questa organizzazione non è disponibile per il tuo account.
+	Your session has expired. Sign in again.	La sessione è scaduta. Accedi di nuovo.
+	This version of the app is too old for PI ID. Update the app, then try again.	Questa versione dell'app è troppo vecchia per PI ID. Aggiorna l'app, poi riprova.
+	PI ID is temporarily unavailable. Try again later.	PI ID non è temporaneamente disponibile. Riprova più tardi.
+	Something went wrong with PI ID. Try again.	Si è verificato un problema con PI ID. Riprova.
+	Signed in to PI ID. You can close this tab and go back to the app.	Accesso a PI ID effettuato. Puoi chiudere questa scheda e tornare all'app.
+	Sign-in did not finish. Close this tab and try again in the app.	L'accesso non è stato completato. Chiudi questa scheda e riprova dall'app.
+	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft funziona offline. L'accesso con PI ID è facoltativo. Nessuna telemetria e nessuna elaborazione nel cloud, a meno che tu non aggiunga un fornitore.

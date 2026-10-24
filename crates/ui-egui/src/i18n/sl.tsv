@@ -2423,3 +2423,44 @@ animation effects	Off	Izklopljeni
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Prepoznavanje vietnamščine ni nameščeno. Prosite skrbnika, naj namesti vietnamski model OCR.
+
+# Optional PI ID account (ERPCons)
+	Account	Račun
+	Sign in with PI ID	Prijava s PI ID
+	Signing in is optional: every feature works without an account.	Prijava ni obvezna: vse funkcije delujejo tudi brez računa.
+	Continue in your browser…	Nadaljujte v brskalniku…
+	Sign in again	Znova se prijavite
+	Organization	Organizacija
+	Personal	Osebno
+	License	Licenca
+	You will need to sign in again the next time you open the app.	Ko boste naslednjič odprli aplikacijo, se boste morali znova prijaviti.
+	Connected to PI ID	Povezano s PI ID
+	Offline. Your account syncs when you reconnect.	Brez povezave. Račun se bo sinhroniziral, ko se znova povežete.
+	Sign out	Odjava
+	Plan: Free	Paket: brezplačni
+	This device is activated until {date}.	Ta naprava je aktivirana do {date}.
+	Paid features are valid until {date}.	Plačljive funkcije veljajo do {date}.
+	Paid features are active.	Plačljive funkcije so aktivne.
+	Your license expired on {date}. Free features keep working.	Licenca je potekla {date}. Brezplačne funkcije še naprej delujejo.
+	This device was removed from your account. Free features keep working.	Ta naprava je bila odstranjena iz vašega računa. Brezplačne funkcije še naprej delujejo.
+	Your account has reached its device limit, so this device is not activated.	Vaš račun je dosegel omejitev naprav, zato ta naprava ni aktivirana.
+	Signed in for this session only: this computer has no credential store.	Prijavljeni samo za to sejo: ta računalnik nima shrambe poverilnic.
+	PI ID account	Račun PI ID
+	Signing in…	Prijavljanje…
+	Sign in	Prijava
+	Paid features expire on {date}. Connect to the internet to renew them.	Plačljive funkcije potečejo {date}. Povežite se z internetom, da jih podaljšate.
+	Could not reach PI ID. Check your connection and try again.	Povezava s PI ID ni uspela. Preverite povezavo in poskusite znova.
+	PI ID took too long to answer. Try again.	PI ID se je odzival predolgo. Poskusite znova.
+	PI ID refused the request. Free features keep working.	PI ID je zavrnil zahtevo. Brezplačne funkcije še naprej delujejo.
+	PI ID is busy. Try again in {minutes} min.	PI ID je zaseden. Poskusite znova čez {minutes} min.
+	PI ID is busy. Try again in a few minutes.	PI ID je zaseden. Poskusite znova čez nekaj minut.
+	Your account has reached its device limit. Remove a device in PI ID, then retry.	Vaš račun je dosegel omejitev naprav. Odstranite napravo v PI ID in poskusite znova.
+	Your PI ID account is suspended. Free features keep working.	Vaš račun PI ID je začasno onemogočen. Brezplačne funkcije še naprej delujejo.
+	This organization is not available to your account.	Ta organizacija za vaš račun ni na voljo.
+	Your session has expired. Sign in again.	Seja je potekla. Znova se prijavite.
+	This version of the app is too old for PI ID. Update the app, then try again.	Ta različica aplikacije je prestara za PI ID. Posodobite aplikacijo in poskusite znova.
+	PI ID is temporarily unavailable. Try again later.	PI ID začasno ni na voljo. Poskusite pozneje.
+	Something went wrong with PI ID. Try again.	Pri PI ID je prišlo do napake. Poskusite znova.
+	Signed in to PI ID. You can close this tab and go back to the app.	Prijavljeni ste v PI ID. Ta zavihek lahko zaprete in se vrnete v aplikacijo.
+	Sign-in did not finish. Close this tab and try again in the app.	Prijava ni bila dokončana. Zaprite ta zavihek in poskusite znova v aplikaciji.
+	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft deluje brez povezave. Prijava s PI ID ni obvezna. Brez telemetrije in brez obdelave v oblaku, razen če dodate ponudnika.

@@ -29,6 +29,7 @@ use std::rc::Rc;
 
 use pdfcraft_ui_egui::{PdfCraftApp, i18n};
 
+mod account;
 #[cfg(target_os = "macos")]
 mod apple_events;
 mod clipboard;
@@ -369,6 +370,7 @@ fn app_creator<'a>(
         if let Some(dir) = settings_dir() {
             app.update_hook = Some(std::sync::Arc::new(updates::DesktopUpdates::new(dir.join("update-state.json"))));
         }
+        app.account_hook = account::hook();
         app.printer_source = Some(pdfcraft_ui_egui::system_printers());
         app.os_key_store_ids = cfg!(any(target_os = "macos", target_os = "windows"));
         #[cfg(target_os = "macos")]

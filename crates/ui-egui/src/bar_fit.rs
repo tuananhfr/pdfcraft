@@ -108,6 +108,12 @@ pub(crate) fn fit_tab_strip(available: f32, tabs_min: f32, open: f32, open_icon:
     fit
 }
 
+/// Whether the PI ID account button fits beside the full strip ([`fit_tab_strip`]'s arguments). It
+/// is the first control to give way; Help ▸ Account still opens the dialog.
+pub(crate) fn account_button_fits(available: f32, tabs_min: f32, open: f32, open_icon: f32, button: f32) -> bool {
+    fit_tab_strip(available - button, tabs_min, open, open_icon, button) == StripFit::FULL
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -175,5 +181,13 @@ mod tests {
         assert_eq!(fit_tab_strip(300.0, 180.0, 72.0, 40.0, 32.0), StripFit { open_icon: true, ..StripFit::FULL });
         assert_eq!(fit_tab_strip(80.0, 0.0, 72.0, 40.0, 32.0), StripFit { open_icon: true, theme: false, help: true });
         assert_eq!(fit_tab_strip(45.0, 0.0, 72.0, 40.0, 32.0), StripFit { open_icon: true, theme: false, help: false });
+    }
+
+    #[test]
+    fn the_account_button_gives_way_before_anything_else() {
+        // The full strip is 180 + 72 + 2 × 32 = 316 wide; the account button needs 32 more.
+        assert!(account_button_fits(348.0, 180.0, 72.0, 40.0, 32.0));
+        assert!(!account_button_fits(347.0, 180.0, 72.0, 40.0, 32.0), "Open keeps its text first");
+        assert_eq!(fit_tab_strip(347.0, 180.0, 72.0, 40.0, 32.0), StripFit::FULL);
     }
 }

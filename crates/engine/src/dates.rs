@@ -389,6 +389,18 @@ pub fn date_language(code: &str) -> Option<&'static DateLanguage> {
     DATE_LANGUAGES.iter().find(|l| l.code.eq_ignore_ascii_case(code.trim()))
 }
 
+/// The local calendar day `(year, month, day)` of a Unix time, or `None` outside years 1970–9999.
+/// UTC where the local offset is unknown (the web build).
+pub fn local_day(unix_secs: i64) -> Option<(i64, u32, u32)> {
+    // `pdf_date` writes the year in four digits only up to 9999.
+    const END_OF_9999: i64 = 253_402_300_800;
+    let local = unix_secs.checked_add(crate::local_utc_offset())?;
+    if !(0..END_OF_9999).contains(&local) {
+        return None;
+    }
+    crate::parse_ymd(&pdfcraft_cos::pdf_date(local))
+}
+
 /// The characters of `text` that Fill & Sign can't write into a PDF yet, each once. Its text is
 /// drawn in Helvetica with WinAnsi encoding (Western European letters), so anything else (`ř`,
 /// Japanese, Chinese) would become `?` in the file.
@@ -573,6 +585,14 @@ mod tests {
 
     fn in_lang(fmt: &str, code: &str) -> String {
         format_day(fmt, DAY, date_language(code).unwrap())
+    }
+
+    #[test]
+    fn local_day_reads_the_calendar_day_and_refuses_what_it_cannot_write() {
+        // Noon UTC on 15 March 2027: the same day in the time zones the tests run in.
+        assert_eq!(local_day(1_805_112_000), Some((2027, 3, 15)));
+        assert_eq!(local_day(i64::MAX), None);
+        assert_eq!(local_day(i64::MIN), None);
     }
 
     #[test]

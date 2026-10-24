@@ -2416,3 +2416,44 @@ animation effects	Off	Өшірулі
 
 	Tiếng Việt	Вьетнам тілі
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Вьетнам тілін тану орнатылмаған. Әкімшіден вьетнамдық OCR моделін орнатуды сұраңыз.
+
+# Optional PI ID account (ERPCons)
+	Account	Тіркелгі
+	Sign in with PI ID	PI ID арқылы кіру
+	Signing in is optional: every feature works without an account.	Кіру міндетті емес: барлық функция тіркелгісіз де жұмыс істейді.
+	Continue in your browser…	Браузерде жалғастырыңыз…
+	Sign in again	Қайта кіру
+	Organization	Ұйым
+	Personal	Жеке
+	License	Лицензия
+	You will need to sign in again the next time you open the app.	Қолданбаны келесі ашқанда қайта кіру керек болады.
+	Connected to PI ID	PI ID-ге қосылды
+	Offline. Your account syncs when you reconnect.	Офлайн. Байланыс қалпына келгенде тіркелгі синхрондалады.
+	Sign out	Шығу
+	Plan: Free	Жоспар: Тегін
+	This device is activated until {date}.	Бұл құрылғы {date} дейін белсендірілген.
+	Paid features are valid until {date}.	Ақылы функциялар {date} дейін жарамды.
+	Paid features are active.	Ақылы функциялар белсенді.
+	Your license expired on {date}. Free features keep working.	Лицензия мерзімі {date} аяқталды. Тегін функциялар жұмысын жалғастырады.
+	This device was removed from your account. Free features keep working.	Бұл құрылғы тіркелгіңізден өшірілді. Тегін функциялар жұмысын жалғастырады.
+	Your account has reached its device limit, so this device is not activated.	Тіркелгіңіз құрылғылар шегіне жетті, сондықтан бұл құрылғы белсендірілмеген.
+	Signed in for this session only: this computer has no credential store.	Тек осы сеанс үшін кірдіңіз: бұл компьютерде тіркелгі деректерінің қоймасы жоқ.
+	PI ID account	PI ID тіркелгісі
+	Signing in…	Кіру орындалуда…
+	Sign in	Кіру
+	Paid features expire on {date}. Connect to the internet to renew them.	Ақылы функциялардың мерзімі {date} аяқталады. Жаңарту үшін интернетке қосылыңыз.
+	Could not reach PI ID. Check your connection and try again.	PI ID-ге қосылу мүмкін болмады. Байланысты тексеріп, қайталап көріңіз.
+	PI ID took too long to answer. Try again.	PI ID тым ұзақ жауап берді. Қайталап көріңіз.
+	PI ID refused the request. Free features keep working.	PI ID сұрауды қабылдамады. Тегін функциялар жұмысын жалғастырады.
+	PI ID is busy. Try again in {minutes} min.	PI ID бос емес. {minutes} мин кейін қайталап көріңіз.
+	PI ID is busy. Try again in a few minutes.	PI ID бос емес. Бірнеше минуттан кейін қайталап көріңіз.
+	Your account has reached its device limit. Remove a device in PI ID, then retry.	Тіркелгіңіз құрылғылар шегіне жетті. PI ID ішінде бір құрылғыны өшіріп, қайталап көріңіз.
+	Your PI ID account is suspended. Free features keep working.	PI ID тіркелгіңіз тоқтатылған. Тегін функциялар жұмысын жалғастырады.
+	This organization is not available to your account.	Бұл ұйым тіркелгіңіз үшін қолжетімсіз.
+	Your session has expired. Sign in again.	Сеанс мерзімі аяқталды. Қайта кіріңіз.
+	This version of the app is too old for PI ID. Update the app, then try again.	Қолданбаның бұл нұсқасы PI ID үшін тым ескі. Қолданбаны жаңартып, қайталап көріңіз.
+	PI ID is temporarily unavailable. Try again later.	PI ID уақытша қолжетімсіз. Кейінірек қайталап көріңіз.
+	Something went wrong with PI ID. Try again.	PI ID жұмысында қате шықты. Қайталап көріңіз.
+	Signed in to PI ID. You can close this tab and go back to the app.	PI ID-ге кірдіңіз. Бұл қойындыны жауып, қолданбаға оралуға болады.
+	Sign-in did not finish. Close this tab and try again in the app.	Кіру аяқталмады. Бұл қойындыны жауып, қолданбада қайталап көріңіз.
+	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft офлайн жұмыс істейді. PI ID арқылы кіру міндетті емес. Провайдер қоспағаныңызша телеметрия да, бұлтта өңдеу де жоқ.

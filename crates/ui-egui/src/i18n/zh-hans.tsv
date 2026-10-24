@@ -2382,3 +2382,44 @@ animation effects	Off	关
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	未安装越南语文字识别。请联系管理员安装越南语 OCR 模型。
+
+# Optional PI ID account (ERPCons)
+	Account	账号
+	Sign in with PI ID	使用 PI ID 登录
+	Signing in is optional: every feature works without an account.	登录是可选的：不登录也能使用所有功能。
+	Continue in your browser…	请在浏览器中继续…
+	Sign in again	重新登录
+	Organization	组织
+	Personal	个人
+	License	许可证
+	You will need to sign in again the next time you open the app.	下次打开应用时需要重新登录。
+	Connected to PI ID	已连接 PI ID
+	Offline. Your account syncs when you reconnect.	离线。重新联网后账号会自动同步。
+	Sign out	退出登录
+	Plan: Free	套餐：免费
+	This device is activated until {date}.	此设备已激活至 {date}。
+	Paid features are valid until {date}.	付费功能有效期至 {date}。
+	Paid features are active.	付费功能已启用。
+	Your license expired on {date}. Free features keep working.	许可证已于 {date} 过期。免费功能仍可正常使用。
+	This device was removed from your account. Free features keep working.	此设备已从您的账号中移除。免费功能仍可正常使用。
+	Your account has reached its device limit, so this device is not activated.	您的账号已达到设备数量上限，因此此设备未激活。
+	Signed in for this session only: this computer has no credential store.	仅在本次会话中登录：此电脑没有凭据存储。
+	PI ID account	PI ID 账号
+	Signing in…	正在登录…
+	Sign in	登录
+	Paid features expire on {date}. Connect to the internet to renew them.	付费功能将于 {date} 到期。请连接互联网以续期。
+	Could not reach PI ID. Check your connection and try again.	无法连接 PI ID。请检查网络连接后重试。
+	PI ID took too long to answer. Try again.	PI ID 响应超时。请重试。
+	PI ID refused the request. Free features keep working.	PI ID 拒绝了请求。免费功能仍可正常使用。
+	PI ID is busy. Try again in {minutes} min.	PI ID 繁忙。请在 {minutes} 分钟后重试。
+	PI ID is busy. Try again in a few minutes.	PI ID 繁忙。请过几分钟再试。
+	Your account has reached its device limit. Remove a device in PI ID, then retry.	您的账号已达到设备数量上限。请在 PI ID 中移除一台设备，然后重试。
+	Your PI ID account is suspended. Free features keep working.	您的 PI ID 账号已被暂停。免费功能仍可正常使用。
+	This organization is not available to your account.	您的账号无法使用此组织。
+	Your session has expired. Sign in again.	会话已过期。请重新登录。
+	This version of the app is too old for PI ID. Update the app, then try again.	此版本的应用过旧，无法使用 PI ID。请更新应用后重试。
+	PI ID is temporarily unavailable. Try again later.	PI ID 暂时不可用。请稍后重试。
+	Something went wrong with PI ID. Try again.	PI ID 出现问题。请重试。
+	Signed in to PI ID. You can close this tab and go back to the app.	已登录 PI ID。您可以关闭此标签页并返回应用。
+	Sign-in did not finish. Close this tab and try again in the app.	登录未完成。请关闭此标签页，然后在应用中重试。
+	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft 可离线工作。使用 PI ID 登录是可选的。无遥测，除非您自行添加服务商，否则无云端处理。
