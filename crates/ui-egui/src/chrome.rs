@@ -84,6 +84,9 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                 let fixed = 12.0 + window_controls::width(&controls.right);
                 // Room for one tab at its narrowest before any control gives way.
                 let one_tab = natural.iter().map(|w| w.min(TAB_MIN_WIDTH)).fold(0.0, f32::max);
+                let account =
+                    app.account_hook.is_some() && bar_fit::account_button_fits(ui.available_width() - fixed, one_tab, open_full, open_icon, button);
+                let fixed = if account { fixed + button } else { fixed };
                 let fit = bar_fit::fit_tab_strip(ui.available_width() - fixed, one_tab, open_full, open_icon, button);
                 // Keep the icon buttons and their gaps outside the scrolling tabs.
                 let controls_width = (usize::from(fit.theme) + usize::from(fit.help)) as f32 * button + fixed;
@@ -281,6 +284,9 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                             window_controls::buttons(ui, &controls.right);
                         });
                         ui.add_space(window_controls::SIDE_GAP - 4.0);
+                    }
+                    if account {
+                        crate::account::strip_button(app, ui, button);
                     }
                     if fit.theme {
                         let (icon, label) = match app.theme_preference {
@@ -732,7 +738,10 @@ fn main_menu(app: &mut PdfCraftApp, ui: &mut egui::Ui, icon_only: bool) {
                 }
             });
         });
-        ui.menu_button(tl!("Help"), |ui| crate::commands::registry_menu(app, ui, "Help"));
+        ui.menu_button(tl!("Help"), |ui| {
+            crate::commands::registry_menu(app, ui, "Help");
+            crate::account::help_menu_item(app, ui);
+        });
     });
 }
 

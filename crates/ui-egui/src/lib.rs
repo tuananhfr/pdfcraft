@@ -23,6 +23,7 @@ macro_rules! tl_ctx {
 }
 
 mod a11y_ui;
+pub mod account;
 mod actions_ui;
 mod appearance;
 pub mod branding;
@@ -357,6 +358,8 @@ pub enum Dialog {
     AuditSpace,
     /// Signatures ▸ Show certificate.
     CertificateViewer,
+    /// The optional PI ID account ([`account`]); only with an account hook.
+    Account,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -574,6 +577,10 @@ pub struct PdfCraftApp {
     pub update_hook: Option<std::sync::Arc<dyn updates::UpdateHook>>,
     #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     pub(crate) updates: updates::Updates,
+    /// ERPCons: the optional PI ID account ([`account`]). `None` (the default) shows no account UI
+    /// and allows every feature.
+    pub account_hook: Option<std::sync::Arc<dyn account::AccountHook>>,
+    pub(crate) account: account::AccountState,
     /// Lists the Print dialog's printers in the background (the desktop app sets it; see
     /// [`PrinterSource`]).
     pub printer_source: Option<PrinterSource>,
@@ -957,6 +964,8 @@ impl PdfCraftApp {
             updates: updates::Updates::default(),
             #[cfg(target_arch = "wasm32")]
             updates: updates::Updates,
+            account_hook: None,
+            account: Default::default(),
             printer_source: None,
             print_tasks: print_ui::PrintTasks::default(),
             palette_open: false,
@@ -2502,6 +2511,7 @@ impl PdfCraftApp {
                         self.execute("page.number");
                         Some(Dialog::NumberPages)
                     }
+                    "account" if self.account_hook.is_some() => Some(Dialog::Account),
                     "none" => None,
                     _ => Some(Dialog::About),
                 }
@@ -2995,6 +3005,7 @@ impl eframe::App for PdfCraftApp {
             }
         }
         self.poll_updates();
+        self.poll_account(ctx);
         self.poll_print();
         // Shortcuts deferred last frame: the text field has taken that frame's typing since.
         let deferred = std::mem::take(&mut self.deferred_commands);
@@ -3079,6 +3090,7 @@ impl eframe::App for PdfCraftApp {
         }
         chrome::tab_strip(self, ui);
         chrome::mode_bar(self, ui);
+        account::warning_notice(self, ui);
         if self.active.is_some() {
             chrome::right_rail(self, ui);
             // Read mode hides the tools, not the navigation panes: the rail stays visible

@@ -13,6 +13,9 @@ workspace = true
 pdfcraft-ui-egui = { workspace = true }
 eframe = { workspace = true, features = ["default_fonts", "glow", "persistence", "accesskit"] }
 egui = { workspace = true }
+# The office shell's `window.erpAccount` snapshots are mapped as JSON (src/account.rs), so the
+# mapping is tested natively; already in the tree through pdfcraft-ui-egui.
+serde_json = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4"

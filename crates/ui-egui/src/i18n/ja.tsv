@@ -2418,3 +2418,44 @@ animation effects	Off	オフ
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	ベトナム語の文字認識がインストールされていません。管理者にベトナム語OCRモデルのインストールを依頼してください。
+
+# Optional PI ID account (ERPCons)
+	Account	アカウント
+	Sign in with PI ID	PI ID でサインイン
+	Signing in is optional: every feature works without an account.	サインインは任意です。アカウントがなくてもすべての機能を使えます。
+	Continue in your browser…	ブラウザーで続行してください…
+	Sign in again	もう一度サインイン
+	Organization	組織
+	Personal	個人
+	License	ライセンス
+	You will need to sign in again the next time you open the app.	次回アプリを開くときに、もう一度サインインが必要です。
+	Connected to PI ID	PI ID に接続済み
+	Offline. Your account syncs when you reconnect.	オフラインです。再接続するとアカウントが同期されます。
+	Sign out	サインアウト
+	Plan: Free	プラン: 無料
+	This device is activated until {date}.	このデバイスは {date} まで有効化されています。
+	Paid features are valid until {date}.	有料機能は {date} まで利用できます。
+	Paid features are active.	有料機能は有効です。
+	Your license expired on {date}. Free features keep working.	ライセンスは {date} に期限切れになりました。無料の機能は引き続き使えます。
+	This device was removed from your account. Free features keep working.	このデバイスはアカウントから削除されました。無料の機能は引き続き使えます。
+	Your account has reached its device limit, so this device is not activated.	アカウントのデバイス数が上限に達しているため、このデバイスは有効化されていません。
+	Signed in for this session only: this computer has no credential store.	このセッションのみサインインしています。このコンピューターには資格情報ストアがありません。
+	PI ID account	PI ID アカウント
+	Signing in…	サインイン中…
+	Sign in	サインイン
+	Paid features expire on {date}. Connect to the internet to renew them.	有料機能は {date} に期限切れになります。更新するにはインターネットに接続してください。
+	Could not reach PI ID. Check your connection and try again.	PI ID に接続できませんでした。接続を確認してもう一度お試しください。
+	PI ID took too long to answer. Try again.	PI ID の応答に時間がかかりすぎました。もう一度お試しください。
+	PI ID refused the request. Free features keep working.	PI ID が要求を拒否しました。無料の機能は引き続き使えます。
+	PI ID is busy. Try again in {minutes} min.	PI ID は混み合っています。{minutes} 分後にもう一度お試しください。
+	PI ID is busy. Try again in a few minutes.	PI ID は混み合っています。数分後にもう一度お試しください。
+	Your account has reached its device limit. Remove a device in PI ID, then retry.	アカウントのデバイス数が上限に達しています。PI ID でデバイスを削除してから再試行してください。
+	Your PI ID account is suspended. Free features keep working.	PI ID アカウントは停止されています。無料の機能は引き続き使えます。
+	This organization is not available to your account.	この組織はあなたのアカウントでは利用できません。
+	Your session has expired. Sign in again.	セッションの有効期限が切れました。もう一度サインインしてください。
+	This version of the app is too old for PI ID. Update the app, then try again.	このバージョンのアプリは PI ID に対応していません。アプリを更新してからもう一度お試しください。
+	PI ID is temporarily unavailable. Try again later.	PI ID は一時的に利用できません。しばらくしてからもう一度お試しください。
+	Something went wrong with PI ID. Try again.	PI ID で問題が発生しました。もう一度お試しください。
+	Signed in to PI ID. You can close this tab and go back to the app.	PI ID にサインインしました。このタブを閉じてアプリに戻ってください。
+	Sign-in did not finish. Close this tab and try again in the app.	サインインが完了しませんでした。このタブを閉じて、アプリでもう一度お試しください。
+	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft はオフラインで動作します。PI ID でのサインインは任意です。使用状況の送信はなく、サービス提供元を追加しない限りクラウド処理も行いません。

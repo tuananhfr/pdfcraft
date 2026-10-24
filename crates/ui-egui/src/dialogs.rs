@@ -83,6 +83,7 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
             Dialog::Print => 820.0,
             Dialog::FieldProps | Dialog::BulkFieldProps => 600.0,
             Dialog::About => 780.0,
+            Dialog::Account => widgets::modal_content_width(ctx, 520.0),
             _ => 520.0,
         });
         match dialog {
@@ -1100,6 +1101,7 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
                     });
                 });
             }
+            Dialog::Account => close = crate::account::body(app, ui),
             Dialog::About => {
                 // Tabs About · Contributors · Models (craftrules standards/contributors.md).
                 let tab_id = egui::Id::new("about_tab");

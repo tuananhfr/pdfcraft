@@ -2439,3 +2439,44 @@ animation effects	Off	معطّلة
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	التعرف على النص الفيتنامي غير مثبت. اطلب من المسؤول تثبيت نموذج OCR الفيتنامي.
+
+# Optional PI ID account (ERPCons)
+	Account	الحساب
+	Sign in with PI ID	تسجيل الدخول باستخدام PI ID
+	Signing in is optional: every feature works without an account.	تسجيل الدخول اختياري: كل الميزات تعمل دون حساب.
+	Continue in your browser…	تابع في المتصفح…
+	Sign in again	تسجيل الدخول مجددًا
+	Organization	المؤسسة
+	Personal	شخصي
+	License	الترخيص
+	You will need to sign in again the next time you open the app.	ستحتاج إلى تسجيل الدخول مجددًا في المرة القادمة التي تفتح فيها التطبيق.
+	Connected to PI ID	متصل بـ PI ID
+	Offline. Your account syncs when you reconnect.	غير متصل. ستتم مزامنة حسابك عند عودة الاتصال.
+	Sign out	تسجيل الخروج
+	Plan: Free	الخطة: مجانية
+	This device is activated until {date}.	هذا الجهاز مفعّل حتى {date}.
+	Paid features are valid until {date}.	الميزات المدفوعة صالحة حتى {date}.
+	Paid features are active.	الميزات المدفوعة مفعّلة.
+	Your license expired on {date}. Free features keep working.	انتهى ترخيصك في {date}. تظل الميزات المجانية تعمل.
+	This device was removed from your account. Free features keep working.	أُزيل هذا الجهاز من حسابك. تظل الميزات المجانية تعمل.
+	Your account has reached its device limit, so this device is not activated.	بلغ حسابك الحد الأقصى للأجهزة، لذلك لم يُفعَّل هذا الجهاز.
+	Signed in for this session only: this computer has no credential store.	تسجيل الدخول لهذه الجلسة فقط: لا يحتوي هذا الكمبيوتر على مخزن لبيانات الاعتماد.
+	PI ID account	حساب PI ID
+	Signing in…	جارٍ تسجيل الدخول…
+	Sign in	تسجيل الدخول
+	Paid features expire on {date}. Connect to the internet to renew them.	تنتهي الميزات المدفوعة في {date}. اتصل بالإنترنت لتجديدها.
+	Could not reach PI ID. Check your connection and try again.	تعذّر الوصول إلى PI ID. تحقق من اتصالك وحاول مرة أخرى.
+	PI ID took too long to answer. Try again.	استغرق PI ID وقتًا طويلًا للرد. حاول مرة أخرى.
+	PI ID refused the request. Free features keep working.	رفض PI ID الطلب. تظل الميزات المجانية تعمل.
+	PI ID is busy. Try again in {minutes} min.	PI ID مشغول. حاول مرة أخرى بعد {minutes} دقيقة.
+	PI ID is busy. Try again in a few minutes.	PI ID مشغول. حاول مرة أخرى بعد بضع دقائق.
+	Your account has reached its device limit. Remove a device in PI ID, then retry.	بلغ حسابك الحد الأقصى للأجهزة. أزل جهازًا في PI ID ثم أعد المحاولة.
+	Your PI ID account is suspended. Free features keep working.	حسابك في PI ID معلّق. تظل الميزات المجانية تعمل.
+	This organization is not available to your account.	هذه المؤسسة غير متاحة لحسابك.
+	Your session has expired. Sign in again.	انتهت صلاحية جلستك. سجّل الدخول مجددًا.
+	This version of the app is too old for PI ID. Update the app, then try again.	هذا الإصدار من التطبيق قديم جدًا على PI ID. حدّث التطبيق ثم حاول مرة أخرى.
+	PI ID is temporarily unavailable. Try again later.	PI ID غير متاح مؤقتًا. حاول لاحقًا.
+	Something went wrong with PI ID. Try again.	حدث خطأ ما في PI ID. حاول مرة أخرى.
+	Signed in to PI ID. You can close this tab and go back to the app.	تم تسجيل الدخول إلى PI ID. يمكنك إغلاق علامة التبويب هذه والعودة إلى التطبيق.
+	Sign-in did not finish. Close this tab and try again in the app.	لم يكتمل تسجيل الدخول. أغلق علامة التبويب هذه وحاول مرة أخرى في التطبيق.
+	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	يعمل PdfCraft دون اتصال. تسجيل الدخول باستخدام PI ID اختياري. لا قياس عن بُعد ولا معالجة سحابية إلا إذا أضفت مزوّدًا.

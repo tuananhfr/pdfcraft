@@ -2670,3 +2670,44 @@ key	Space	Tarpas
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Vietnamiečių teksto atpažinimas neįdiegtas. Paprašykite administratoriaus įdiegti vietnamiečių OCR modelį.
+
+# Optional PI ID account (ERPCons)
+	Account	Paskyra
+	Sign in with PI ID	Prisijungti su PI ID
+	Signing in is optional: every feature works without an account.	Prisijungti nebūtina: visos funkcijos veikia ir be paskyros.
+	Continue in your browser…	Tęskite naršyklėje…
+	Sign in again	Prisijungti iš naujo
+	Organization	Organizacija
+	Personal	Asmeninė
+	License	Licencija
+	You will need to sign in again the next time you open the app.	Kitą kartą atidarę programą turėsite prisijungti iš naujo.
+	Connected to PI ID	Prisijungta prie PI ID
+	Offline. Your account syncs when you reconnect.	Neprisijungta. Paskyra bus sinchronizuota, kai vėl prisijungsite.
+	Sign out	Atsijungti
+	Plan: Free	Planas: nemokamas
+	This device is activated until {date}.	Šis įrenginys aktyvintas iki {date}.
+	Paid features are valid until {date}.	Mokamos funkcijos galioja iki {date}.
+	Paid features are active.	Mokamos funkcijos aktyvios.
+	Your license expired on {date}. Free features keep working.	Licencija baigėsi {date}. Nemokamos funkcijos veikia toliau.
+	This device was removed from your account. Free features keep working.	Šis įrenginys pašalintas iš jūsų paskyros. Nemokamos funkcijos veikia toliau.
+	Your account has reached its device limit, so this device is not activated.	Jūsų paskyra pasiekė įrenginių ribą, todėl šis įrenginys neaktyvintas.
+	Signed in for this session only: this computer has no credential store.	Prisijungta tik šiam seansui: šiame kompiuteryje nėra prisijungimo duomenų saugyklos.
+	PI ID account	PI ID paskyra
+	Signing in…	Jungiamasi…
+	Sign in	Prisijungti
+	Paid features expire on {date}. Connect to the internet to renew them.	Mokamos funkcijos baigsis {date}. Prisijunkite prie interneto, kad jas pratęstumėte.
+	Could not reach PI ID. Check your connection and try again.	Nepavyko susisiekti su PI ID. Patikrinkite ryšį ir bandykite dar kartą.
+	PI ID took too long to answer. Try again.	PI ID atsakė per ilgai. Bandykite dar kartą.
+	PI ID refused the request. Free features keep working.	PI ID atmetė užklausą. Nemokamos funkcijos veikia toliau.
+	PI ID is busy. Try again in {minutes} min.	PI ID užimta. Bandykite dar kartą po {minutes} min.
+	PI ID is busy. Try again in a few minutes.	PI ID užimta. Bandykite dar kartą po kelių minučių.
+	Your account has reached its device limit. Remove a device in PI ID, then retry.	Jūsų paskyra pasiekė įrenginių ribą. Pašalinkite įrenginį PI ID ir bandykite dar kartą.
+	Your PI ID account is suspended. Free features keep working.	Jūsų PI ID paskyra sustabdyta. Nemokamos funkcijos veikia toliau.
+	This organization is not available to your account.	Ši organizacija jūsų paskyrai nepasiekiama.
+	Your session has expired. Sign in again.	Seansas baigėsi. Prisijunkite iš naujo.
+	This version of the app is too old for PI ID. Update the app, then try again.	Ši programos versija per sena PI ID. Atnaujinkite programą ir bandykite dar kartą.
+	PI ID is temporarily unavailable. Try again later.	PI ID laikinai nepasiekiama. Bandykite vėliau.
+	Something went wrong with PI ID. Try again.	Su PI ID kažkas nepavyko. Bandykite dar kartą.
+	Signed in to PI ID. You can close this tab and go back to the app.	Prisijungta prie PI ID. Galite uždaryti šį skirtuką ir grįžti į programą.
+	Sign-in did not finish. Close this tab and try again in the app.	Prisijungimas nebaigtas. Uždarykite šį skirtuką ir bandykite dar kartą programoje.
+	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	„PdfCraft“ veikia neprisijungus. Prisijungti su PI ID nebūtina. Nerenkami telemetrijos duomenys ir nenaudojamos debesijos paslaugos, nebent pridėtumėte jų teikėją.
