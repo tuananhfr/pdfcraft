@@ -93,6 +93,7 @@ pub struct WarningView {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AccountError {
     Cancelled,
+    PopupBlocked,
     Network,
     Timeout,
     Denied,
@@ -112,6 +113,13 @@ pub enum AccountError {
 pub fn is_pro_feature(feature: &str) -> bool {
     let builtin_free = feature.split_once('.').is_some_and(|(_, name)| name == "use");
     !(feature.ends_with(".view") || feature.ends_with(".export") || builtin_free)
+}
+
+/// The avatar letter: the given name's first letter (Vietnamese names put it last, as the office
+/// shell does), else the email's.
+pub fn avatar_letter(name: &str, email: Option<&str>) -> Option<String> {
+    let given = name.split_whitespace().next_back().unwrap_or_default();
+    given.chars().chain(email.unwrap_or_default().chars()).find(|c| c.is_alphanumeric()).map(|c| c.to_uppercase().collect())
 }
 
 /// What the app keeps between frames about the account.
@@ -163,6 +171,7 @@ pub fn date_text(session: &pdfcraft_engine::Session, unix_secs: i64) -> String {
 pub fn error_text(error: AccountError) -> Option<String> {
     let text = match error {
         AccountError::Cancelled => return None,
+        AccountError::PopupBlocked => tl!("The browser blocked the sign-in window. Allow pop-ups for this site and try again."),
         AccountError::Network => tl!("Could not reach PI ID. Check your connection and try again."),
         AccountError::Timeout => tl!("PI ID took too long to answer. Try again."),
         AccountError::Denied => tl!("PI ID refused the request. Free features keep working."),
@@ -198,6 +207,13 @@ pub fn callback_page(signed_in: bool) -> String {
 mod tests {
     use super::*;
     use crate::i18n::{self, Lang};
+
+    #[test]
+    fn the_avatar_shows_the_given_name_like_the_office_shell() {
+        assert_eq!(super::avatar_letter("Nguyễn Văn An", None).as_deref(), Some("A"));
+        assert_eq!(super::avatar_letter(" ", Some("binh@example.com")).as_deref(), Some("B"));
+        assert_eq!(super::avatar_letter("", None), None);
+    }
 
     #[test]
     fn only_features_outside_the_free_built_ins_are_pro() {

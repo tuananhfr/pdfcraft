@@ -2454,6 +2454,7 @@ animation effects	Off	Ki
 	Your session has expired. Sign in again.	A munkameneted lejárt. Jelentkezz be újra.
 	This version of the app is too old for PI ID. Update the app, then try again.	Az alkalmazás ezen verziója túl régi a PI ID-hez. Frissítsd az alkalmazást, majd próbáld újra.
 	PI ID is temporarily unavailable. Try again later.	A PI ID átmenetileg nem érhető el. Próbáld újra később.
+	The browser blocked the sign-in window. Allow pop-ups for this site and try again.	A böngésző letiltotta a bejelentkezési ablakot. Engedélyezd az előugró ablakokat ezen a webhelyen, és próbáld újra.
 	Something went wrong with PI ID. Try again.	Hiba történt a PI ID-vel. Próbáld újra.
 	Signed in to PI ID. You can close this tab and go back to the app.	Bejelentkeztél a PI ID-be. Bezárhatod ezt a lapot, és visszatérhetsz az alkalmazásba.
 	Sign-in did not finish. Close this tab and try again in the app.	A bejelentkezés nem fejeződött be. Zárd be ezt a lapot, és próbáld újra az alkalmazásban.

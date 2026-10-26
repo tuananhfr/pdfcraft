@@ -2455,6 +2455,7 @@ animation effects	Off	オフ
 	Your session has expired. Sign in again.	セッションの有効期限が切れました。もう一度サインインしてください。
 	This version of the app is too old for PI ID. Update the app, then try again.	このバージョンのアプリは PI ID に対応していません。アプリを更新してからもう一度お試しください。
 	PI ID is temporarily unavailable. Try again later.	PI ID は一時的に利用できません。しばらくしてからもう一度お試しください。
+	The browser blocked the sign-in window. Allow pop-ups for this site and try again.	ブラウザーがサインインウィンドウをブロックしました。このサイトのポップアップを許可して、もう一度お試しください。
 	Something went wrong with PI ID. Try again.	PI ID で問題が発生しました。もう一度お試しください。
 	Signed in to PI ID. You can close this tab and go back to the app.	PI ID にサインインしました。このタブを閉じてアプリに戻ってください。
 	Sign-in did not finish. Close this tab and try again in the app.	サインインが完了しませんでした。このタブを閉じて、アプリでもう一度お試しください。
