@@ -2455,6 +2455,7 @@ animation effects	Off	Désactivés
 	Your session has expired. Sign in again.	Votre session a expiré. Reconnectez-vous.
 	This version of the app is too old for PI ID. Update the app, then try again.	Cette version de l'application est trop ancienne pour PI ID. Mettez l'application à jour, puis réessayez.
 	PI ID is temporarily unavailable. Try again later.	PI ID est temporairement indisponible. Réessayez plus tard.
+	The browser blocked the sign-in window. Allow pop-ups for this site and try again.	Le navigateur a bloqué la fenêtre de connexion. Autorisez les fenêtres pop-up pour ce site et réessayez.
 	Something went wrong with PI ID. Try again.	Un problème est survenu avec PI ID. Réessayez.
 	Signed in to PI ID. You can close this tab and go back to the app.	Connecté à PI ID. Vous pouvez fermer cet onglet et revenir à l'application.
 	Sign-in did not finish. Close this tab and try again in the app.	La connexion n'a pas abouti. Fermez cet onglet et réessayez dans l'application.

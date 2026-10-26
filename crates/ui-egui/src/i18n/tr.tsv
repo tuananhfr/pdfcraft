@@ -2451,6 +2451,7 @@ animation effects	Off	Kapalı
 	Your session has expired. Sign in again.	Oturumunuzun süresi doldu. Yeniden oturum açın.
 	This version of the app is too old for PI ID. Update the app, then try again.	Uygulamanın bu sürümü PI ID için çok eski. Uygulamayı güncelleyip tekrar deneyin.
 	PI ID is temporarily unavailable. Try again later.	PI ID geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.
+	The browser blocked the sign-in window. Allow pop-ups for this site and try again.	Tarayıcı oturum açma penceresini engelledi. Bu site için açılır pencerelere izin verip tekrar deneyin.
 	Something went wrong with PI ID. Try again.	PI ID ile ilgili bir sorun oluştu. Tekrar deneyin.
 	Signed in to PI ID. You can close this tab and go back to the app.	PI ID'de oturum açıldı. Bu sekmeyi kapatıp uygulamaya dönebilirsiniz.
 	Sign-in did not finish. Close this tab and try again in the app.	Oturum açma tamamlanmadı. Bu sekmeyi kapatıp uygulamada tekrar deneyin.

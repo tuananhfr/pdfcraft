@@ -1,6 +1,6 @@
 //! The Account dialog, the tab strip's account button, Help ▸ Account and the paid licence expiry notice.
 
-use egui::{Align2, Color32, RichText, Sense, vec2};
+use egui::{Align2, Color32, RichText, Sense, TextWrapMode, vec2};
 
 use super::{AccountError, AccountSnapshot, AccountView, LicenceView, SignedInView, date_text, error_text};
 use crate::theme::{self, Tokens};
@@ -85,9 +85,10 @@ fn shown_error(snapshot: &AccountSnapshot) -> Option<AccountError> {
 
 fn signed_in(ui: &mut egui::Ui, session: &pdfcraft_engine::Session, view: &SignedInView, t: &Tokens, action: &mut Option<Action>) {
     let name = display_name(view);
-    ui.label(RichText::new(&name).font(theme::semibold(15.0)));
+    // Wrapping would split a long name or address mid-word in a phone-wide dialog.
+    one_line_label(ui, RichText::new(&name).font(theme::semibold(15.0)));
     if let Some(email) = view.email.as_deref().filter(|email| !email.is_empty() && *email != name) {
-        ui.label(RichText::new(email).color(t.text_muted));
+        one_line_label(ui, RichText::new(email).color(t.text_muted));
     }
     if view.reauth_required {
         ui.add_space(8.0);
@@ -101,7 +102,7 @@ fn signed_in(ui: &mut egui::Ui, session: &pdfcraft_engine::Session, view: &Signe
     let personal = std::iter::once((None, tl!("Personal").to_string()));
     let orgs = view.orgs.iter().map(|org| (Some(org.id.clone()), org.name.clone()));
     for (id, label) in personal.chain(orgs) {
-        if ui.add(widgets::radio(view.active_org == id, label)).clicked() && view.active_org != id {
+        if one_line_radio(ui, view.active_org == id, &label).clicked() && view.active_org != id {
             *action = Some(Action::SelectOrg(id));
         }
     }
@@ -125,6 +126,34 @@ fn signed_in(ui: &mut egui::Ui, session: &pdfcraft_engine::Session, view: &Signe
     if widgets::pill_button(ui, tl!("Sign out"), false).clicked() {
         *action = Some(Action::SignOut);
     }
+}
+
+fn fits_on_one_line(ui: &egui::Ui, text: impl Into<egui::WidgetText>, reserved: f32) -> bool {
+    let galley = text.into().into_galley(ui, Some(TextWrapMode::Extend), f32::INFINITY, egui::FontSelection::Default);
+    reserved + galley.size().x <= ui.available_width()
+}
+
+/// A label on one line, elided with the full text on hover when it does not fit.
+fn one_line_label(ui: &mut egui::Ui, text: RichText) {
+    let fits = fits_on_one_line(ui, text.clone(), 0.0);
+    let full = text.text().to_owned();
+    // egui's own elision tooltip is wider than a phone; this one wraps within the window.
+    let response = ui.add(egui::Label::new(text).truncate().show_tooltip_when_elided(false));
+    if !fits {
+        response.on_hover_ui(|ui| widgets::fitted_tip(ui, &full));
+    }
+}
+
+/// [`widgets::radio`] on one line, elided with the full text on hover when it does not fit.
+fn one_line_radio(ui: &mut egui::Ui, selected: bool, label: &str) -> egui::Response {
+    let fits = fits_on_one_line(ui, label, ui.spacing().icon_width + ui.spacing().icon_spacing);
+    let response = ui
+        .scope(|ui| {
+            ui.style_mut().wrap_mode = Some(TextWrapMode::Truncate);
+            ui.add(widgets::radio(selected, label))
+        })
+        .inner;
+    if fits { response } else { response.on_hover_ui(|ui| widgets::fitted_tip(ui, label)) }
 }
 
 fn licence_lines(session: &pdfcraft_engine::Session, licence: LicenceView) -> Vec<String> {
@@ -152,7 +181,7 @@ fn display_name(view: &SignedInView) -> String {
 }
 
 fn initial(view: &SignedInView) -> Option<String> {
-    view.name.chars().chain(view.email.iter().flat_map(|e| e.chars())).find(|c| c.is_alphanumeric()).map(|c| c.to_uppercase().collect())
+    crate::account::avatar_letter(&view.name, view.email.as_deref())
 }
 
 /// The tab strip's account button: the user's initial when signed in, a person otherwise. It opens

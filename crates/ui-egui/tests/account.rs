@@ -243,6 +243,19 @@ fn errors_show_in_plain_language() {
     fake.set(AccountSnapshot { view: AccountView::Guest, busy: false, error: Some(AccountError::RateLimited { retry_after_secs: Some(150) }) });
     h.run_steps(3);
     h.get_by_label("PI ID đang bận. Hãy thử lại sau 3 phút.");
+    fake.set(AccountSnapshot { view: AccountView::Guest, busy: false, error: Some(AccountError::PopupBlocked) });
+    h.run_steps(3);
+    h.get_by_label("Trình duyệt đã chặn cửa sổ đăng nhập. Hãy cho phép cửa sổ bật lên cho trang này rồi thử lại.");
+    h.get_by_label("Đăng nhập bằng PI ID");
+}
+
+#[test]
+fn a_blocked_popup_explains_how_to_allow_it() {
+    let fake = Fake::with(AccountSnapshot { view: AccountView::Guest, busy: false, error: Some(AccountError::PopupBlocked) });
+    let mut h = harness(Some(fake));
+    open_dialog(&mut h);
+    h.get_by_label("The browser blocked the sign-in window. Allow pop-ups for this site and try again.");
+    h.get_by_label("Sign in with PI ID");
 }
 
 fn pro_lease_with_warning(pro: bool) -> AccountSnapshot {
@@ -282,6 +295,57 @@ fn help_account_opens_the_dialog() {
     h.get_by(|n| n.role() == egui::accesskit::Role::Button && n.label().is_some_and(|l| l.trim() == "Account")).click();
     h.run_steps(3);
     assert_eq!(h.state().dialog, Some(Dialog::Account));
+}
+
+#[test]
+fn the_signed_in_account_fits_a_phone_and_a_desktop() {
+    for width in [390.0, 1280.0] {
+        let mut h = harness_sized(Some(Fake::with(snapshot_of(signed_in(LicenceView::Free)))), "vi", width);
+        shot(&mut h, &format!("titlebar-signed-in-{width}"));
+        open_dialog(&mut h);
+        for label in ["Nguyễn Văn An", "an@example.com", "Công ty B", "Gói: Miễn phí", "Đăng xuất"] {
+            let rects: Vec<_> = h.query_all_by_label(label).map(|n| n.rect()).collect();
+            assert!(!rects.is_empty(), "{width}: {label} shown");
+            for rect in rects {
+                assert!(rect.left() >= 0.0 && rect.right() <= width, "{width}: {label} {rect:?} inside the window");
+            }
+        }
+        shot(&mut h, &format!("account-signed-in-{width}"));
+    }
+}
+
+#[test]
+fn long_names_stay_on_one_line_inside_a_phone_wide_dialog() {
+    const NAME: &str = "Nguyễn Hoàng Phương Thảo Nguyên Khánh";
+    const EMAIL: &str = "nguyen.hoang.phuong.thao.nguyen@cong-ty-xay-dung-lpc-vietnam.example.com";
+    const ORG: &str = "Công ty Cổ phần Tư vấn Thiết kế Xây dựng LPC Việt Nam Chi nhánh Hà Nội";
+    let mut view = signed_in(LicenceView::Free);
+    view.name = NAME.into();
+    view.email = Some(EMAIL.into());
+    view.orgs[1].name = ORG.into();
+    let mut h = harness_sized(Some(Fake::with(snapshot_of(view))), "vi", 390.0);
+    open_dialog(&mut h);
+    let card: egui::Rect = h.ctx.data(|d| d.get_temp(egui::Id::new("dialog").with("card"))).unwrap();
+    // The tab strip's account button also carries the name; only the dialog's copy counts.
+    let in_dialog = |h: &Harness<'static, PdfCraftApp>, label: &str| -> Vec<egui::Rect> {
+        h.query_all_by_label(label).map(|n| n.rect()).filter(|r| r.intersects(card)).collect()
+    };
+    let rect = |h: &Harness<'static, PdfCraftApp>, label: &str| {
+        let rects = in_dialog(h, label);
+        assert_eq!(rects.len(), 1, "{label} shown once in the dialog");
+        rects[0]
+    };
+    // Each long label against a one-row label in the same font or a larger one.
+    for (long, one_row) in [(NAME, "Tài khoản"), (EMAIL, "Gói: Miễn phí"), (ORG, "Cá nhân")] {
+        let long_rect = rect(&h, long);
+        assert!(long_rect.height() <= rect(&h, one_row).height() + 0.5, "{long} {long_rect:?} is one row");
+        assert!(long_rect.left() >= card.left() && long_rect.right() <= card.right(), "{long} {long_rect:?} inside {card:?}");
+    }
+    shot(&mut h, "account-long-names-390");
+    let before_hover = h.query_all_by_label(EMAIL).count();
+    h.query_all_by_label(EMAIL).find(|n| n.rect().intersects(card)).unwrap().hover();
+    h.run_steps(4);
+    assert!(h.query_all_by_label(EMAIL).count() > before_hover, "the full address shows on hover");
 }
 
 /// A two-page PDF, so the tab strip has a document tab to make room for.
