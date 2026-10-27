@@ -44,8 +44,8 @@ impl std::fmt::Display for Unwritable {
         write!(
             f,
             "portable mode is off: {} was found, but {} can't be written ({}); settings are kept in the user folder instead",
-            self.marker.display(),
-            self.folder.display(),
+            crate::log_safe::home_relative(&self.marker),
+            crate::log_safe::home_relative(&self.folder),
             self.error
         )
     }
@@ -58,7 +58,7 @@ pub fn current() -> &'static Portable {
         let exe = std::env::current_exe().ok();
         let portable = resolve(exe.as_deref().and_then(Path::parent));
         if let Some(dir) = &portable.dir {
-            log::info!("portable mode: settings are kept in {}", dir.display());
+            log::info!("portable mode: settings are kept in {}", crate::log_safe::home_relative(dir));
         }
         if let Some(unwritable) = &portable.unwritable {
             log::warn!("{unwritable}");

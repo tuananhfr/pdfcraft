@@ -4279,6 +4279,9 @@ fn ocr_recognize_files_writes_searchable_copies() {
 fn javascript_through_tools() {
     let dir = workdir("js");
     let mut a = auto(&dir);
+    // Off by default: a document's scripts run only once allowed.
+    assert_eq!(ok(&mut a, "js_enabled", json!({}))["enabled"], false);
+    assert_eq!(ok(&mut a, "js_enabled", json!({ "enabled": true }))["enabled"], true);
     let doc = ok(&mut a, "doc_open", json!({ "path": "a.pdf" }))["doc"].as_u64().unwrap();
     for (name, y) in [("Price", 20), ("Qty", 60), ("Total", 100)] {
         ok(&mut a, "form_add_field", json!({ "doc": doc, "page": 1, "type": "text", "rect": [20, y, 180, y + 22], "name": name }));
@@ -4342,6 +4345,7 @@ fn merging_form_data_into_a_spreadsheet() {
 fn field_actions_through_tools() {
     let dir = workdir("field-actions");
     let mut a = auto(&dir);
+    ok(&mut a, "js_enabled", json!({ "enabled": true }));
     let doc = ok(&mut a, "doc_open", json!({ "path": "a.pdf" }))["doc"].as_u64().unwrap();
     ok(&mut a, "form_add_field", json!({ "doc": doc, "page": 1, "type": "button", "rect": [20, 20, 120, 42], "name": "Go" }));
     let r = ok(
@@ -4549,6 +4553,7 @@ fn hundreds_of_xfa_calculations_open_and_recalculate_within_their_budgets() {
     let (sections, rows) = (10, 20);
     std::fs::write(dir.join("many.pdf"), pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::many_calculations_template(sections, rows))).unwrap();
     let mut a = auto(&dir);
+    ok(&mut a, "js_enabled", json!({ "enabled": true }));
     let started = std::time::Instant::now();
     let opened = ok(&mut a, "doc_open", json!({ "path": "many.pdf" }));
     let open_took = started.elapsed();
@@ -4802,6 +4807,7 @@ fn xfa_scripts_run_for_buttons_and_field_changes_through_tools() {
     let dir = workdir("xfa-scripts");
     std::fs::write(dir.join("scripted.pdf"), pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template())).unwrap();
     let mut a = auto(&dir);
+    ok(&mut a, "js_enabled", json!({ "enabled": true }));
     let doc = ok(&mut a, "doc_open", json!({ "path": "scripted.pdf" }))["doc"].as_u64().unwrap();
     let field = |a: &mut Automation, n: &str| {
         let f = ok(a, "form_fields", json!({ "doc": doc }));
@@ -4837,6 +4843,7 @@ fn doc_info_says_when_a_runaway_script_turned_the_forms_scripts_off() {
     );
     std::fs::write(dir.join("runaway.pdf"), pdfcraft_xfa::fixtures::shell(&tpl)).unwrap();
     let mut a = auto(&dir);
+    ok(&mut a, "js_enabled", json!({ "enabled": true }));
     let doc = ok(&mut a, "doc_open", json!({ "path": "runaway.pdf" }))["doc"].as_u64().unwrap();
     assert_eq!(ok(&mut a, "doc_info", json!({ "doc": doc }))["xfa_scripts_off"], true);
     let _ = std::fs::remove_dir_all(dir);

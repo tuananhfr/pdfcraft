@@ -760,6 +760,8 @@ fn a_background_startup_forms_script_notice_waits_until_its_tab_is_selected() {
     let template = pdfcraft_xfa::fixtures::scripted_template()
         .replace("if (qty.rawValue === null) qty.rawValue = 2;", r#"xfa.host.messageBox("Late form opened");"#);
     let mut h = harness(&[3]);
+    // Opening scripts run only with JavaScript always allowed.
+    h.state_mut().session.set_javascript(true);
     deliver_startup(&h, "late-form.pdf", pdfcraft_xfa::fixtures::shell(&template));
     h.run_steps(2);
     assert_eq!(h.state().active, Some(0));

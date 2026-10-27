@@ -196,7 +196,12 @@ fn main() -> eframe::Result {
     // Records logged until now are written to it first.
     if let (Some(logger), Some(dir)) = (logger, settings_dir()) {
         match logger.attach_dir(&dir.join("logs")) {
-            Ok(path) => log::info!("{} {}, log file {}", PRODUCT_NAME, pdfcraft_engine::build_info::version(), path.display()),
+            Ok(path) => log::info!(
+                "{} {}, log file {}",
+                PRODUCT_NAME,
+                pdfcraft_engine::build_info::version(),
+                pdfcraft_ui_egui::log_safe::home_relative(&path)
+            ),
             // Standard error only by now (`attach_dir` gave up on the file); unlike `eprintln!`, never panics.
             Err(e) => log::warn!("no log file: {e}"),
         }
@@ -422,7 +427,9 @@ fn app_creator<'a>(
         }
         for (k, v) in options {
             if let Err(e) = app.set_option(&k, &v) {
-                log::warn!("--{k} {v}: {e}");
+                // An unknown flag swallows the next argument, which may be a document path.
+                let e = if v.is_empty() { e } else { e.replace(&v, "<value>") };
+                log::warn!("--{k} <value>: {e}");
             }
         }
         Ok(Box::new(language::DesktopApp::new(app, language_path)))
@@ -449,7 +456,10 @@ fn open_control_channel(file: &str, endpoint: std::io::Result<pdfcraft_ui_egui::
     match endpoint.and_then(|ep| write_control_file(file, ep.port, &ep.token).map(|()| ep.port)) {
         // Never the token (AGENTS.md §3): it stays in the owner-only file.
         Ok(port) => {
-            log::info!("UI control channel on 127.0.0.1:{port} (connection details in {file})");
+            log::info!(
+                "UI control channel on 127.0.0.1:{port} (connection details in {})",
+                pdfcraft_ui_egui::log_safe::home_relative(std::path::Path::new(file))
+            );
             Ok(())
         }
         Err(e) => {
@@ -457,7 +467,14 @@ fn open_control_channel(file: &str, endpoint: std::io::Result<pdfcraft_ui_egui::
                 i18n::t("--control {file}: {e}. Use a control file in a folder only you can write, such as ~/.pdfcraft-control.json"),
                 &[("file", file), ("e", &e.to_string())],
             );
-            log::error!("{message}");
+            log::error!(
+                "{}",
+                if file.is_empty() {
+                    message.clone()
+                } else {
+                    message.replace(file, &pdfcraft_ui_egui::log_safe::home_relative(std::path::Path::new(file)))
+                }
+            );
             Err(message)
         }
     }

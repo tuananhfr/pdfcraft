@@ -25,6 +25,8 @@ pub struct HeldSave {
     after: After,
     target: SaveTarget,
     affected: Vec<pdfcraft_engine::SignatureAffected>,
+    /// Held by File ▸ Share…: confirming shares the copy instead of saving.
+    share: bool,
 }
 
 /// The sentence shown wherever a level-1 certification refuses a change.
@@ -80,8 +82,15 @@ impl PdfCraftApp {
         if conflicts.is_empty() && affected.is_empty() {
             return Some(after);
         }
-        self.held_save = Some(HeldSave { doc: id, conflicts, after, target, affected });
+        self.held_save = Some(HeldSave { doc: id, conflicts, after, target, affected, share: false });
         None
+    }
+
+    /// Ask before sharing signed document `id` with changes, as Save a copy… would.
+    pub(crate) fn hold_share(&mut self, id: DocId) {
+        let conflicts = self.session.certification_conflicts(id);
+        let affected = self.session.signatures_affected(id);
+        self.held_save = Some(HeldSave { doc: id, conflicts, after: Box::new(|_| {}), target: SaveTarget::As, affected, share: true });
     }
 
     /// Whether the user confirmed writing the current changes of signed document `id`.
@@ -166,6 +175,7 @@ fn explain(conflict: &CertificationConflict) -> Vec<String> {
 pub(crate) fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
     let Some(held) = app.held_save.as_ref() else { return };
     let mut lines: Vec<String> = held.conflicts.iter().flat_map(explain).collect();
+    let share = held.share;
     let confirm_allowed = held.conflicts.is_empty() && !held.affected.iter().any(|s| s.doc_mdp == Some(1));
     // A conflict already says the signature breaks; the changed-after-signing note is for the rest.
     if held.conflicts.is_empty() && !held.affected.is_empty() {
@@ -185,13 +195,14 @@ pub(crate) fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
         if held.affected.iter().any(|s| matches!(s.doc_mdp, Some(2 | 3))) {
             lines.push(tl!("Saving may violate the certification's allowed-changes policy.").into());
         }
-        if held.affected.iter().any(|s| s.doc_mdp == Some(1)) {
+        if !share && held.affected.iter().any(|s| s.doc_mdp == Some(1)) {
             lines.push(tl!("This certification allows no changes. Use Save a copy… to save to another file.").into());
         }
     }
     let t = Tokens::get(ctx);
     let mut copy = false;
     let mut confirm = false;
+    let mut by_pointer = false;
     let mut cancel = false;
     let modal = widgets::show_modal(ctx, "signed_save_guard", |ui| {
         ui.set_width(460.0);
@@ -199,7 +210,9 @@ pub(crate) fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
             ui.add(crate::icons::image("lock", 22.0, t.accent));
             ui.add(
                 egui::Label::new(
-                    egui::RichText::new(if confirm_allowed {
+                    egui::RichText::new(if share {
+                        tl!("Share changes after signing?")
+                    } else if confirm_allowed {
                         tl!("Save changes after signing?")
                     } else {
                         tl!("Saving would invalidate a signature")
@@ -216,18 +229,31 @@ pub(crate) fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
         }
         ui.add_space(10.0);
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-            if confirm_allowed && widgets::pill_button(ui, tl!("Save"), true).clicked() {
-                confirm = true;
-            }
-            if widgets::pill_button(ui, tl!("Save a copy…"), true).clicked() {
-                copy = true;
+            // A share is already a copy, so it goes ahead whatever the signatures allow.
+            if share {
+                let share_button = widgets::pill_button(ui, tl!("Share…"), true);
+                confirm = share_button.clicked();
+                by_pointer = share_button.clicked_by(egui::PointerButton::Primary);
+            } else {
+                if confirm_allowed && widgets::pill_button(ui, tl!("Save"), true).clicked() {
+                    confirm = true;
+                }
+                if widgets::pill_button(ui, tl!("Save a copy…"), true).clicked() {
+                    copy = true;
+                }
             }
             if widgets::pill_button(ui, tl!("Cancel"), false).clicked() {
                 cancel = true;
             }
         });
     });
-    if confirm {
+    if confirm && share {
+        if let Some(held) = app.held_save.take() {
+            app.signature_save_ack = app.session.get(held.doc).map(|d| (held.doc, d.edit_generation()));
+            // Still inside the click: browsers open the share sheet only then (Enter downloads).
+            app.share_document(held.doc, by_pointer);
+        }
+    } else if confirm {
         if let Some(held) = app.held_save.take()
             && let Some(index) = app.views.iter().position(|v| v.id == held.doc)
         {

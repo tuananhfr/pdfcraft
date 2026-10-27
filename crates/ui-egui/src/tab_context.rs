@@ -48,7 +48,7 @@ fn reveal(path: &std::path::Path) -> Result<(), String> {
         // so it runs off the UI thread; a failure there is only logged.
         let spawned = std::thread::Builder::new().name("pdfcraft-reveal".into()).spawn(move || {
             if let Err(e) = reveal_via(platform, &path, run) {
-                log::warn!("reveal {}: {e}", path.display());
+                log::warn!("reveal {}: {e}", crate::log_safe::document_path(&path));
             }
         });
         return spawned.map(|_| ()).map_err(|e| e.to_string());

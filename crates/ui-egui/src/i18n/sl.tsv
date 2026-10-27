@@ -680,7 +680,7 @@
 	Email Addresses	E-poštni naslovi
 	Embedded Files	Vdelane datoteke
 	Embedded files must be PDF/A files themselves (use PDF/A-3 for others)	Vdelane datoteke morajo biti same datoteke PDF/A (za druge uporabite PDF/A-3)
-	Enable Acrobat JavaScript	Omogoči Acrobat JavaScript
+	Always allow JavaScript in PDFs (don't ask)	Vedno dovoli JavaScript v PDF-jih (brez vprašanja)
 	Enable copying of text, images, and other content	Omogoči kopiranje besedila, slik in druge vsebine
 	Enable text access for screen reader devices for the visually impaired	Omogoči dostop do besedila bralnikom zaslona za slepe in slabovidne
 	Encrypt	Šifriraj
@@ -2465,3 +2465,9 @@ animation effects	Off	Izklopljeni
 	Signed in to PI ID. You can close this tab and go back to the app.	Prijavljeni ste v PI ID. Ta zavihek lahko zaprete in se vrnete v aplikacijo.
 	Sign-in did not finish. Close this tab and try again in the app.	Prijava ni bila dokončana. Zaprite ta zavihek in poskusite znova v aplikaciji.
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft deluje brez povezave. Prijava s PI ID ni obvezna. Brez telemetrije in brez obdelave v oblaku, razen če dodate ponudnika.
+	This PDF contains JavaScript. Its scripts have not been run.	Ta PDF vsebuje JavaScript. Njegovi skripti niso bili zagnani.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Ta PDF vsebuje JavaScript. Njegovi skripti niso bili zagnani, zato gumb ali izračun, ki ste ga uporabili, ni naredil ničesar.
+	Allow for this file	Dovoli za to datoteko
+	Share…	Deli…
+	Couldn't share {name}: {e}	{name} ni bilo mogoče deliti: {e}
+	Share changes after signing?	Delim spremembe po podpisu?

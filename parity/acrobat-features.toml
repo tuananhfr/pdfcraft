@@ -5160,8 +5160,8 @@ milestone = "M6"
 status = "shipped"
 commands = ["app.preferences"]
 tools = ["js_enabled"]
-evidence = ["crates/js/src/tests.rs::the_sandbox_has_no_host_access", "crates/js/src/tests.rs::errors_and_runaway_scripts_are_contained", "crates/ui-egui/tests/javascript.rs::document_scripts_and_preferences", "crates/ui-egui/tests/document_links.rs::a_script_asks_first_and_only_once", "crates/ui-egui/tests/document_links.rs::a_script_cannot_open_other_kinds_of_address"]
-notes = "Preferences \u25b8 JavaScript \u25b8 Enable Acrobat JavaScript (remembered); no host access; loop and recursion limits; app.launchURL asks before opening and only offers http, https and mailto addresses (#90, #91)."
+evidence = ["crates/js/src/tests.rs::the_sandbox_has_no_host_access", "crates/js/src/tests.rs::errors_and_runaway_scripts_are_contained", "crates/ui-egui/tests/javascript.rs::document_scripts_and_preferences", "crates/ui-egui/tests/javascript.rs::a_document_with_scripts_says_so_until_they_are_allowed", "crates/ui-egui/tests/document_links.rs::a_script_asks_first_and_only_once", "crates/ui-egui/tests/document_links.rs::a_script_cannot_open_other_kinds_of_address"]
+notes = "Off by default: a document's scripts run once its bar's Allow for this file trusts it for the session, or with Preferences \u25b8 JavaScript \u25b8 Always allow JavaScript in PDFs (remembered); no host access; loop and recursion limits; app.launchURL asks before opening and only offers http, https and mailto addresses (#90, #91)."
 
 [[feature]]
 id = "form.folder-level-js"
@@ -9961,7 +9961,7 @@ status = "shipped"
 commands = ["app.preferences"]
 tools = ["js_enabled"]
 evidence = ["crates/ui-egui/tests/javascript.rs::document_scripts_and_preferences"]
-notes = "Enable Acrobat JavaScript, remembered between runs."
+notes = "Always allow JavaScript in PDFs (don't ask), off by default and remembered between runs; allowing one document lasts for the session."
 
 [[feature]]
 id = "misc.prefs-measuring"

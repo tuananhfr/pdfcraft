@@ -30,7 +30,7 @@ fn form() -> Vec<u8> {
     out
 }
 
-fn harness() -> Harness<'static, PdfCraftApp> {
+fn harness_with(allowed: bool) -> Harness<'static, PdfCraftApp> {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|_cc| {
         let mut app = PdfCraftApp::new();
         app.set_option("language", "en").unwrap();
@@ -38,7 +38,17 @@ fn harness() -> Harness<'static, PdfCraftApp> {
         app
     });
     h.run_steps(4);
+    if allowed {
+        let id = h.state().active_ids().unwrap().1;
+        h.state_mut().allow_scripts(id);
+        h.run_steps(2);
+    }
     h
+}
+
+/// The form, its scripts allowed (they are not by default).
+fn harness() -> Harness<'static, PdfCraftApp> {
+    harness_with(true)
 }
 
 fn value(h: &Harness<'static, PdfCraftApp>, name: &str) -> Vec<String> {
@@ -95,16 +105,131 @@ fn document_scripts_and_preferences() {
     h.state_mut().dialog = Some(Dialog::Preferences);
     h.run_steps(2);
     // Below the fold in a 900-point window: the preferences scroll to it.
-    h.get_by_label("Enable Acrobat JavaScript").scroll_to_me();
+    let always = "Always allow JavaScript in PDFs (don't ask)";
+    h.get_by_label(always).scroll_to_me();
     h.run_steps(4);
-    h.get_by_label("Enable Acrobat JavaScript").click();
+    assert!(!h.state().session.javascript(), "off by default");
+    h.get_by_label(always).click();
     h.run_steps(2);
-    assert!(!h.state().session.javascript());
+    assert!(h.state().session.javascript());
     let saved = h.state().persist();
     let mut fresh = PdfCraftApp::new();
     fresh.set_option("language", "en").unwrap();
     fresh.restore(&saved);
-    assert!(!fresh.session.javascript(), "the preference is remembered");
+    assert!(fresh.session.javascript(), "the preference is remembered");
+}
+
+#[test]
+fn javascript_stored_under_the_old_key_does_not_turn_always_allow_on() {
+    let mut saved: serde_json::Value = serde_json::from_str(&PdfCraftApp::new().persist()).unwrap();
+    let settings = saved.as_object_mut().unwrap();
+    assert!(settings.remove("javascript_always").is_some(), "the preference is stored under its new key");
+    // Enable Acrobat JavaScript was on by default, so a stored true says nothing about consent.
+    settings.insert("javascript".into(), serde_json::Value::Bool(true));
+    let mut fresh = PdfCraftApp::new();
+    fresh.restore(&saved.to_string());
+    assert!(!fresh.session.javascript());
+}
+
+const BAR: &str = "This PDF contains JavaScript. Its scripts have not been run.";
+
+#[test]
+fn a_document_with_scripts_says_so_until_they_are_allowed() {
+    let mut h = harness_with(false);
+    let id = h.state().active_ids().unwrap().1;
+    assert!(!h.state().session.scripts_allowed(id));
+    h.get_by_label(BAR);
+    h.get_by_label("Allow for this file").click();
+    h.run_steps(3);
+    assert!(h.state().session.scripts_allowed(id));
+    assert!(h.query_by_label(BAR).is_none(), "the bar goes once they are allowed");
+    h.state_mut().run_button_script(id, "hello", "getField('greeting').value = 'Hello from JavaScript';");
+    h.run_steps(2);
+    assert_eq!(value(&h, "greeting"), ["Hello from JavaScript"]);
+}
+
+#[test]
+fn a_blocked_button_says_so_on_the_bar_and_brings_it_back() {
+    let mut h = harness_with(false);
+    let id = h.state().active_ids().unwrap().1;
+    // The scripts bar is drawn first, above the form notice with its own ×.
+    h.query_all_by_label("Dismiss").next().expect("the scripts bar closes").click();
+    h.run_steps(2);
+    assert!(h.query_by_label(BAR).is_none(), "closed with ×");
+    h.state_mut().run_button_script(id, "hello", "getField('greeting').value = 'Hello from JavaScript';");
+    h.run_steps(3);
+    assert!(value(&h, "greeting").iter().all(|v| v.is_empty()), "the script did not run");
+    assert!(!h.state().toast.as_ref().is_some_and(|t| t.0.contains("not allowed")), "no error toast: the bar says it");
+    h.get_by_label("This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.");
+}
+
+#[test]
+fn a_document_without_scripts_has_no_bar() {
+    let blank = pdfcraft_engine::Session::new().create_blank(200.0, 200.0, 1).unwrap().to_vec();
+    let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
+        let mut app = PdfCraftApp::new();
+        app.set_option("language", "en").unwrap();
+        app.open_bytes("blank.pdf", None, blank.clone()).unwrap();
+        app
+    });
+    h.run_steps(4);
+    assert!(h.query_by_label(BAR).is_none());
+    assert!(h.query_by_label("Allow for this file").is_none());
+}
+
+const BLOCKED: &str = "This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.";
+
+#[test]
+fn allowing_one_copy_leaves_a_second_copy_and_a_reopened_tab_blocked() {
+    let mut h = harness_with(false);
+    h.state_mut().open_bytes("form copy.pdf", None, form()).unwrap();
+    h.run_steps(3);
+    let (first, copy) = (h.state().views[0].id, h.state().views[1].id);
+    h.state_mut().allow_scripts(first);
+    h.run_steps(2);
+    assert!(h.state().session.scripts_allowed(first));
+    assert!(!h.state().session.scripts_allowed(copy), "the same bytes in another tab are another document");
+    h.state_mut().active = Some(0);
+    assert!(h.state_mut().execute("file.close"));
+    h.run_steps(3);
+    assert!(h.state_mut().execute("file.reopen_closed"));
+    h.run_steps(4);
+    let app = h.state();
+    let reopened = app.views.iter().map(|v| v.id).find(|&id| id != copy).expect("the closed tab is back");
+    assert_ne!(reopened, first);
+    assert!(!app.session.scripts_allowed(reopened), "reopened, it asks again");
+}
+
+#[test]
+fn a_console_blocked_on_a_document_without_scripts_offers_to_allow_them() {
+    let blank = pdfcraft_engine::Session::new().create_blank(200.0, 200.0, 1).unwrap().to_vec();
+    let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
+        let mut app = PdfCraftApp::new();
+        app.set_option("language", "en").unwrap();
+        app.open_bytes("blank.pdf", None, blank.clone()).unwrap();
+        app
+    });
+    h.run_steps(4);
+    assert!(h.query_by_label(BAR).is_none() && h.query_by_label(BLOCKED).is_none(), "no scripts, no bar");
+    assert!(h.state_mut().execute("tools.js_console"));
+    h.run_steps(2);
+    h.state_mut().js_console.input = "6 * 7".into();
+    h.get_by_label("Run").click();
+    h.run_steps(3);
+    assert!(!h.state().js_console.log.iter().any(|l| l == "42"), "{:?}", h.state().js_console.log);
+    h.state_mut().dialog = None;
+    h.run_steps(2);
+    h.get_by_label(BLOCKED);
+    h.get_by_label("Allow for this file").click();
+    h.run_steps(3);
+    let id = h.state().views[0].id;
+    assert!(h.state().session.scripts_allowed(id));
+    assert!(h.state_mut().execute("tools.js_console"));
+    h.run_steps(2);
+    h.state_mut().js_console.input = "6 * 7".into();
+    h.get_by_label("Run").click();
+    h.run_steps(3);
+    assert!(h.state().js_console.log.iter().any(|l| l == "42"), "{:?}", h.state().js_console.log);
 }
 
 #[test]

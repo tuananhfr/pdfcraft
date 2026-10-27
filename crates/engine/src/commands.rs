@@ -195,6 +195,9 @@ pub const COMMANDS: &[CommandSpec] = &[
     c("page.combine", "Combine files…", FILE, None, Nothing, "files"),
     c("file.save", "Save", FILE, Some(Shortcut::cmd("S")), Document, "save"),
     c("file.save_as", "Save as…", FILE, Some(Shortcut::cmd_shift("S")), Document, "save"),
+    // Web only, inside the office shell: shown while the frontend has a way to share files.
+    // No shortcut: browsers share only inside a click.
+    c("file.share", "Share…", FILE, None, Document, "share-2"),
     c("file.close", "Close file", FILE, Some(Shortcut::cmd("W")), Document, "x"),
     c("file.close_all", "Close all", FILE, Some(Shortcut::cmd_shift("W")), Document, "x"),
     c("file.revert", "Revert", FILE, None, Undo, "rotate-ccw"),

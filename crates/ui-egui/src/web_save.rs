@@ -137,6 +137,11 @@ impl WebSaves {
     pub fn is_pending(&self, doc: DocId) -> bool {
         self.pending.iter().any(|p| p.doc == doc)
     }
+
+    /// Offer `bytes` as a download, outside the save bookkeeping (an export such as Share…).
+    pub(crate) fn download(&self, name: &str, bytes: &[u8]) -> Result<(), String> {
+        self.browser.download(name, bytes)
+    }
 }
 
 /// `name` as a PDF file name: trimmed, with `.pdf` added when it lacks it; `None` when empty.

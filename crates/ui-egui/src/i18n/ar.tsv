@@ -93,7 +93,7 @@
 	Fit to width	ملاءمة العرض
 	Display theme	سمة العرض
 	Side panels	اللوحات الجانبية
-	Enable Acrobat JavaScript	تفعيل Acrobat JavaScript
+	Always allow JavaScript in PDFs (don't ask)	السماح دائمًا بـ JavaScript في ملفات PDF (دون سؤال)
 	OK	موافق
 	Close	إغلاق
 	Next / previous match	التطابق التالي / السابق
@@ -2481,3 +2481,9 @@ animation effects	Off	معطّلة
 	Signed in to PI ID. You can close this tab and go back to the app.	تم تسجيل الدخول إلى PI ID. يمكنك إغلاق علامة التبويب هذه والعودة إلى التطبيق.
 	Sign-in did not finish. Close this tab and try again in the app.	لم يكتمل تسجيل الدخول. أغلق علامة التبويب هذه وحاول مرة أخرى في التطبيق.
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	يعمل PdfCraft دون اتصال. تسجيل الدخول باستخدام PI ID اختياري. لا قياس عن بُعد ولا معالجة سحابية إلا إذا أضفت مزوّدًا.
+	This PDF contains JavaScript. Its scripts have not been run.	يحتوي ملف PDF هذا على JavaScript. لم يتم تشغيل البرامج النصية الخاصة به.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	يحتوي ملف PDF هذا على JavaScript. لم يتم تشغيل البرامج النصية الخاصة به، لذلك لم يفعل الزر أو الحساب الذي استخدمته شيئًا.
+	Allow for this file	السماح لهذا الملف
+	Share…	مشاركة…
+	Couldn't share {name}: {e}	تعذّرت مشاركة {name}: {e}
+	Share changes after signing?	مشاركة التغييرات بعد التوقيع؟

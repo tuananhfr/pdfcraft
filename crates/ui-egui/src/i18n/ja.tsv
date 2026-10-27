@@ -93,7 +93,7 @@
 	Fit to width	幅に合わせる
 	Display theme	表示テーマ
 	Side panels	サイドパネル
-	Enable Acrobat JavaScript	Acrobat JavaScript を有効にする
+	Always allow JavaScript in PDFs (don't ask)	PDF の JavaScript を常に許可する（確認しない）
 	OK	OK
 	Close	閉じる
 	Next / previous match	次／前の検索結果
@@ -2460,3 +2460,9 @@ animation effects	Off	オフ
 	Signed in to PI ID. You can close this tab and go back to the app.	PI ID にサインインしました。このタブを閉じてアプリに戻ってください。
 	Sign-in did not finish. Close this tab and try again in the app.	サインインが完了しませんでした。このタブを閉じて、アプリでもう一度お試しください。
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft はオフラインで動作します。PI ID でのサインインは任意です。使用状況の送信はなく、サービス提供元を追加しない限りクラウド処理も行いません。
+	This PDF contains JavaScript. Its scripts have not been run.	この PDF には JavaScript が含まれています。スクリプトは実行されていません。
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	この PDF には JavaScript が含まれています。スクリプトが実行されていないため、使用したボタンや計算は何もしませんでした。
+	Allow for this file	このファイルで許可
+	Share…	共有…
+	Couldn't share {name}: {e}	{name} を共有できませんでした: {e}
+	Share changes after signing?	署名後の変更を共有しますか？

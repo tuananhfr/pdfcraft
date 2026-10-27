@@ -308,6 +308,8 @@ pub struct DocView {
     pub notice_dismissed: bool,
     /// The user has been told that the form's scripts were turned off (it is said once).
     pub scripts_off_noted: bool,
+    /// The bar saying the document's JavaScript has not been allowed to run.
+    pub scripts_bar: crate::script_bar::ScriptsBar,
     /// The file changed on disk while this document had unsaved changes: the notice bar asks
     /// before replacing it (#431).
     pub disk_changed: bool,
@@ -607,6 +609,7 @@ impl DocView {
             page_input: "1".into(),
             notice_dismissed: false,
             scripts_off_noted: false,
+            scripts_bar: Default::default(),
             disk_changed: false,
             cover: false,
             back: Vec::new(),
@@ -747,6 +750,7 @@ impl DocView {
         fresh.shown = self.shown;
         fresh.highlight_fields = self.highlight_fields;
         fresh.notice_dismissed = self.notice_dismissed;
+        fresh.scripts_bar = std::mem::take(&mut self.scripts_bar);
         fresh.cover = self.cover;
         fresh.back = std::mem::take(&mut self.back);
         fresh.forward = std::mem::take(&mut self.forward);
@@ -2225,6 +2229,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     // Opened without the owner password and something is restricted.
     let secured = doc.security_summary().is_some_and(|s| !(s.owner || (s.permissions.modify() && s.permissions.assemble())));
     let repaired = !doc.repair_log().is_empty();
+    crate::script_bar::show(&mut view.scripts_bar, doc, app.session.scripts_allowed(view.id), ui, &t);
     match notices(view, doc, secured, repaired, crate::sign_ui::banner(&doc.signatures), ui, &t) {
         #[cfg(not(target_arch = "wasm32"))]
         Some(Notice::Reload) => app.watch.reload_request = Some(view.id),

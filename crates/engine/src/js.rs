@@ -3,8 +3,9 @@
 //! input run on request ([`Session::run_javascript`]). What scripts ask of the viewer (alerts,
 //! printing, navigation, links) is kept for the front end in [`JsOutput`].
 //!
-//! Preferences ▸ JavaScript ▸ Enable Acrobat JavaScript is [`Session::set_javascript`]; with it
-//! off, scripts don't run and AF calls keep working natively.
+//! Scripts run only in documents the user allowed ([`Session::trust_scripts`], for the session)
+//! or with Preferences ▸ JavaScript ▸ Always allow ([`Session::set_javascript`]); otherwise they
+//! don't run and AF calls keep working natively.
 
 use pdfcraft_forms::{Field, FieldChange, FieldEvent, FieldKind, ScriptResult, Scripts};
 pub use pdfcraft_js::{Limits, Outcome, Request};
@@ -148,6 +149,9 @@ impl Scripts for JsRunner {
     }
 }
 
+/// Why [`Session::run_javascript`] refused: the document's scripts are not allowed.
+pub const SCRIPTS_NOT_ALLOWED: &str = "JavaScript is not allowed for this document (allow it on its bar, or in Preferences ▸ JavaScript)";
+
 /// A document-level JavaScript: its name and source.
 pub fn document_scripts(cos: &pdfcraft_cos::Document) -> Vec<(String, String)> {
     pdfcraft_forms::document_scripts_named(cos)
@@ -165,14 +169,79 @@ impl crate::Document {
     }
 }
 
+/// Fields with JavaScript of their own (format, keystroke, validate or calculate scripts that
+/// are not AF calls, and push buttons that run a script).
+pub(crate) fn field_scripts(form: &[Field]) -> bool {
+    form.iter().any(|f| {
+        f.actions.scripts != pdfcraft_forms::af::Scripts::default()
+            || !f.actions.unsupported.is_empty()
+            || matches!(f.button, Some(pdfcraft_forms::af::ButtonAction::Script(_)))
+    })
+}
+
+/// A widget's action or additional action (any trigger) that runs JavaScript.
+fn widget_scripts(cos: &pdfcraft_cos::Document, form: &[Field]) -> bool {
+    let is_js = |o: &pdfcraft_cos::Object| cos.resolve(o).as_dict().is_some_and(|d| d.name(b"S") == Some(b"JavaScript".as_slice()));
+    form.iter().flat_map(|f| &f.widgets).any(|w| {
+        let widget = cos.get(w.obj);
+        let Some(d) = widget.as_dict() else { return false };
+        d.get(b"A").is_some_and(is_js)
+            || d.get(b"AA").map(|aa| cos.resolve(aa)).is_some_and(|aa| aa.as_dict().is_some_and(|aa| aa.iter().any(|(_, a)| is_js(a))))
+    })
+}
+
+impl crate::Document {
+    /// The document has scripts that run without the user typing them: document-level
+    /// JavaScript, XFA template scripts, or JavaScript on fields and buttons. OpenAction
+    /// scripts never run, so they don't count.
+    pub fn has_scripts(&self) -> bool {
+        self.xfa_template.is_some()
+            || field_scripts(&self.form)
+            || self.editor.as_ref().is_some_and(|e| !document_scripts(&e.cos).is_empty() || widget_scripts(&e.cos, &self.form))
+    }
+}
+
 impl Session {
-    /// Preferences ▸ JavaScript ▸ Enable Acrobat JavaScript (on by default).
+    /// Preferences ▸ JavaScript ▸ Always allow JavaScript in PDFs (don't ask). Off by default:
+    /// then a document's scripts run only once the user allows them for it ([`Session::trust_scripts`]).
     pub fn set_javascript(&mut self, on: bool) {
-        self.js_off = !on;
+        self.js_always = on;
     }
 
     pub fn javascript(&self) -> bool {
-        !self.js_off
+        self.js_always
+    }
+
+    /// Whether document `id`'s scripts may run: always allowed, or allowed for it this session.
+    pub fn scripts_allowed(&self, id: DocId) -> bool {
+        self.js_always || self.js_trusted.contains(&id)
+    }
+
+    /// See [`crate::Document::has_scripts`].
+    pub fn has_scripts(&self, id: DocId) -> bool {
+        self.get(id).is_some_and(crate::Document::has_scripts)
+    }
+
+    /// Allow document `id`'s scripts for the rest of the session (never saved). A document with
+    /// no unsaved changes and no undo history is opened again in place so its XFA initialize and
+    /// calculate scripts run as on opening (on-open print and save requests stay dropped);
+    /// otherwise they are not replayed over the user's entries or undo history, and scripts run
+    /// from the next change.
+    /// Returns whether the document was reopened (its output is then in [`Session::take_js_output`]).
+    pub fn trust_scripts(&mut self, id: DocId) -> Result<bool, crate::OpenError> {
+        let doc = self.get(id).ok_or_else(|| crate::OpenError::Invalid("the document is not open".into()))?;
+        // Reopening would drop the undo history, so a document with any keeps it instead.
+        let replay = doc.xfa_template.is_some() && !doc.xfa_scripts_off && !doc.dirty && doc.can_undo().is_none() && doc.editor.is_some();
+        let bytes = doc.bytes.clone();
+        self.js_trusted.insert(id);
+        if let Some(d) = self.docs.iter_mut().find(|d| d.id == id) {
+            d.scripts_skipped = false;
+        }
+        if !replay {
+            return Ok(false);
+        }
+        self.reload_with(id, bytes, true)?;
+        Ok(true)
     }
 
     /// What scripts printed or asked for since the last call (alerts, console, print, …).
@@ -184,8 +253,13 @@ impl Session {
     /// the console (no target). Field changes and `resetForm` are applied as one undoable step;
     /// everything else the script asked for is returned.
     pub fn run_javascript(&mut self, id: DocId, script: &str, target: Option<&str>) -> Result<Outcome, EditError> {
-        if self.js_off {
-            return Err(EditError::Invalid("JavaScript is turned off (Preferences ▸ JavaScript)".into()));
+        if !self.scripts_allowed(id) {
+            // The console and Run JavaScript count too: the bar then offers to allow them, even
+            // on a document with no scripts of its own.
+            if let Some(d) = self.docs.iter_mut().find(|d| d.id == id) {
+                d.scripts_skipped = true;
+            }
+            return Err(EditError::Invalid(SCRIPTS_NOT_ALLOWED.into()));
         }
         let doc = self.get(id).ok_or(EditError::NoDocument)?;
         let cos = doc.editor.as_ref().map(|e| e.cos.clone()).ok_or_else(|| EditError::ReadOnly(doc.read_only_reason.clone().unwrap_or_default()))?;

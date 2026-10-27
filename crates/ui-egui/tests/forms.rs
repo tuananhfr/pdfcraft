@@ -407,6 +407,8 @@ fn a_rejected_value_keeps_the_typing_and_stops_the_save() {
         let mut app = PdfCraftApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("order.pdf", None, validated_form()).unwrap();
+        let id = app.views[0].id;
+        app.allow_scripts(id);
         app.set_option("left", "closed").unwrap();
         app.set_option("zoom", "150").unwrap();
         app
@@ -463,6 +465,8 @@ fn refused_value_stops_save(commit_key: egui::Key, case: &str) {
         let mut app = PdfCraftApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("order.pdf", None, validated_form()).unwrap();
+        let id = app.views[0].id;
+        app.allow_scripts(id);
         app.set_option("left", "closed").unwrap();
         app.set_option("zoom", "150").unwrap();
         app
@@ -581,6 +585,8 @@ mod revert_tests {
 #[test]
 fn calculated_field_and_script_side_effect_on_another_page_re_render() {
     let mut h = harness();
+    let id = h.state().views[0].id;
+    h.state_mut().allow_scripts(id);
     assert!(h.state_mut().apply_edit(pdfcraft_engine::Edit::InsertBlankPage { at: 1, width: 300.0, height: 400.0 }));
     assert!(h.state_mut().apply_edit(pdfcraft_engine::Edit::AddField {
         page: 1,

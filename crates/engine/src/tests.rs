@@ -2720,6 +2720,7 @@ fn scripted_form() -> Vec<u8> {
 #[test]
 fn form_javascript_validates_calculates_and_formats() {
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("order.pdf", None, Arc::new(scripted_form()), None).unwrap();
     let value = |s: &Session, n: &str| s.get(id).unwrap().form.iter().find(|f| f.name == n).unwrap().value.clone();
     s.apply(id, Edit::SetFieldValue { name: "qty".into(), value: FieldValue::Text("4".into()) }).unwrap();
@@ -2751,6 +2752,7 @@ fn form_javascript_validates_calculates_and_formats() {
 #[test]
 fn edit_history_does_not_replay_field_script_side_effects() {
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("order.pdf", None, Arc::new(scripted_form()), None).unwrap();
     let value = |s: &Session, name: &str| s.get(id).unwrap().form.iter().find(|f| f.name == name).unwrap().value.clone();
     let initial_qty = value(&s, "qty");
@@ -3172,6 +3174,7 @@ fn xfa_choice_lists_signature_and_picture_fields_open_fill_script_and_save() {
     let data = "<form><page1><country>Japan</country><langs>English\nSpanish</langs></page1></form>";
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::fields_template(data)));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("fields.pdf", None, bytes, None).expect("opens");
     let field = |s: &Session, n: &str| s.get(id).unwrap().form.iter().find(|f| f.name == n).cloned().unwrap_or_else(|| panic!("no field {n}"));
     use pdfcraft_forms::FieldKind as K;
@@ -3235,6 +3238,7 @@ fn xfa_data_exports_imports_and_pictures_round_trip_through_the_session() {
     let data = "<form><page1><country>JP</country><langs>English\nSpanish</langs></page1></form>";
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::fields_template(data)));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("fields.pdf", None, bytes, None).expect("opens");
     let field = |s: &Session, n: &str| s.get(id).unwrap().form.iter().find(|f| f.name == n).cloned().unwrap_or_else(|| panic!("no field {n}"));
     // Export: XML is the datasets document, XDP wraps it; the fields' current values are in it.
@@ -3334,6 +3338,7 @@ fn xfa_data_import_on_a_static_form_replaces_every_value_and_pictures_reach_its_
 fn xfa_data_import_adds_and_removes_rows_of_a_dynamic_form() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template()));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("rows.pdf", None, bytes, None).expect("opens");
     let names = |s: &Session| s.get(id).unwrap().form.iter().map(|f| f.name.clone()).collect::<Vec<_>>();
     let value = |s: &Session, n: &str| s.get(id).unwrap().form.iter().find(|f| f.name == n).map(|f| f.value.clone()).unwrap_or_default();
@@ -3367,6 +3372,7 @@ fn hundreds_of_xfa_calculations_run_in_one_engine_within_the_open_budget() {
     let (sections, rows) = (10, 20);
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::many_calculations_template(sections, rows)));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let started = std::time::Instant::now();
     let id = s.open("many.pdf", None, bytes, None).expect("opens");
     let elapsed = started.elapsed();
@@ -3408,6 +3414,7 @@ fn xfa_scripts_of_one_event_see_the_form_as_the_engine_holds_it() {
     );
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&tpl));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("iso.pdf", None, bytes, None).expect("opens");
     let value = |s: &Session, n: &str| s.get(id).unwrap().form.iter().find(|f| f.name == n).map(|f| f.value.clone()).unwrap_or_default();
     let out = s.take_js_output(id);
@@ -3423,6 +3430,7 @@ fn xfa_scripts_of_one_event_see_the_form_as_the_engine_holds_it() {
 fn xfa_scripts_initialize_calculate_validate_toggle_and_add_rows() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template()));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("scripted.pdf", None, bytes, None).expect("opens");
     let add_row = s.get(id).unwrap().form.iter().find(|f| f.name == "addRow").expect("the XFA button is in the form snapshot");
     assert!(matches!(add_row.button.as_ref(), Some(pdfcraft_forms::af::ButtonAction::Script(_))));
@@ -3494,6 +3502,7 @@ fn xfa_rows_in_areas_are_laid_out_read_calculated_and_written_where_adobe_binds_
     let data = "<form><page><table><row><reason>Regular</reason><days>4</days></row><row><reason/><days/></row><row><reason/><days/></row></table><carried>5</carried></page></form>";
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::leave_template(data)));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("leave.pdf", None, bytes, None).expect("opens");
     let value = |s: &Session, n: &str| {
         s.get(id).unwrap().form.iter().find(|f| f.name == n).unwrap_or_else(|| panic!("no field {n}")).value.first().cloned().unwrap_or_default()
@@ -3548,6 +3557,7 @@ fn a_value_a_script_sets_reaches_every_field_bound_to_the_same_data_node() {
     assert!(tpl.contains("name=\"echo\"") && tpl.contains("name=\"setter\""), "the fixture was reshaped");
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&tpl));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("shared.pdf", None, bytes, None).expect("opens");
     let out = s.take_js_output(id);
     assert!(out.errors.is_empty(), "{out:?}");
@@ -3591,6 +3601,7 @@ fn a_value_a_script_sets_reaches_every_field_bound_to_the_same_data_node() {
 fn dynamic_xfa_forms_run_formcalc_scripts() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::formcalc_template()));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("formcalc.pdf", None, bytes, None).expect("opens");
     let value = |s: &Session, n: &str| s.get(id).unwrap().form.iter().find(|f| f.name == n).unwrap().value.clone();
     let names = |s: &Session| s.get(id).unwrap().form.iter().map(|f| f.name.clone()).collect::<Vec<_>>();
@@ -3646,6 +3657,7 @@ f(1)</script>",
         );
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&tpl));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let started = std::time::Instant::now();
     let id = s.open("hostile.pdf", None, bytes, None).expect("opens");
     let rows = |s: &Session| s.get(id).unwrap().form.iter().filter(|f| f.name.starts_with("amount")).count();
@@ -3663,6 +3675,7 @@ fn a_formcalc_calculate_result_is_cut_before_it_is_saved() {
         .replace("<script>WordNum(total)</script>", "<script>Replace(Space(100000), \" \", \"x\")</script>");
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&tpl));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("long.pdf", None, bytes, None).expect("opens");
     let words = |s: &Session, id| s.get(id).unwrap().form.iter().find(|f| f.name == "words").unwrap().value.concat();
     assert_eq!(words(&s, id).chars().count(), 65_536);
@@ -3674,15 +3687,105 @@ fn a_formcalc_calculate_result_is_cut_before_it_is_saved() {
 }
 
 #[test]
-fn xfa_scripts_stay_off_with_javascript_off() {
+fn xfa_scripts_stay_off_by_default() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template()));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
-    s.set_javascript(false);
+    assert!(!s.javascript(), "JavaScript is not always allowed out of the box");
     let id = s.open("scripted.pdf", None, bytes, None).expect("opens");
     let qty = s.get(id).unwrap().form.iter().find(|f| f.name == "qty").unwrap().value.clone();
     assert!(qty.is_empty(), "no initialize script ran");
+    assert!(s.take_js_output(id).is_empty(), "nothing a script said or asked for");
     assert!(s.run_javascript(id, "", Some("addRow")).is_err());
     assert!(!s.get(id).unwrap().xfa_scripts_off(), "the preference, not a script that ran away");
+}
+
+#[test]
+fn trusting_a_document_runs_its_opening_scripts_and_no_other_documents() {
+    // A counter: run twice (at the blocked open and again in the replay, say) it says 4.
+    let tpl = pdfcraft_xfa::fixtures::scripted_template()
+        .replace("if (qty.rawValue === null) qty.rawValue = 2;", "qty.rawValue = Number(qty.rawValue) + 2;");
+    let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&tpl));
+    let mut s = Session::new().with_clock(|| 1_700_000_000);
+    let a = s.open("a.pdf", None, bytes.clone(), None).unwrap();
+    let b = s.open("b.pdf", None, bytes, None).unwrap();
+    let value = |s: &Session, id: DocId, n: &str| s.get(id).unwrap().form.iter().find(|f| f.name == n).unwrap().value.clone();
+    assert!(s.has_scripts(a) && !s.scripts_allowed(a));
+    // A blocked button is noted for the document's bar, not silently dropped.
+    assert!(!s.get(a).unwrap().scripts_skipped());
+    assert!(s.run_javascript(a, "", Some("addRow")).is_err());
+    assert!(s.get(a).unwrap().scripts_skipped());
+
+    assert!(s.trust_scripts(a).unwrap(), "a document without unsaved changes reopens in place");
+    assert!(s.scripts_allowed(a) && !s.get(a).unwrap().scripts_skipped());
+    assert_eq!(value(&s, a, "qty"), ["2"], "the initialize script ran");
+    assert_eq!(value(&s, a, "total"), ["10"], "and the calculations");
+    assert!(!s.get(a).unwrap().dirty);
+    assert!(s.run_javascript(a, "", Some("addRow")).is_ok());
+
+    assert!(!s.scripts_allowed(b), "trust is per document");
+    assert!(value(&s, b, "qty").is_empty());
+    assert!(s.run_javascript(b, "", Some("addRow")).is_err());
+    s.close(a);
+    assert!(!s.scripts_allowed(a));
+}
+
+#[test]
+fn trusting_an_edited_document_keeps_the_entries_and_runs_scripts_from_the_next_change() {
+    let mut s = Session::new().with_clock(|| 1_700_000_000);
+    let id = s.open("order.pdf", None, Arc::new(scripted_form()), None).unwrap();
+    let value = |s: &Session, n: &str| s.get(id).unwrap().form.iter().find(|f| f.name == n).unwrap().value.clone();
+    s.apply(id, Edit::SetFieldValue { name: "qty".into(), value: FieldValue::Text("4".into()) }).unwrap();
+    assert_ne!(value(&s, "total"), ["10"], "the calculate script did not run");
+    assert!(s.get(id).unwrap().scripts_skipped(), "and that is noted");
+    assert!(!s.trust_scripts(id).unwrap(), "nothing reopened over the user's entries");
+    assert_eq!(value(&s, "qty"), ["4"]);
+    s.apply(id, Edit::SetFieldValue { name: "qty".into(), value: FieldValue::Text("6".into()) }).unwrap();
+    assert_eq!(value(&s, "total"), ["15"], "calculated now");
+}
+
+#[test]
+fn a_trusted_document_reloaded_from_disk_is_not_trusted_any_more() {
+    let open_scripts = |init: &str| {
+        let tpl = pdfcraft_xfa::fixtures::scripted_template().replace("if (qty.rawValue === null) qty.rawValue = 2;", init);
+        Arc::new(pdfcraft_xfa::fixtures::shell(&tpl))
+    };
+    let mut s = Session::new().with_clock(|| 1_700_000_000);
+    let id = s.open("a.pdf", None, open_scripts("qty.rawValue = 2;"), None).unwrap();
+    assert!(s.trust_scripts(id).unwrap());
+    let _ = s.take_js_output(id);
+    s.reload(id, open_scripts(r#"xfa.host.messageBox("Rewritten"); qty.rawValue = 7;"#)).unwrap();
+    assert!(!s.scripts_allowed(id), "the file's new bytes ask again");
+    assert!(s.get(id).unwrap().form.iter().find(|f| f.name == "qty").unwrap().value.iter().all(|v| v.is_empty()));
+    assert!(s.take_js_output(id).is_empty(), "nothing ran");
+}
+
+#[test]
+fn trusting_a_document_with_undo_history_keeps_it() {
+    let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template()));
+    let mut s = Session::new().with_clock(|| 1_700_000_000);
+    let id = s.open("a.pdf", None, bytes, None).unwrap();
+    s.apply(id, Edit::RotatePages { pages: vec![0], degrees: 90 }).unwrap();
+    s.apply(id, Edit::RotatePages { pages: vec![0], degrees: 90 }).unwrap();
+    let saved = s.save_bytes(id).unwrap();
+    s.mark_saved(id, saved, None).unwrap();
+    assert!(!s.get(id).unwrap().dirty, "saved");
+    assert!(s.get(id).unwrap().can_undo().is_some());
+    assert!(!s.trust_scripts(id).unwrap(), "not reopened: that would drop the undo history");
+    assert!(s.scripts_allowed(id));
+    assert!(s.get(id).unwrap().can_undo().is_some());
+}
+
+#[test]
+fn documents_with_and_without_scripts() {
+    let mut s = Session::new();
+    let blank = s.create_blank(200.0, 200.0, 1).unwrap();
+    let plain = s.open("plain.pdf", None, blank, None).unwrap();
+    assert!(!s.has_scripts(plain));
+    let form = s.open("order.pdf", None, Arc::new(scripted_form()), None).unwrap();
+    assert!(s.has_scripts(form), "field scripts");
+    let xfa = s.open("x.pdf", None, Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template())), None).unwrap();
+    assert!(s.has_scripts(xfa), "XFA template scripts");
+    assert!(!s.has_scripts(DocId(999)));
 }
 
 #[test]
@@ -3700,6 +3803,7 @@ fn hostile_xfa_scripts_cannot_hang_or_bloat_the_document() {
         );
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&tpl));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let started = std::time::Instant::now();
     let id = s.open("hostile.pdf", None, bytes, None).expect("opens");
     let rows = |s: &Session| s.get(id).unwrap().form.iter().filter(|f| f.name.starts_with("amount")).count();
@@ -3716,6 +3820,7 @@ fn xfa_scripts_can_remove_rows_twice_and_reset_fields_by_name() {
         .replace(r#"xfa.host.messageBox("Hello " + qty.rawValue);"#, r#"xfa.host.resetData("qty, table");"#);
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&tpl));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let id = s.open("rows.pdf", None, bytes, None).expect("opens");
     let rows = |s: &Session| s.get(id).unwrap().form.iter().filter(|f| f.name.starts_with("amount")).count();
     s.run_javascript(id, "", Some("addRow")).unwrap();
@@ -3766,6 +3871,7 @@ fn hostile_xfa_open_scripts_are_merged_capped_kept_from_printing_and_noted() {
         );
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&tpl));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let started = std::time::Instant::now();
     let id = s.open("hostile.pdf", None, bytes, None).expect("opens");
     assert!(started.elapsed() < std::time::Duration::from_secs(5), "{:?}", started.elapsed());
@@ -3797,6 +3903,7 @@ fn runaway_xfa_calculations_at_open_end_quickly_with_a_report() {
         );
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&tpl));
     let mut s = Session::new().with_clock(|| 1_700_000_000);
+    s.set_javascript(true);
     let started = std::time::Instant::now();
     let id = s.open("runaway.pdf", None, bytes, None).expect("opens");
     assert!(started.elapsed() < std::time::Duration::from_secs(4), "{:?}", started.elapsed());

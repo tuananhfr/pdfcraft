@@ -402,6 +402,8 @@ impl PdfCraftApp {
                 self.forget_recovery(id);
                 if let (Some(view), Some(doc)) = (self.views.get_mut(i), self.session.get(id)) {
                     view.document_replaced(&doc.info);
+                    // New bytes are not trusted (the engine dropped that), so their bar asks afresh.
+                    view.scripts_bar = Default::default();
                 }
                 // What the form's scripts said while it opened, as on opening.
                 let out = self.session.take_js_output(id);

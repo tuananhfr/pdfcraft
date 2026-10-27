@@ -144,6 +144,10 @@ fn every_registered_command_is_implemented() {
             let p = pdfcraft_engine::Protection { open_password: Some("pw".into()), ..Default::default() };
             app.apply_edit(pdfcraft_engine::Edit::Protect(p));
         }
+        // Share… exists only with the office shell's share sheet.
+        if spec.id == "file.share" {
+            app.share = Some(Box::new(|_: &[u8], _: &str, _: &str| true));
+        }
         // Reopen needs a document closed first.
         if spec.id == "file.reopen_closed" {
             app.open_bytes("closed.pdf", None, fixture(1)).unwrap();

@@ -78,7 +78,7 @@
 	Fit to width	Προσαρμογή στο πλάτος
 	Display theme	Θέμα εμφάνισης
 	Side panels	Πλευρικοί πίνακες
-	Enable Acrobat JavaScript	Ενεργοποίηση Acrobat JavaScript
+	Always allow JavaScript in PDFs (don't ask)	Να επιτρέπεται πάντα η JavaScript σε PDF (χωρίς ερώτηση)
 	OK	Εντάξει
 	Close	Κλείσιμο
 	Next / previous match	Επόμενο / προηγούμενο αποτέλεσμα
@@ -2377,3 +2377,9 @@ animation effects	Off	Ανενεργά
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Η αναγνώριση βιετναμέζικων δεν είναι εγκατεστημένη. Ζητήστε από τον διαχειριστή να εγκαταστήσει το βιετναμέζικο μοντέλο OCR.
+	This PDF contains JavaScript. Its scripts have not been run.	Αυτό το PDF περιέχει JavaScript. Τα σενάριά του δεν εκτελέστηκαν.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Αυτό το PDF περιέχει JavaScript. Τα σενάριά του δεν εκτελέστηκαν, οπότε το κουμπί ή ο υπολογισμός που χρησιμοποιήσατε δεν έκανε τίποτα.
+	Allow for this file	Να επιτρέπεται για αυτό το αρχείο
+	Share…	Κοινή χρήση…
+	Couldn't share {name}: {e}	Δεν ήταν δυνατή η κοινή χρήση του {name}: {e}
+	Share changes after signing?	Κοινή χρήση των αλλαγών μετά την υπογραφή;

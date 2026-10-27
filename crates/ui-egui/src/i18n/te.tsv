@@ -70,7 +70,7 @@ comment menu	Edit	సవరించు
 	Fit to width	వెడల్పుకు సరిపోయేలా
 	Display theme	ప్రదర్శన థీమ్
 	Side panels	సైడ్ ప్యానెల్‌లు
-	Enable Acrobat JavaScript	Acrobat JavaScriptను ప్రారంభించు
+	Always allow JavaScript in PDFs (don't ask)	PDFలలో JavaScriptను ఎల్లప్పుడూ అనుమతించు (అడగవద్దు)
 	OK	సరే
 	Close	మూసివేయి
 	Next / previous match	తదుపరి / మునుపటి సరిపోలిక
@@ -2280,3 +2280,9 @@ animation effects	Off	ఆఫ్
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	వియత్నామీస్ గుర్తింపు ఇన్‌స్టాల్ కాలేదు. వియత్నామీస్ OCR మోడల్‌ను ఇన్‌స్టాల్ చేయమని నిర్వాహకుడిని అడగండి.
+	This PDF contains JavaScript. Its scripts have not been run.	ఈ PDFలో JavaScript ఉంది. దాని స్క్రిప్ట్‌లు అమలు చేయబడలేదు.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	ఈ PDFలో JavaScript ఉంది. దాని స్క్రిప్ట్‌లు అమలు చేయబడలేదు, కాబట్టి మీరు ఉపయోగించిన బటన్ లేదా లెక్కింపు ఏమీ చేయలేదు.
+	Allow for this file	ఈ ఫైల్‌కు అనుమతించు
+	Share…	షేర్ చేయి…
+	Couldn't share {name}: {e}	{name}ను షేర్ చేయడం సాధ్యపడలేదు: {e}
+	Share changes after signing?	సంతకం తర్వాతి మార్పులను షేర్ చేయాలా?

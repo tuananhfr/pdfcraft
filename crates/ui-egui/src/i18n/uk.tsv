@@ -91,7 +91,7 @@
 	Fit to width	За шириною
 	Display theme	Тема оформлення
 	Side panels	Бічні панелі
-	Enable Acrobat JavaScript	Увімкнути Acrobat JavaScript
+	Always allow JavaScript in PDFs (don't ask)	Завжди дозволяти JavaScript у PDF (не питати)
 	OK	OK
 	Close	Закрити
 	Next / previous match	Наступний / попередній збіг
@@ -2482,3 +2482,9 @@ animation effects	Off	Вимкнено
 	Signed in to PI ID. You can close this tab and go back to the app.	Вхід у PI ID виконано. Можна закрити цю вкладку й повернутися до застосунку.
 	Sign-in did not finish. Close this tab and try again in the app.	Вхід не завершено. Закрийте цю вкладку й спробуйте ще раз у застосунку.
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft працює офлайн. Вхід через PI ID необов’язковий. Без телеметрії та хмарної обробки, якщо ви не додасте постачальника.
+	This PDF contains JavaScript. Its scripts have not been run.	Цей PDF містить JavaScript. Його скрипти не запускалися.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Цей PDF містить JavaScript. Його скрипти не запускалися, тому використана кнопка чи обчислення нічого не зробили.
+	Allow for this file	Дозволити для цього файлу
+	Share…	Поділитися…
+	Couldn't share {name}: {e}	Не вдалося поділитися {name}: {e}
+	Share changes after signing?	Поділитися змінами після підписання?

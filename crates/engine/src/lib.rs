@@ -381,6 +381,8 @@ pub struct Document {
     xfa_template: Option<Arc<pdfcraft_xfa::model::Template>>,
     /// A script of the XFA form ran away, so its scripts are off (see [`Document::xfa_scripts_off`]).
     xfa_scripts_off: bool,
+    /// A script would have run had the document's scripts been allowed (see [`Document::scripts_skipped`]).
+    scripts_skipped: bool,
     /// A content-only refresh keeps `info` from before the edit; an edit may have added or
     /// embedded fonts, so the font list is read again on demand ([`Session::refresh_fonts`]).
     fonts_stale: bool,
@@ -477,6 +479,11 @@ impl Document {
     /// error is in the JavaScript output; this is the state, for a viewer to show.
     pub fn xfa_scripts_off(&self) -> bool {
         self.xfa_scripts_off
+    }
+
+    /// A form edit or button would have run this document's scripts, but they are not allowed.
+    pub fn scripts_skipped(&self) -> bool {
+        self.scripts_skipped
     }
 
     /// PDF Optimizer ▸ Audit space usage.
@@ -2778,8 +2785,11 @@ pub struct Session {
     history_clock: Option<fn() -> u64>,
     /// Certificates trusted for signing (Acrobat: Trusted Certificates).
     trust: Arc<TrustStore>,
-    /// Preferences ▸ JavaScript ▸ Enable Acrobat JavaScript, inverted (on by default).
-    js_off: bool,
+    /// Preferences ▸ JavaScript ▸ Always allow JavaScript in PDFs (off by default: a document's
+    /// scripts wait until the user allows them for it, see [`Session::trust_scripts`]).
+    js_always: bool,
+    /// Documents whose scripts the user allowed this session. Never saved.
+    js_trusted: std::collections::HashSet<DocId>,
     /// Preferences ▸ Date format, when not the default (see [`dates`]).
     date_format: Option<String>,
     /// Preferences ▸ Date format ▸ Language, when not following the interface language.
@@ -2791,7 +2801,8 @@ pub struct Session {
 pub struct OpenContext {
     budget: memory::Budget,
     now: Option<i64>,
-    js_off: bool,
+    /// Whether the document's open-time XFA scripts may run.
+    scripts: bool,
     trust: Arc<TrustStore>,
 }
 
@@ -3134,7 +3145,8 @@ impl Session {
 
     /// Snapshot the session state that affects open-time scripts, dates and signature trust.
     pub fn open_context(&self) -> OpenContext {
-        OpenContext { budget: memory::Budget::platform(), now: self.now(), js_off: self.js_off, trust: self.trust.clone() }
+        // A document being opened is not trusted yet: only "always allow" runs its scripts.
+        OpenContext { budget: memory::Budget::platform(), now: self.now(), scripts: self.js_always, trust: self.trust.clone() }
     }
 
     /// Prepare a document without adding it to this session.
@@ -3269,7 +3281,7 @@ impl Session {
             _ => None,
         };
         let (bytes, info, cos) = match (&xfa, cos) {
-            (Some(_), Ok(Ok(cos))) if !context.js_off => match xfa_template.clone() {
+            (Some(_), Ok(Ok(cos))) if context.scripts => match xfa_template.clone() {
                 Some(tpl) => {
                     let mut work = cos.clone();
                     let pages = info.pages.len();
@@ -3416,6 +3428,7 @@ impl Session {
             xfa,
             xfa_template: None,
             xfa_scripts_off: false,
+            scripts_skipped: false,
             fonts_stale: false,
             xfa_warnings: Vec::new(),
             edit_notices: Vec::new(),
@@ -3431,15 +3444,19 @@ impl Session {
         let timestamp = self.history_timestamp();
         let now = self.now();
         let today = self.today();
-        let js_off = self.js_off;
+        let scripts = self.scripts_allowed(id);
         let doc = self.doc_mut(id)?;
         doc.edit_notices.clear();
         let name = doc.name.clone();
         let is_xfa = doc.info.xfa.is_some();
         let mut cx = EditCtx::new(now, doc.generation ^ (id.0 << 48));
-        if !js_off {
+        if scripts {
             cx.xfa = doc.xfa_template.clone();
         }
+        // Said on the document's scripts bar, so a calculation that did not run is not silent.
+        let skipped = !scripts
+            && (uses_scripts(&edit) || matches!(edit, Edit::ResetForm { .. }))
+            && (doc.xfa_template.is_some() || js::field_scripts(&doc.form));
         cx.pages = doc.info.pages.len();
         cx.today = today;
         let reason = doc.read_only_reason.clone().unwrap_or_default();
@@ -3476,7 +3493,7 @@ impl Session {
             return if matches!(&edit, Edit::FlattenFillSign) { Ok(()) } else { Err(EditError::CertifiedNoChanges) };
         }
         let mut next = editor.cos.clone();
-        if !js_off && uses_scripts(&edit) {
+        if scripts && uses_scripts(&edit) {
             cx.js = Some(js::JsRunner::new(&next, &name));
         }
         cx.renamed_fields.clear();
@@ -3629,6 +3646,7 @@ impl Session {
         }
         doc.dirty = true;
         doc.generation += 1;
+        doc.scripts_skipped |= skipped;
         doc.edit_notices = notices;
         note_warnings(&mut doc.xfa_warnings, &xfa_notes);
         let notes = doc.xfa_warnings.clone();
@@ -4070,14 +4088,22 @@ impl Session {
     /// `bytes`, the file as it is now, in its place. Everything opening does runs again (XFA
     /// layout and scripts, signatures, repairs), but the document keeps its id, name and path,
     /// so its tab and view stay with it. Undo history goes, as with Revert. The password it was
-    /// opened with is tried; on any failure the document is left as it was.
+    /// opened with is tried; on any failure the document is left as it was. The new bytes are
+    /// not trusted: their scripts run only with JavaScript always allowed, until allowed again.
     pub fn reload(&mut self, id: DocId, bytes: Arc<Vec<u8>>) -> Result<(), OpenError> {
+        self.js_trusted.remove(&id);
+        self.reload_with(id, bytes, self.js_always)
+    }
+
+    /// [`Session::reload`], running opening scripts when `scripts`.
+    pub(crate) fn reload_with(&mut self, id: DocId, bytes: Arc<Vec<u8>>, scripts: bool) -> Result<(), OpenError> {
         let old = self.docs.iter().position(|d| d.id == id).ok_or_else(|| OpenError::Invalid("the document is not open".into()))?;
         let doc = &self.docs[old];
         let (name, path, generation) = (doc.name.clone(), doc.path.clone(), doc.generation);
         let next_transaction_id = doc.next_transaction_id;
         let password = doc.editor.as_ref().and_then(|e| e.keys.reopen.clone()).or_else(|| doc.password.clone());
-        let new_id = self.open(name, path, bytes, password.as_deref())?;
+        let context = OpenContext { scripts, ..self.open_context() };
+        let new_id = self.commit_open(context.prepare_open(name, path, bytes, password.as_deref())?);
         let at = self.docs.iter().position(|d| d.id == new_id).ok_or_else(|| OpenError::Invalid("the new version was not kept".into()))?;
         let mut doc = self.docs.remove(at);
         doc.id = id;
@@ -4713,6 +4739,7 @@ impl Session {
 
     pub fn close(&mut self, id: DocId) {
         self.docs.retain(|d| d.id != id);
+        self.js_trusted.remove(&id);
     }
 
     pub fn get(&self, id: DocId) -> Option<&Document> {

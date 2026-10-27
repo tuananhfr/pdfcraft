@@ -93,8 +93,10 @@ pub mod folders_ui;
 pub mod forms_ui;
 mod home;
 mod icon_data;
+mod intake_result;
 pub mod icons;
 pub mod last_session;
+pub mod log_safe;
 pub mod motion;
 pub mod narrow;
 mod page_selection_ui;
@@ -108,6 +110,8 @@ mod print_ui;
 mod save_all;
 mod save_deadline;
 mod save_status;
+mod script_bar;
+pub mod share;
 mod signature_drag;
 pub mod units;
 mod web_print;
@@ -393,6 +397,9 @@ pub struct PageClip {
 /// Files delivered asynchronously: (name, bytes).
 pub type Inbox = std::sync::Arc<std::sync::Mutex<Vec<(String, Vec<u8>)>>>;
 
+/// Hears how a dropped file ended: (name, size in bytes, opened or accepted).
+pub type IntakeReportFn = Box<dyn Fn(&str, usize, bool)>;
+
 /// Files that failed to arrive asynchronously (a browser `?file=` URL that couldn't be fetched):
 /// `(name, error)`, reported to the user on the next frame (#173).
 pub type FailedInbox = std::sync::Arc<std::sync::Mutex<Vec<(String, String)>>>;
@@ -634,6 +641,11 @@ pub struct PdfCraftApp {
     /// arrival opens in the background once the user has started working (#171).
     pub startup_inbox: Inbox,
     startup_superseded: bool,
+    /// Files dropped in the browser, read and waiting to open; their outcome goes back to the
+    /// office shell ([`intake_result`]).
+    drop_inbox: Inbox,
+    /// Takes the drop outcomes `window.erpIntakeResult` would get (tests); `None` calls it.
+    pub intake_report: Option<IntakeReportFn>,
     /// Asynchronous opens that failed (web `?file=` fetches), shown as a notice.
     pub failed_inbox: FailedInbox,
     /// Mirrors "some document has unsaved work" each frame, so the web page's `beforeunload` handler can read it (#812).
@@ -649,6 +661,11 @@ pub struct PdfCraftApp {
     /// Save through the browser's picker or a download (web; `None` on desktop). An embedding
     /// page's [`HostSaveFn`] comes first.
     pub web_save: Option<web_save::WebSaves>,
+    /// File ▸ Share… hands the document to the office shell's share sheet (web, when the browser
+    /// can share files; `None` hides the command, as on desktop).
+    pub share: Option<share::ShareFn>,
+    /// Whether the File ▸ Share… being run came from a primary-button click, set by the menu.
+    pub(crate) share_by_pointer: bool,
     /// A pending "save changes?" question (closing a dirty tab or quitting).
     pub close_request: Option<CloseRequest>,
     /// A save held because it would invalidate a signature (see `cert_guard`).
@@ -998,6 +1015,8 @@ impl PdfCraftApp {
             inbox: Default::default(),
             startup_inbox: Default::default(),
             startup_superseded: false,
+            drop_inbox: Default::default(),
+            intake_report: None,
             failed_inbox: Default::default(),
             unsaved_flag: Default::default(),
             os_events: None,
@@ -1008,6 +1027,8 @@ impl PdfCraftApp {
             web_save: Some(web_save::WebSaves::new(Box::new(web_save_browser::Browser::default()))),
             #[cfg(not(target_arch = "wasm32"))]
             web_save: None,
+            share: None,
+            share_by_pointer: false,
             close_request: None,
             held_save: None,
             signature_save_ack: None,
@@ -1498,15 +1519,56 @@ impl PdfCraftApp {
         }
     }
 
-    /// Browsers read dropped files asynchronously; the bytes land in `inbox` and open next frame.
+    /// A dropped file the browser has read, as the web drop handler hands it over: it opens on
+    /// the next frame, and its outcome goes to the office shell.
+    pub fn queue_dropped(&self, name: &str, bytes: Vec<u8>) {
+        if let Ok(mut q) = self.drop_inbox.lock() {
+            q.push((name.to_string(), bytes));
+        }
+    }
+
+    /// Tell the office shell how a dropped file ended ([`intake_result`]).
+    pub(crate) fn report_intake(&self, name: &str, size: usize, ok: bool) {
+        match &self.intake_report {
+            Some(report) => report(name, size, ok),
+            None => intake_result::report(name, size, ok),
+        }
+    }
+
+    /// Open the files in `drop_inbox`, one password prompt at a time: while one is up, the rest
+    /// wait their turn (each prompt would replace the one before).
+    fn open_dropped_files(&mut self) {
+        let mut waiting: std::collections::VecDeque<(String, Vec<u8>)> =
+            self.drop_inbox.lock().map(|mut q| std::mem::take(&mut *q).into()).unwrap_or_default();
+        while self.password_prompt.is_none()
+            && let Some((name, bytes)) = waiting.pop_front()
+        {
+            let size = bytes.len();
+            let opened = self.open_bytes(&name, None, bytes);
+            // A password prompt counts as accepted: the file is waiting for its password.
+            self.report_intake(&name, size, opened.is_ok());
+            if let Err(e) = opened {
+                self.notify_fmt("Couldn't open {name}: {e}", &[("name", &name), ("e", &e)]);
+            }
+        }
+        if !waiting.is_empty()
+            && let Ok(mut q) = self.drop_inbox.lock()
+        {
+            // Ahead of anything dropped since, so the files keep their order.
+            q.splice(0..0, waiting);
+        }
+    }
+
+    /// Browsers read dropped files asynchronously; the bytes land in `drop_inbox` and open next frame.
     #[cfg(target_arch = "wasm32")]
     fn open_dropped(&mut self, f: egui::DroppedFileHandle, ctx: &egui::Context) {
         self.startup_superseded = true;
-        let inbox = self.inbox.clone();
+        let inbox = self.drop_inbox.clone();
         let ctx = ctx.clone();
         wasm_bindgen_futures::spawn_local(async move {
             let name = f.path().file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "dropped.pdf".into());
-            if let Ok(bytes) = f.bytes_async().await
+            let size = f.web_file().map_or(0, |file| file.size() as usize);
+            if let Some(bytes) = intake_result::read_or_report(&name, size, f.bytes_async().await, intake_result::report)
                 && let Ok(mut q) = inbox.lock()
             {
                 q.push((name, bytes));
@@ -2240,7 +2302,8 @@ impl PdfCraftApp {
             "digital_ids": self.digital_ids.iter().filter(|e| !e.path.starts_with("keychain:") && !e.path.starts_with("windows:")).collect::<Vec<_>>(),
             "trusted": trusted,
             "custom_stamps": stamps_ui::encode(&self.custom_stamps),
-            "javascript": self.session.javascript(),
+            // Renamed from "javascript" (on by default) so a stored true from then is not "always allow".
+            "javascript_always": self.session.javascript(),
             "actions": actions_ui::encode(&self.custom_actions),
             "combine_columns": self.combine_columns.to_json(),
             "combine_view": self.combine_view.as_str(),
@@ -2394,7 +2457,7 @@ impl PdfCraftApp {
         }
         self.custom_stamps = stamps_ui::decode(&v["custom_stamps"]);
         self.custom_actions = actions_ui::decode(&v["actions"]);
-        if let Some(on) = v["javascript"].as_bool() {
+        if let Some(on) = v["javascript_always"].as_bool() {
             self.session.set_javascript(on);
         }
         if let Ok(pems) = serde_json::from_value::<Vec<String>>(v["trusted"].clone()) {
@@ -2945,6 +3008,7 @@ impl eframe::App for PdfCraftApp {
                 self.notify_fmt("Couldn't open {name}: {e}", &[("name", &name), ("e", &e.to_string())]);
             }
         }
+        self.open_dropped_files();
         self.open_draft_restores();
         // Don't replace a pending prompt or import. A startup file may need its own password
         // prompt, so its bytes stay queued until the current interaction finishes.
@@ -2983,6 +3047,7 @@ impl eframe::App for PdfCraftApp {
                 OsEvent::Quit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
             }
         }
+        self.allow_requested_scripts();
         if let Some((_, id)) = self.active_ids() {
             let out = self.session.take_js_output(id);
             self.handle_js(id, out);

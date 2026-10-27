@@ -64,7 +64,7 @@
 	Fit to width	Szélességhez igazítás
 	Display theme	Megjelenítési téma
 	Side panels	Oldalsó panelek
-	Enable Acrobat JavaScript	Acrobat JavaScript engedélyezése
+	Always allow JavaScript in PDFs (don't ask)	JavaScript mindig engedélyezése PDF-ekben (kérdés nélkül)
 	OK	OK
 	Close	Bezárás
 	Next / previous match	Következő / előző találat
@@ -2459,3 +2459,9 @@ animation effects	Off	Ki
 	Signed in to PI ID. You can close this tab and go back to the app.	Bejelentkeztél a PI ID-be. Bezárhatod ezt a lapot, és visszatérhetsz az alkalmazásba.
 	Sign-in did not finish. Close this tab and try again in the app.	A bejelentkezés nem fejeződött be. Zárd be ezt a lapot, és próbáld újra az alkalmazásban.
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	A PdfCraft offline működik. A PI ID-s bejelentkezés nem kötelező. Nincs telemetria, és nincs felhőfeldolgozás, amíg nem adsz hozzá szolgáltatót.
+	This PDF contains JavaScript. Its scripts have not been run.	Ez a PDF JavaScriptet tartalmaz. A szkriptjei nem futottak le.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Ez a PDF JavaScriptet tartalmaz. A szkriptjei nem futottak le, ezért a használt gomb vagy számítás nem csinált semmit.
+	Allow for this file	Engedélyezés ehhez a fájlhoz
+	Share…	Megosztás…
+	Couldn't share {name}: {e}	{name} nem osztható meg: {e}
+	Share changes after signing?	Megosztja az aláírás utáni módosításokat?

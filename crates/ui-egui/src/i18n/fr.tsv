@@ -64,7 +64,7 @@
 	Fit to width	Ajuster à la largeur
 	Display theme	Thème d'affichage
 	Side panels	Panneaux latéraux
-	Enable Acrobat JavaScript	Activer Acrobat JavaScript
+	Always allow JavaScript in PDFs (don't ask)	Toujours autoriser JavaScript dans les PDF (sans demander)
 	Flatten Fill & Sign when saving	Aplatir Remplir et signer à l'enregistrement
 	Text, marks and signatures become part of the page. Other comments stay editable.	Le texte, les marques et les signatures deviennent partie de la page. Les autres commentaires restent modifiables.
 	OK	OK
@@ -2460,3 +2460,9 @@ animation effects	Off	Désactivés
 	Signed in to PI ID. You can close this tab and go back to the app.	Connecté à PI ID. Vous pouvez fermer cet onglet et revenir à l'application.
 	Sign-in did not finish. Close this tab and try again in the app.	La connexion n'a pas abouti. Fermez cet onglet et réessayez dans l'application.
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft fonctionne hors ligne. La connexion avec PI ID est facultative. Pas de télémétrie, et aucun traitement dans le cloud sauf si vous ajoutez un fournisseur.
+	This PDF contains JavaScript. Its scripts have not been run.	Ce PDF contient du JavaScript. Ses scripts n'ont pas été exécutés.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Ce PDF contient du JavaScript. Ses scripts n'ont pas été exécutés : le bouton ou le calcul utilisé n'a donc rien fait.
+	Allow for this file	Autoriser pour ce fichier
+	Share…	Partager…
+	Couldn't share {name}: {e}	Impossible de partager {name} : {e}
+	Share changes after signing?	Partager les modifications après signature ?

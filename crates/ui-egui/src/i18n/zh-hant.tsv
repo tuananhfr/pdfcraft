@@ -96,7 +96,7 @@
 	Fit to width	符合寬度
 	Display theme	顯示主題
 	Side panels	側邊面板
-	Enable Acrobat JavaScript	啟用 Acrobat JavaScript
+	Always allow JavaScript in PDFs (don't ask)	一律允許 PDF 中的 JavaScript（不再詢問）
 	OK	確定
 	Cancel	取消
 	Close	關閉
@@ -2241,3 +2241,9 @@ animation effects	Off	關
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	未安裝越南語文字辨識。請聯絡管理員安裝越南語 OCR 模型。
+	This PDF contains JavaScript. Its scripts have not been run.	此 PDF 包含 JavaScript。其指令碼尚未執行。
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	此 PDF 包含 JavaScript。其指令碼尚未執行，因此你使用的按鈕或計算沒有作用。
+	Allow for this file	允許此檔案
+	Share…	分享…
+	Couldn't share {name}: {e}	無法分享 {name}：{e}
+	Share changes after signing?	分享簽署後的變更？

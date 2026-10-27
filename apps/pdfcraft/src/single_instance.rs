@@ -217,7 +217,7 @@ fn claim_at(path: &std::path::Path, files: &[String], may_hand_off: bool) -> Cla
                     continue;
                 }
                 Err(e) => {
-                    log::info!("single instance off: can't clear {} ({e})", path.display());
+                    log::info!("single instance off: can't clear {} ({e})", pdfcraft_ui_egui::log_safe::home_relative(path));
                     return Claim::Alone;
                 }
             },
@@ -232,7 +232,7 @@ fn claim_at(path: &std::path::Path, files: &[String], may_hand_off: bool) -> Cla
             // Older Windows, a path too long for a socket address, a file system without socket
             // support (some network or removable drives): this launch works as before.
             Err(e) => {
-                log::info!("single instance off: can't listen at {} ({e})", path.display());
+                log::info!("single instance off: can't listen at {} ({e})", pdfcraft_ui_egui::log_safe::home_relative(path));
                 return Claim::Alone;
             }
         }

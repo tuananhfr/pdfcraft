@@ -67,7 +67,7 @@
 	Fit to width	Еніне сыйдыру
 	Display theme	Көрсету темасы
 	Side panels	Бүйірлік панельдер
-	Enable Acrobat JavaScript	Acrobat JavaScript-ті қосу
+	Always allow JavaScript in PDFs (don't ask)	PDF файлдарындағы JavaScript-ке әрқашан рұқсат ету (сұрамау)
 	OK	ОК
 	Close	Жабу
 	Next / previous match	Келесі / алдыңғы сәйкестік
@@ -2458,3 +2458,9 @@ animation effects	Off	Өшірулі
 	Signed in to PI ID. You can close this tab and go back to the app.	PI ID-ге кірдіңіз. Бұл қойындыны жауып, қолданбаға оралуға болады.
 	Sign-in did not finish. Close this tab and try again in the app.	Кіру аяқталмады. Бұл қойындыны жауып, қолданбада қайталап көріңіз.
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft офлайн жұмыс істейді. PI ID арқылы кіру міндетті емес. Провайдер қоспағаныңызша телеметрия да, бұлтта өңдеу де жоқ.
+	This PDF contains JavaScript. Its scripts have not been run.	Бұл PDF файлында JavaScript бар. Оның скрипттері іске қосылмады.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Бұл PDF файлында JavaScript бар. Оның скрипттері іске қосылмады, сондықтан сіз пайдаланған түйме немесе есептеу ештеңе істемеді.
+	Allow for this file	Осы файл үшін рұқсат ету
+	Share…	Бөлісу…
+	Couldn't share {name}: {e}	{name} бөлісу мүмкін болмады: {e}
+	Share changes after signing?	Қол қойылғаннан кейінгі өзгерістерді бөлісу керек пе?

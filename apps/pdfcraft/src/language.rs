@@ -13,13 +13,13 @@ pub fn read(path: Option<&Path>) -> Option<String> {
         Ok(json) => match serde_json::from_str::<String>(&json) {
             Ok(value) => i18n::normalize_pref(&value).map(str::to_owned),
             Err(error) => {
-                log::warn!("reading {}: {error}", path.display());
+                log::warn!("reading {}: {error}", pdfcraft_ui_egui::log_safe::home_relative(path));
                 None
             }
         },
         Err(error) => {
             if error.kind() != std::io::ErrorKind::NotFound {
-                log::warn!("reading {}: {error}", path.display());
+                log::warn!("reading {}: {error}", pdfcraft_ui_egui::log_safe::home_relative(path));
             }
             None
         }
@@ -57,7 +57,7 @@ impl DesktopApp {
         if let Some(path) = &self.path
             && let Err(error) = write(path, &self.app.language)
         {
-            log::warn!("saving {}: {error}", path.display());
+            log::warn!("saving {}: {error}", pdfcraft_ui_egui::log_safe::home_relative(path));
         }
         self.saved.clone_from(&self.app.language);
     }

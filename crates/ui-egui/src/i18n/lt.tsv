@@ -496,7 +496,7 @@
 	Edit text…	Redaguoti tekstą…
 	Edit…	Redaguoti…
 	Email Address	El. pašto adresas
-	Enable Acrobat JavaScript	Įjungti „Acrobat JavaScript“
+	Always allow JavaScript in PDFs (don't ask)	Visada leisti „JavaScript“ PDF failuose (neklausti)
 	Enable copying of text, images, and other content	Leisti kopijuoti tekstą, paveikslėlius ir kitą turinį
 	Enable text access for screen reader devices for the visually impaired	Leisti regos negalią turintiems žmonėms skirtoms ekrano skaitymo programoms pasiekti tekstą
 	Encrypt	Šifruoti
@@ -2712,3 +2712,9 @@ key	Space	Tarpas
 	Signed in to PI ID. You can close this tab and go back to the app.	Prisijungta prie PI ID. Galite uždaryti šį skirtuką ir grįžti į programą.
 	Sign-in did not finish. Close this tab and try again in the app.	Prisijungimas nebaigtas. Uždarykite šį skirtuką ir bandykite dar kartą programoje.
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	„PdfCraft“ veikia neprisijungus. Prisijungti su PI ID nebūtina. Nerenkami telemetrijos duomenys ir nenaudojamos debesijos paslaugos, nebent pridėtumėte jų teikėją.
+	This PDF contains JavaScript. Its scripts have not been run.	Šiame PDF yra „JavaScript“. Jo scenarijai nebuvo paleisti.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Šiame PDF yra „JavaScript“. Jo scenarijai nebuvo paleisti, todėl jūsų naudotas mygtukas ar skaičiavimas nieko nepadarė.
+	Allow for this file	Leisti šiam failui
+	Share…	Bendrinti…
+	Couldn't share {name}: {e}	Nepavyko bendrinti {name}: {e}
+	Share changes after signing?	Bendrinti pakeitimus po pasirašymo?

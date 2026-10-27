@@ -131,7 +131,7 @@
 	Fit to width	Побери по ширина
 	Display theme	Тема на показване
 	Side panels	Странични панели
-	Enable Acrobat JavaScript	Включи Acrobat JavaScript
+	Always allow JavaScript in PDFs (don't ask)	Винаги разрешавай JavaScript в PDF файлове (без питане)
 	Flatten Fill & Sign when saving	Сплескай „Попълни и подпиши“ при запазване
 	Text, marks and signatures become part of the page. Other comments stay editable.	Текстът, маркировките и подписите стават част от страницата. Другите коментари остават редактируеми.
 	OK	OK
@@ -2423,3 +2423,9 @@ animation effects	Off	Изключени
 	Signed in to PI ID. You can close this tab and go back to the app.	Влязохте в PI ID. Можете да затворите този раздел и да се върнете в приложението.
 	Sign-in did not finish. Close this tab and try again in the app.	Влизането не завърши. Затворете този раздел и опитайте отново в приложението.
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft работи офлайн. Влизането с PI ID не е задължително. Без телеметрия и без обработка в облака, освен ако не добавите доставчик.
+	This PDF contains JavaScript. Its scripts have not been run.	Този PDF съдържа JavaScript. Скриптовете му не са изпълнени.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Този PDF съдържа JavaScript. Скриптовете му не са изпълнени, затова бутонът или изчислението, които използвахте, не направиха нищо.
+	Allow for this file	Разреши за този файл
+	Share…	Споделяне…
+	Couldn't share {name}: {e}	{name} не може да бъде споделен: {e}
+	Share changes after signing?	Споделяне на промените след подписването?

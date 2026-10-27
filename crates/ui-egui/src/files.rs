@@ -111,6 +111,15 @@ pub struct FileRequest {
     purpose: FilePurpose,
     target: Option<PickTarget>,
     files: Vec<(String, Vec<u8>)>,
+    /// Dropped in the browser: the office shell hears how each file ended.
+    dropped: bool,
+}
+
+impl FileRequest {
+    /// The files were dropped in the browser, so each one's outcome goes to the office shell.
+    pub fn dropped(self) -> Self {
+        Self { dropped: true, ..self }
+    }
 }
 
 /// Files picked asynchronously (web), waiting to be used.
@@ -413,10 +422,11 @@ impl PdfCraftApp {
         let ctx = ctx.clone();
         wasm_bindgen_futures::spawn_local(async move {
             let name = f.path().file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "dropped.pdf".into());
-            if let Ok(bytes) = f.bytes_async().await
+            let size = f.web_file().map_or(0, |file| file.size() as usize);
+            if let Some(bytes) = crate::intake_result::read_or_report(&name, size, f.bytes_async().await, crate::intake_result::report)
                 && let Ok(mut q) = requests.lock()
             {
-                q.push(FileRequest { files: vec![(name, bytes)], ..request });
+                q.push(FileRequest { files: vec![(name, bytes)], dropped: true, ..request });
                 ctx.request_repaint();
             }
         });
@@ -427,7 +437,7 @@ impl PdfCraftApp {
     /// `requests` once the files are read; it is used on a later frame.
     pub fn file_request(&self, purpose: FilePurpose, files: Vec<(String, Vec<u8>)>) -> FileRequest {
         let target = if purpose.edits_active_document() { self.pick_target(self.active_ids().map(|(_, id)| id)) } else { None };
-        FileRequest { purpose, target, files }
+        FileRequest { purpose, target, files, dropped: false }
     }
 
     /// `doc` as it is now, for a pick that will edit it.
@@ -451,12 +461,23 @@ impl PdfCraftApp {
     /// Handle files picked asynchronously.
     pub(crate) fn process_file_requests(&mut self) {
         let pending: Vec<_> = self.requests.lock().map(|mut q| std::mem::take(&mut *q)).unwrap_or_default();
-        for FileRequest { purpose, target, files } in pending {
+        for FileRequest { purpose, target, files, dropped } in pending {
             if !self.still_pick_target(target) {
+                if dropped {
+                    for (name, bytes) in &files {
+                        self.report_intake(name, bytes.len(), false);
+                    }
+                }
                 continue;
             }
+            let arrived: Vec<(String, usize)> = if dropped { files.iter().map(|(n, b)| (n.clone(), b.len())).collect() } else { Vec::new() };
             // Last-resort guard (AGENTS.md §4), as for desktop picks and commands.
-            if let Err(m) = pdfcraft_engine::guard(|| self.use_files(purpose, files)) {
+            let used = pdfcraft_engine::guard(|| self.use_files(purpose, files));
+            // A dropped file joins the Combine files list even when it can't be read (the list says why).
+            for (name, size) in arrived {
+                self.report_intake(&name, size, used.is_ok());
+            }
+            if let Err(m) = used {
                 self.notify_fmt("That didn't work: an internal error stopped it ({m}).", &[("m", m.as_str())]);
             }
         }

@@ -55,7 +55,7 @@
 	Fit to width	Genişliğe sığdır
 	Display theme	Görünüm teması
 	Side panels	Yan paneller
-	Enable Acrobat JavaScript	Acrobat JavaScript'i etkinleştir
+	Always allow JavaScript in PDFs (don't ask)	PDF'lerde JavaScript'e her zaman izin ver (sorma)
 	Flatten Fill & Sign when saving	Kaydederken Doldur ve İmzala'yı düzleştir
 	Text, marks and signatures become part of the page. Other comments stay editable.	Metin, işaretler ve imzalar sayfanın bir parçası olur. Diğer yorumlar düzenlenebilir kalır.
 	OK	Tamam
@@ -2456,3 +2456,9 @@ animation effects	Off	Kapalı
 	Signed in to PI ID. You can close this tab and go back to the app.	PI ID'de oturum açıldı. Bu sekmeyi kapatıp uygulamaya dönebilirsiniz.
 	Sign-in did not finish. Close this tab and try again in the app.	Oturum açma tamamlanmadı. Bu sekmeyi kapatıp uygulamada tekrar deneyin.
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft çevrimdışı çalışır. PI ID ile oturum açmak isteğe bağlıdır. Bir sağlayıcı eklemediğiniz sürece telemetri yok ve bulut işleme yok.
+	This PDF contains JavaScript. Its scripts have not been run.	Bu PDF JavaScript içeriyor. Komut dosyaları çalıştırılmadı.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Bu PDF JavaScript içeriyor. Komut dosyaları çalıştırılmadı, bu yüzden kullandığınız düğme veya hesaplama hiçbir şey yapmadı.
+	Allow for this file	Bu dosya için izin ver
+	Share…	Paylaş…
+	Couldn't share {name}: {e}	{name} paylaşılamadı: {e}
+	Share changes after signing?	İmzadan sonraki değişiklikler paylaşılsın mı?

@@ -87,7 +87,7 @@
 	Fit to width	Ajustar al ancho
 	Display theme	Tema de visualización
 	Side panels	Paneles laterales
-	Enable Acrobat JavaScript	Activar Acrobat JavaScript
+	Always allow JavaScript in PDFs (don't ask)	Permitir siempre JavaScript en los PDF (sin preguntar)
 	Flatten Fill & Sign when saving	Acoplar Rellenar y firmar al guardar
 	Text, marks and signatures become part of the page. Other comments stay editable.	El texto, las marcas y las firmas pasan a formar parte de la página. Los demás comentarios siguen siendo editables.
 	OK	Aceptar
@@ -2497,3 +2497,9 @@ animation effects	Off	Desactivados
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	El reconocimiento de vietnamita no está instalado. Pida al administrador que instale el modelo OCR vietnamita.
+	This PDF contains JavaScript. Its scripts have not been run.	Este PDF contiene JavaScript. Sus scripts no se han ejecutado.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Este PDF contiene JavaScript. Sus scripts no se han ejecutado, así que el botón o el cálculo que usó no hizo nada.
+	Allow for this file	Permitir para este archivo
+	Share…	Compartir…
+	Couldn't share {name}: {e}	No se pudo compartir {name}: {e}
+	Share changes after signing?	¿Compartir los cambios posteriores a la firma?

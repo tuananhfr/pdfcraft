@@ -117,6 +117,15 @@ fn harness() -> Harness<'static, PdfCraftApp> {
     h
 }
 
+/// The links fixture with its scripts allowed (they are not by default).
+fn scripted_harness() -> Harness<'static, PdfCraftApp> {
+    let mut h = harness();
+    let id = h.state().views[0].id;
+    h.state_mut().allow_scripts(id);
+    h.run_steps(2);
+    h
+}
+
 fn click_at(h: &mut Harness<'static, PdfCraftApp>, at: egui::Pos2) {
     h.hover_at(at);
     h.run_steps(2);
@@ -314,7 +323,7 @@ fn a_button_script_cannot_open_a_local_program() {
 #[test]
 fn a_script_asks_first_and_only_once() {
     let _gpu = gpu();
-    let mut h = harness();
+    let mut h = scripted_harness();
     let id = h.state().views[0].id;
     let script = "app.launchURL('https://example.org/?q=' + 'first'); app.launchURL('https://example.org/second');";
     h.state_mut().run_button_script(id, "web", script);
@@ -337,7 +346,7 @@ fn a_script_cannot_open_other_kinds_of_address() {
         "mailto://a^b/x",
         "https://a^b/",
     ] {
-        let mut h = harness();
+        let mut h = scripted_harness();
         let id = h.state().views[0].id;
         let script = format!("app.launchURL({});", serde_json::to_string(url).unwrap());
         h.state_mut().run_button_script(id, "web", &script);
@@ -352,7 +361,7 @@ fn a_script_cannot_open_other_kinds_of_address() {
 fn an_email_link_cannot_attach_a_local_file() {
     let _gpu = gpu();
     for url in ["mailto:a@example.org?attach=/home/me/.ssh/id_ed25519", "mailto:a@example.org?subject=Hi&%61ttachment=C:/Users/me/x.txt"] {
-        let mut h = harness();
+        let mut h = scripted_harness();
         let id = h.state().views[0].id;
         let script = format!("app.launchURL({});", serde_json::to_string(url).unwrap());
         h.state_mut().run_button_script(id, "web", &script);
@@ -366,7 +375,7 @@ fn an_email_link_cannot_attach_a_local_file() {
 
 /// Ask to open `url` from a script and return the harness with the prompt showing.
 fn prompt_for(url: &str) -> Harness<'static, PdfCraftApp> {
-    let mut h = harness();
+    let mut h = scripted_harness();
     let id = h.state().views[0].id;
     let script = format!("app.launchURL({});", serde_json::to_string(url).unwrap());
     h.state_mut().run_button_script(id, "web", &script);

@@ -90,7 +90,7 @@
 	Fit to width	Adatta alla larghezza
 	Display theme	Tema di visualizzazione
 	Side panels	Pannelli laterali
-	Enable Acrobat JavaScript	Abilita JavaScript di Acrobat
+	Always allow JavaScript in PDFs (don't ask)	Consenti sempre JavaScript nei PDF (senza chiedere)
 	OK	OK
 	Close	Chiudi
 	Next / previous match	Risultato successivo/precedente
@@ -2469,3 +2469,9 @@ animation effects	Off	Disattivati
 	Signed in to PI ID. You can close this tab and go back to the app.	Accesso a PI ID effettuato. Puoi chiudere questa scheda e tornare all'app.
 	Sign-in did not finish. Close this tab and try again in the app.	L'accesso non è stato completato. Chiudi questa scheda e riprova dall'app.
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft funziona offline. L'accesso con PI ID è facoltativo. Nessuna telemetria e nessuna elaborazione nel cloud, a meno che tu non aggiunga un fornitore.
+	This PDF contains JavaScript. Its scripts have not been run.	Questo PDF contiene JavaScript. I suoi script non sono stati eseguiti.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Questo PDF contiene JavaScript. I suoi script non sono stati eseguiti, quindi il pulsante o il calcolo usato non ha avuto effetto.
+	Allow for this file	Consenti per questo file
+	Share…	Condividi…
+	Couldn't share {name}: {e}	Impossibile condividere {name}: {e}
+	Share changes after signing?	Condividere le modifiche successive alla firma?

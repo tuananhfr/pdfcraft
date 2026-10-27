@@ -40,7 +40,7 @@
 	Auto follows the system's text size. Pages always render at the display's full resolution.	Automaticky se řídí velikostí textu v systému. Stránky se vždy vykreslují v plném rozlišení displeje.
 	Identity	Identita
 	Name on new comments	Jméno autora nových komentářů
-	Enable Acrobat JavaScript	Povolit Acrobat JavaScript
+	Always allow JavaScript in PDFs (don't ask)	Vždy povolit JavaScript v PDF (neptat se)
 	OK	OK
 	Open…	Otevřít…
 	Open Recent	Otevřít nedávné soubory
@@ -2534,3 +2534,9 @@ animation effects	Off	Vypnuto
 	Signed in to PI ID. You can close this tab and go back to the app.	Přihlášeno k PI ID. Tuto kartu můžete zavřít a vrátit se do aplikace.
 	Sign-in did not finish. Close this tab and try again in the app.	Přihlášení nebylo dokončeno. Zavřete tuto kartu a zkuste to znovu v aplikaci.
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft funguje offline. Přihlášení přes PI ID je volitelné. Žádná telemetrie a žádné zpracování v cloudu, pokud nepřidáte poskytovatele.
+	This PDF contains JavaScript. Its scripts have not been run.	Tento PDF obsahuje JavaScript. Jeho skripty nebyly spuštěny.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Tento PDF obsahuje JavaScript. Jeho skripty nebyly spuštěny, proto tlačítko nebo výpočet, které jste použili, nic neudělaly.
+	Allow for this file	Povolit pro tento soubor
+	Share…	Sdílet…
+	Couldn't share {name}: {e}	{name} nelze sdílet: {e}
+	Share changes after signing?	Sdílet změny po podpisu?

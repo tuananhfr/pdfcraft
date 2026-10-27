@@ -29,7 +29,10 @@ impl BrowserSave for Browser {
             Ok(promise) => promise,
             // Thrown before any picker showed (a frame that may not show one): download instead.
             Err(e) => {
-                log::warn!("showSaveFilePicker failed: {e}; downloading instead");
+                log::warn!(
+                    "showSaveFilePicker failed: {}; downloading instead",
+                    if name.is_empty() { e } else { e.replace(name, &crate::log_safe::document(name, None)) }
+                );
                 done(match crate::editing::download(name, bytes) {
                     Ok(()) => SaveOutcome::Saved { name: name.to_string(), file: None },
                     Err(e) => SaveOutcome::Failed(e),

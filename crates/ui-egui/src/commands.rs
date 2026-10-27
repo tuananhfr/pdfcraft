@@ -109,8 +109,13 @@ impl PdfCraftApp {
         }
     }
 
+    /// Whether `spec` exists in this app: in this build, and Share… only with a way to share.
+    pub(crate) fn command_shown(&self, spec: &commands::CommandSpec) -> bool {
+        commands::available(spec) && (spec.id != "file.share" || self.share.is_some())
+    }
+
     fn execute_unguarded(&mut self, id: &str) -> bool {
-        let Some(spec) = commands::command(id).filter(|s| commands::available(s)) else { return false };
+        let Some(spec) = commands::command(id).filter(|s| self.command_shown(s)) else { return false };
         if !self.command_enabled(spec) {
             let certified = self.certification_refusal(spec.needs);
             let why = match spec.needs {
@@ -178,6 +183,7 @@ impl PdfCraftApp {
             "file.save_as" => {
                 self.save_active(SaveTarget::As);
             }
+            "file.share" => self.share_active(),
             "file.close" => {
                 if let Some(i) = active {
                     self.request_close_tab(i);
@@ -741,7 +747,8 @@ fn pressed_commands(ctx: &egui::Context, typing: bool) -> Vec<&'static CommandSp
 
 /// Render a top-level menu's registered commands (with live labels, shortcuts and enablement).
 pub(crate) fn registry_menu(app: &mut PdfCraftApp, ui: &mut egui::Ui, menu: &str) {
-    for spec in commands::menu(menu) {
+    let shown: Vec<_> = commands::menu(menu).filter(|s| app.command_shown(s)).collect();
+    for spec in shown {
         let label = commands::current_label(spec, &app.session, app.active_ids().map(|(_, id)| id));
         let label = crate::i18n::menu_label(spec.id, &label);
         // Open Recent is a submenu of the live recent list, not one action: disabled while the
@@ -784,7 +791,11 @@ pub(crate) fn registry_menu(app: &mut PdfCraftApp, ui: &mut egui::Ui, menu: &str
             resp = resp.on_disabled_hover_ui(|ui| widgets::fitted_tip(ui, why));
         }
         if resp.clicked() {
+            // Enter or Space on a focused item also clicks, a frame later and without the
+            // browser's user activation that the share sheet needs.
+            app.share_by_pointer = resp.clicked_by(egui::PointerButton::Primary);
             app.execute(spec.id);
+            app.share_by_pointer = false;
             ui.close();
         }
     }

@@ -91,6 +91,8 @@ impl PdfCraftApp {
                 let out = JsOutput { alerts: o.alerts, console: o.console, requests: o.requests, errors: o.error.into_iter().collect() };
                 self.handle_js(id, out);
             }
+            // The document's scripts bar says the button did nothing and offers to allow them.
+            Err(_) if !self.session.scripts_allowed(id) => {}
             Err(e) => self.notify_fmt("{field}: {e}", &[("field", field), ("e", &e.to_string())]),
         }
     }
@@ -163,7 +165,7 @@ fn buttons(ui: &mut egui::Ui, primary: &str, others: &[&str]) -> Option<String> 
 pub(crate) fn console_body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> bool {
     ui.label(egui::RichText::new(tl!("JavaScript Console")).font(theme::semibold(18.0)));
     ui.add_space(6.0);
-    if !app.session.javascript() {
+    if !app.active_ids().is_some_and(|(_, id)| app.session.scripts_allowed(id)) {
         ui.label(egui::RichText::new(tl!("JavaScript is turned off (Preferences ▸ JavaScript).")).small().color(t.text_muted));
     }
     egui::Frame::new().fill(t.hover).corner_radius(egui::CornerRadius::same(6)).inner_margin(egui::Margin::same(8)).show(ui, |ui| {
@@ -482,7 +484,7 @@ pub(crate) fn preferences_body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tok
     egui::Frame::new().fill(t.hover).corner_radius(egui::CornerRadius::same(6)).inner_margin(egui::Margin::same(10)).show(ui, |ui| {
         ui.set_width(ui.available_width());
         let mut on = app.session.javascript();
-        if ui.add(widgets::checkbox(&mut on, tl!("Enable Acrobat JavaScript"))).changed() {
+        if ui.add(widgets::checkbox(&mut on, tl!("Always allow JavaScript in PDFs (don't ask)"))).changed() {
             app.session.set_javascript(on);
         }
         ui.label(

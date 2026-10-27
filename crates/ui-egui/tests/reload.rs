@@ -204,3 +204,28 @@ fn a_shorter_new_version_drops_what_pointed_into_the_old_one() {
     assert_eq!(view.current, 0, "the page is clamped");
     assert!(view.selected.is_empty() && view.comments.selected.is_none(), "no selection points past the new version");
 }
+
+#[test]
+fn a_trusted_form_rewritten_on_disk_reloads_with_its_scripts_blocked_again() {
+    let scripted = |init: &str| {
+        let tpl = pdfcraft_xfa::fixtures::scripted_template().replace("if (qty.rawValue === null) qty.rawValue = 2;", init);
+        pdfcraft_xfa::fixtures::shell(&tpl)
+    };
+    let file = TempPdf::new("trusted", &scripted("if (qty.rawValue === null) qty.rawValue = 2;"));
+    let mut h = harness(&file.path);
+    h.state_mut().set_option("language", "en").unwrap();
+    let id = h.state().views[0].id;
+    h.state_mut().allow_scripts(id);
+    h.run_steps(2);
+    let qty = |h: &Harness<'static, PdfCraftApp>| h.state().session.get(id).unwrap().form.iter().find(|f| f.name == "qty").unwrap().value.clone();
+    assert_eq!(qty(&h), ["2"], "trusted, its opening scripts ran");
+    h.state_mut().toast = None;
+    file.rebuild(&scripted(r#"xfa.host.messageBox("Rewritten"); qty.rawValue = 7;"#));
+    h.run_steps(3);
+    let app = h.state();
+    assert_eq!(app.views[0].id, id, "reloaded in place");
+    assert!(!app.session.scripts_allowed(id), "new bytes are not trusted");
+    assert!(qty(&h).iter().all(|v| v.is_empty()), "their opening scripts did not run");
+    assert!(app.toast.is_none() && app.js_console.log.is_empty(), "nor said anything: {:?}", app.toast);
+    h.get_by_label("This PDF contains JavaScript. Its scripts have not been run.");
+}

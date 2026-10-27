@@ -46,7 +46,7 @@ pub(crate) struct ClosedDocs {
 impl ClosedDocs {
     fn push(&mut self, closed: ClosedDoc) {
         if closed.size() > MAX_CLOSED_BYTES {
-            log::warn!("{} is too large to keep for reopening", closed.name);
+            log::warn!("a closed {} is too large to keep for reopening", crate::log_safe::document(&closed.name, Some(closed.size() as u64)));
             return;
         }
         self.stack.push(closed);

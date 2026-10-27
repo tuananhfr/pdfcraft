@@ -234,7 +234,7 @@ fn read(path: &Path, probe: char, max: u64) -> Option<Arc<FontData>> {
     let index = face_with(&bytes, probe)?;
     let mut data = FontData::from_owned(bytes);
     data.index = index;
-    log::info!("interface font fallback: {} (face {index})", path.display());
+    log::info!("interface font fallback: {} (face {index})", crate::log_safe::home_relative(path));
     Some(Arc::new(data))
 }
 

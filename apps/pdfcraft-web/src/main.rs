@@ -9,6 +9,9 @@ mod account;
 #[cfg(any(target_arch = "wasm32", test))]
 mod draft_state;
 
+#[cfg(target_arch = "wasm32")]
+mod share;
+
 #[cfg(any(target_arch = "wasm32", test))]
 fn web_app() -> pdfcraft_ui_egui::PdfCraftApp {
     let mut app = pdfcraft_ui_egui::PdfCraftApp::new();
@@ -67,7 +70,9 @@ fn main() {
                                     }
                                 }
                                 Err(e) => {
-                                    eframe::web_sys::console::error_1(&format!("PdfCraft: could not fetch {url}: {e}").into());
+                                    let kind = pdfcraft_ui_egui::log_safe::document(&url, None);
+                                    let why = if url.is_empty() { e.clone() } else { e.replace(&url, "<url>") };
+                                    eframe::web_sys::console::error_1(&format!("PdfCraft: could not fetch a {kind} (?file= URL): {why}").into());
                                     // Shown in the app too, not only in the console (#173).
                                     if let Ok(mut q) = failed.lock() {
                                         q.push((name, e));
@@ -84,6 +89,8 @@ fn main() {
                     // an embedding host keeps the files itself, so not there.
                     if query_param("host").as_deref() != Some("parent") {
                         app.drafts = Some(drafts::install(cc.egui_ctx.clone()));
+                        // File ▸ Share…, when the office shell can share files (not in embed mode).
+                        app.share = share::install();
                     }
                     // The office shell's PI ID session, when it offers one here (not in embed mode).
                     if let Some(account) = account::install() {

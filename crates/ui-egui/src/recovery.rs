@@ -90,7 +90,7 @@ impl RecoveryStore {
                 .and_then(|b| serde_json::from_slice::<RecoveryMeta>(&b).map_err(std::io::Error::other))
                 .and_then(|m| if m.key == key { Ok(m) } else { Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "snapshot key mismatch")) });
             out.push(meta.unwrap_or_else(|e| {
-                log::warn!("recovering snapshot without metadata: {}: {e}", path.display());
+                log::warn!("recovering snapshot without metadata: {}: {e}", crate::log_safe::home_relative(&path));
                 let saved_at = entry
                     .metadata()
                     .and_then(|m| m.modified())
@@ -123,7 +123,7 @@ impl RecoveryStore {
             .map_err(std::io::Error::other)
             .and_then(|json| crate::editing::write_atomically(&path.to_string_lossy(), &json));
         if let Err(e) = written {
-            log::warn!("couldn't replace recovery metadata {}: {e}", path.display());
+            log::warn!("couldn't replace recovery metadata {}: {e}", crate::log_safe::home_relative(&path));
         }
     }
 

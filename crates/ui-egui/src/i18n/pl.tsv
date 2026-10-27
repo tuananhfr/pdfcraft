@@ -89,7 +89,7 @@
 	Fit to width	Dopasuj do szerokości
 	Display theme	Motyw interfejsu
 	Side panels	Panele boczne
-	Enable Acrobat JavaScript	Włącz Acrobat JavaScript
+	Always allow JavaScript in PDFs (don't ask)	Zawsze zezwalaj na JavaScript w plikach PDF (nie pytaj)
 	OK	OK
 	Close	Zamknij
 	Next / previous match	Następne / poprzednie dopasowanie
@@ -2347,3 +2347,9 @@ animation effects	Off	Wyłączone
 
 	Tiếng Việt	Tiếng Việt
 	Vietnamese recognition is not installed. Ask your administrator to install the Vietnamese OCR model.	Rozpoznawanie tekstu wietnamskiego nie jest zainstalowane. Poproś administratora o zainstalowanie wietnamskiego modelu OCR.
+	This PDF contains JavaScript. Its scripts have not been run.	Ten plik PDF zawiera JavaScript. Jego skrypty nie zostały uruchomione.
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	Ten plik PDF zawiera JavaScript. Jego skrypty nie zostały uruchomione, więc użyty przycisk lub obliczenie nic nie zrobiły.
+	Allow for this file	Zezwól dla tego pliku
+	Share…	Udostępnij…
+	Couldn't share {name}: {e}	Nie można udostępnić {name}: {e}
+	Share changes after signing?	Udostępnić zmiany wprowadzone po podpisaniu?

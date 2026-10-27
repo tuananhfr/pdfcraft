@@ -137,7 +137,7 @@
 	Fit to width	适合宽度
 	Display theme	显示主题
 	Side panels	侧边面板
-	Enable Acrobat JavaScript	启用 Acrobat JavaScript
+	Always allow JavaScript in PDFs (don't ask)	始终允许 PDF 中的 JavaScript（不再询问）
 	Flatten Fill & Sign when saving	保存时拼合填写与签名
 	Text, marks and signatures become part of the page. Other comments stay editable.	文字、标记和签名会成为页面内容。其他注释仍可编辑。
 	OK	确定
@@ -2424,3 +2424,9 @@ animation effects	Off	关
 	Signed in to PI ID. You can close this tab and go back to the app.	已登录 PI ID。您可以关闭此标签页并返回应用。
 	Sign-in did not finish. Close this tab and try again in the app.	登录未完成。请关闭此标签页，然后在应用中重试。
 	PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.	PdfCraft 可离线工作。使用 PI ID 登录是可选的。无遥测，除非您自行添加服务商，否则无云端处理。
+	This PDF contains JavaScript. Its scripts have not been run.	此 PDF 包含 JavaScript。其脚本尚未运行。
+	This PDF contains JavaScript. Its scripts have not been run, so the button or calculation you used did nothing.	此 PDF 包含 JavaScript。其脚本尚未运行，因此你使用的按钮或计算没有起作用。
+	Allow for this file	允许此文件
+	Share…	共享…
+	Couldn't share {name}: {e}	无法共享 {name}：{e}
+	Share changes after signing?	共享签署后的更改？

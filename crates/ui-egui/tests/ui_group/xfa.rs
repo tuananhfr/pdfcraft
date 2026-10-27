@@ -44,6 +44,19 @@ fn open(bytes: Vec<u8>) -> Harness<'static, PdfCraftApp> {
     h
 }
 
+/// Open with JavaScript always allowed, so the form's opening scripts run as it opens.
+fn open_scripted(bytes: Vec<u8>) -> Harness<'static, PdfCraftApp> {
+    let mut h = Harness::builder().with_size(egui::vec2(1400.0, 800.0)).build_eframe(move |_cc| {
+        let mut app = PdfCraftApp::new();
+        app.set_option("language", "en").unwrap();
+        app.session.set_javascript(true);
+        app.open_bytes("form.pdf", None, bytes).expect("opens");
+        app
+    });
+    h.run_steps(4);
+    h
+}
+
 fn xfa(h: &Harness<'static, PdfCraftApp>) -> Option<pdfcraft_render::Xfa> {
     let s = h.state();
     s.session.get(s.views[0].id).unwrap().info.xfa
@@ -132,7 +145,7 @@ fn click_field(h: &mut Harness<'static, PdfCraftApp>, name: &str) {
 
 #[test]
 fn xfa_buttons_run_their_scripts_in_the_app() {
-    let mut h = open(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template()));
+    let mut h = open_scripted(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template()));
     wait_for_pages(&mut h);
     let names = |h: &Harness<'static, PdfCraftApp>| {
         let s = h.state();
@@ -150,7 +163,7 @@ fn xfa_buttons_run_their_scripts_in_the_app() {
 fn messages_from_scripts_run_on_open_show_right_away() {
     let tpl = pdfcraft_xfa::fixtures::scripted_template()
         .replace("if (qty.rawValue === null) qty.rawValue = 2;", r#"xfa.host.messageBox("Welcome to the form"); xfa.host.print();"#);
-    let mut h = open(pdfcraft_xfa::fixtures::shell(&tpl));
+    let mut h = open_scripted(pdfcraft_xfa::fixtures::shell(&tpl));
     h.run_steps(2);
     assert!(h.query_by_label_contains("Welcome to the form").is_some(), "script console: {:?}", h.state().js_console.log);
     assert_eq!(h.state().dialog, None, "an initialize script can't open the Print dialog");
@@ -170,7 +183,7 @@ fn says_scripts_are_off(toast: &Option<(String, f64)>) -> bool {
 #[test]
 fn a_form_whose_scripts_were_turned_off_at_open_says_so() {
     let tpl = pdfcraft_xfa::fixtures::scripted_template().replace("if (qty.rawValue === null) qty.rawValue = 2;", RUNAWAY);
-    let mut h = open(pdfcraft_xfa::fixtures::shell(&tpl));
+    let mut h = open_scripted(pdfcraft_xfa::fixtures::shell(&tpl));
     let id = h.state().views[0].id;
     assert!(h.state().session.get(id).unwrap().xfa_scripts_off(), "script console: {:?}", h.state().js_console.log);
     // A toast says so as it happens; the notice bar keeps saying so after the toast is gone.
@@ -188,7 +201,7 @@ fn a_form_whose_scripts_were_turned_off_at_open_says_so() {
 #[test]
 fn scripts_turned_off_by_a_click_bring_a_closed_notice_bar_back() {
     let tpl = pdfcraft_xfa::fixtures::scripted_template().replace(r#"xfa.host.messageBox("Hello " + qty.rawValue);"#, RUNAWAY);
-    let mut h = open(pdfcraft_xfa::fixtures::shell(&tpl));
+    let mut h = open_scripted(pdfcraft_xfa::fixtures::shell(&tpl));
     wait_for_pages(&mut h);
     // The form opens with its scripts on, and the user closes the notice bar.
     let id = h.state().views[0].id;
