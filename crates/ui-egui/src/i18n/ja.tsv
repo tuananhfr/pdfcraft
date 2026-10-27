@@ -2466,3 +2466,4 @@ animation effects	Off	オフ
 	Share…	共有…
 	Couldn't share {name}: {e}	{name} を共有できませんでした: {e}
 	Share changes after signing?	署名後の変更を共有しますか？
+	AutoSave is off for signed documents. Choose Save to save your changes.	署名済みの文書では自動保存はオフです。変更を保存するには［保存］を選んでください。

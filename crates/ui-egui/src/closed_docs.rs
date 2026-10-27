@@ -80,6 +80,11 @@ impl PdfCraftApp {
 
     /// Keep document `id`, which is about to close, for reopening.
     pub(crate) fn keep_closed(&mut self, id: DocId) {
+        // Reopened, it would be a local copy the drafts store takes, offered over newer server
+        // versions after a reload (erp-host rule 8); the shell reopens server documents.
+        if self.is_host_doc(id) {
+            return;
+        }
         let Some(doc) = self.session.get(id) else { return };
         let unsaved = doc.dirty;
         // A saved file reopens from disk on the desktop, as a newer version there should.

@@ -2488,3 +2488,4 @@ animation effects	Off	Вимкнено
 	Share…	Поділитися…
 	Couldn't share {name}: {e}	Не вдалося поділитися {name}: {e}
 	Share changes after signing?	Поділитися змінами після підписання?
+	AutoSave is off for signed documents. Choose Save to save your changes.	Автозбереження для підписаних документів вимкнено. Щоб зберегти зміни, виберіть «Зберегти».

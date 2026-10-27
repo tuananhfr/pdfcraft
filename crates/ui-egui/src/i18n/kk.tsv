@@ -2464,3 +2464,4 @@ animation effects	Off	Өшірулі
 	Share…	Бөлісу…
 	Couldn't share {name}: {e}	{name} бөлісу мүмкін болмады: {e}
 	Share changes after signing?	Қол қойылғаннан кейінгі өзгерістерді бөлісу керек пе?
+	AutoSave is off for signed documents. Choose Save to save your changes.	Қол қойылған құжаттар үшін автоматты сақтау өшірулі. Өзгерістерді сақтау үшін «Сақтау» пәрменін таңдаңыз.

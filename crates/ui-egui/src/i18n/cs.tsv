@@ -2540,3 +2540,4 @@ animation effects	Off	Vypnuto
 	Share…	Sdílet…
 	Couldn't share {name}: {e}	{name} nelze sdílet: {e}
 	Share changes after signing?	Sdílet změny po podpisu?
+	AutoSave is off for signed documents. Choose Save to save your changes.	Automatické ukládání je u podepsaných dokumentů vypnuté. Změny uložíte volbou Uložit.

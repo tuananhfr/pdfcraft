@@ -2430,3 +2430,4 @@ animation effects	Off	关
 	Share…	共享…
 	Couldn't share {name}: {e}	无法共享 {name}：{e}
 	Share changes after signing?	共享签署后的更改？
+	AutoSave is off for signed documents. Choose Save to save your changes.	已签名的文档不会自动保存。请选择“保存”来保存更改。

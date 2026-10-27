@@ -2429,3 +2429,4 @@ animation effects	Off	Изключени
 	Share…	Споделяне…
 	Couldn't share {name}: {e}	{name} не може да бъде споделен: {e}
 	Share changes after signing?	Споделяне на промените след подписването?
+	AutoSave is off for signed documents. Choose Save to save your changes.	Автоматичното записване е изключено за подписани документи. Изберете Запиши, за да запишете промените си.

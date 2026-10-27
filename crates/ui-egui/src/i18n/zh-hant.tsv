@@ -2247,3 +2247,4 @@ animation effects	Off	關
 	Share…	分享…
 	Couldn't share {name}: {e}	無法分享 {name}：{e}
 	Share changes after signing?	分享簽署後的變更？
+	AutoSave is off for signed documents. Choose Save to save your changes.	已簽署的文件不會自動儲存。請選擇「儲存」來儲存變更。

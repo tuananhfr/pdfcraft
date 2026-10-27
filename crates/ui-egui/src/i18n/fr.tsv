@@ -2466,3 +2466,4 @@ animation effects	Off	Désactivés
 	Share…	Partager…
 	Couldn't share {name}: {e}	Impossible de partager {name} : {e}
 	Share changes after signing?	Partager les modifications après signature ?
+	AutoSave is off for signed documents. Choose Save to save your changes.	L'enregistrement automatique est désactivé pour les documents signés. Choisissez Enregistrer pour enregistrer vos modifications.

@@ -2721,3 +2721,4 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	Share…	Chia sẻ…
 	Couldn't share {name}: {e}	Không chia sẻ được {name}: {e}
 	Share changes after signing?	Chia sẻ thay đổi sau khi ký?
+	AutoSave is off for signed documents. Choose Save to save your changes.	Tự động lưu đã tắt với tài liệu đã ký. Chọn Lưu để lưu thay đổi.

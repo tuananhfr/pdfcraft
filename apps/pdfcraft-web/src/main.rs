@@ -10,6 +10,9 @@ mod account;
 mod draft_state;
 
 #[cfg(target_arch = "wasm32")]
+mod erp_host;
+
+#[cfg(target_arch = "wasm32")]
 mod share;
 
 #[cfg(any(target_arch = "wasm32", test))]
@@ -91,6 +94,8 @@ fn main() {
                         app.drafts = Some(drafts::install(cc.egui_ctx.clone()));
                         // File ▸ Share…, when the office shell can share files (not in embed mode).
                         app.share = share::install();
+                        // Documents the office server holds (`window.erpHost` v1), never with the embed bridge.
+                        app.online = erp_host::install(&cc.egui_ctx);
                     }
                     // The office shell's PI ID session, when it offers one here (not in embed mode).
                     if let Some(account) = account::install() {
