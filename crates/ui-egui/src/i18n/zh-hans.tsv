@@ -2434,3 +2434,13 @@ animation effects	Off	关
 	This document is open for viewing only.	此文档以只读方式打开。
 	Downloading, printing and copying are turned off for this document.	此文档已禁用下载、打印和复制。
 	Commenting on the web is coming later; for now this document can only be viewed.	网页版评论功能即将推出；目前此文档仅可查看。
+	Sign in to PI ID to edit.	登录 PI ID 后即可编辑。
+	Choose an organization to edit.	选择一个组织后即可编辑。
+	This device was removed from your account. Sign in again to edit.	此设备已从您的账号中移除。重新登录后即可编辑。
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	您的账号已达到设备数量上限。请在 PI ID 中移除一台设备，然后在“账号”中点击“重试”。
+	This device is not activated for editing yet.	此设备尚未激活编辑功能。
+	Connect to the internet to renew your license and edit.	请连接互联网以续订许可证并继续编辑。
+	Your license could not be renewed yet. The app keeps trying.	暂时无法续订您的许可证。应用会继续重试。
+	This organization has no Office plan for editing.	此组织没有可用于编辑的 Office 套餐。
+	PI ID licensing is unavailable on this computer, so editing is off.	此电脑无法使用 PI ID 许可，因此编辑已关闭。
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft 可离线工作。编辑需要 PI ID 许可证。无遥测，除非您自行添加服务商，否则无云端处理。

@@ -2468,3 +2468,13 @@ animation effects	Off	Өшірулі
 	This document is open for viewing only.	Бұл құжат тек қарауға ашылған.
 	Downloading, printing and copying are turned off for this document.	Бұл құжат үшін жүктеп алу, басып шығару және көшіру өшірілген.
 	Commenting on the web is coming later; for now this document can only be viewed.	Вебте пікір қалдыру кейінірек қосылады; әзірге бұл құжатты тек қарауға болады.
+	Sign in to PI ID to edit.	Өңдеу үшін PI ID-ге кіріңіз.
+	Choose an organization to edit.	Өңдеу үшін ұйымды таңдаңыз.
+	This device was removed from your account. Sign in again to edit.	Бұл құрылғы тіркелгіңізден өшірілді. Өңдеу үшін қайта кіріңіз.
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	Тіркелгіңіз құрылғылар шегіне жетті. PI ID-де бір құрылғыны өшіріп, «Тіркелгі» бөлімінде «Қайталау» түймесін басыңыз.
+	This device is not activated for editing yet.	Бұл құрылғы өңдеу үшін әлі белсендірілмеген.
+	Connect to the internet to renew your license and edit.	Лицензияны жаңартып, өңдеу үшін интернетке қосылыңыз.
+	Your license could not be renewed yet. The app keeps trying.	Лицензияны әлі жаңарту мүмкін болмады. Қолданба әрекетті жалғастырады.
+	This organization has no Office plan for editing.	Бұл ұйымда өңдеуге арналған Office жоспары жоқ.
+	PI ID licensing is unavailable on this computer, so editing is off.	Бұл компьютерде PI ID лицензиясы қолжетімсіз, сондықтан өңдеу өшірулі.
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft офлайн жұмыс істейді. Өңдеу үшін PI ID лицензиясы керек. Провайдер қоспағаныңызша телеметрия да, бұлтта өңдеу де жоқ.

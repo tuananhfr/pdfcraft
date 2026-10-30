@@ -12,6 +12,7 @@ use egui::{Align2, Color32, CornerRadius, Pos2, Rect, Sense, Stroke, TextureHand
 use pdfcraft_engine::{DocId, Edit};
 use pdfcraft_render::{DestView, DocInfo, LayerOp, LinkTarget, PRINT_TAG, PageText, RenderPool, RenderRequest, RequestKind, Tile, device_pixels};
 
+use crate::account::EditLock;
 use crate::theme::{self, Tokens};
 use crate::touch_page::TouchInput;
 use crate::{PdfCraftApp, QuickTool, RightPanel, comments, icons, widgets};
@@ -2226,12 +2227,13 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
         (app.left_open && app.left == crate::LeftPanel::Tool("edit")) || matches!(app.quick_tool, QuickTool::AddText | QuickTool::EditText);
     let text_style = app.text_style.clone();
     let read_only = app.read_only_notice(app.views[index].id);
+    let licence = app.licence_locked(app.views[index].id);
     let view = &mut app.views[index];
     // Opened without the owner password and something is restricted.
     let secured = doc.security_summary().is_some_and(|s| !(s.owner || (s.permissions.modify() && s.permissions.assemble())));
     let repaired = !doc.repair_log().is_empty();
     crate::script_bar::show(&mut view.scripts_bar, doc, app.session.scripts_allowed(view.id), ui, &t);
-    match notices(view, doc, read_only, secured, repaired, crate::sign_ui::banner(&doc.signatures), ui, &t) {
+    match notices(view, doc, (read_only, licence), secured, repaired, crate::sign_ui::banner(&doc.signatures), ui, &t) {
         #[cfg(not(target_arch = "wasm32"))]
         Some(Notice::Reload) => app.watch.reload_request = Some(view.id),
         #[cfg(target_arch = "wasm32")]
@@ -2242,6 +2244,10 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
         Some(Notice::Signatures) => app.right = Some(RightPanel::Signatures),
         Some(Notice::FieldHighlights(on)) => app.view_defaults.highlight_fields = on,
         Some(Notice::Console) => app.dialog = Some(crate::Dialog::JsConsole),
+        Some(Notice::Account { sign_in }) => {
+            app.account.press_lock_button(sign_in);
+            ui.ctx().request_repaint();
+        }
         None => {}
     }
     // No dialog, close prompt or palette over the page: only then does page input count.
@@ -3654,7 +3660,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
                 app.notify(crate::cert_guard::no_changes_notice().to_string())
             }
             crate::forms_ui::FormNotice::Security if app.session.get(app.views[index].id).is_some_and(|d| d.limits().view_only) => {
-                app.notify(app.read_only_notice(app.views[index].id).to_string())
+                app.refuse_read_only(app.views[index].id)
             }
             crate::forms_ui::FormNotice::Security => app.notify_tr("The document's security settings don't allow filling in form fields"),
             crate::forms_ui::FormNotice::ReadOnly(name) => app.notify_fmt("{name} is read-only", &[("name", &name)]),
@@ -3976,6 +3982,10 @@ enum Notice {
     Console,
     /// Unlock… (enter the permissions password).
     Unlock,
+    /// The licence lock's Sign in or Account button: open the Account dialog, signing in first.
+    Account {
+        sign_in: bool,
+    },
 }
 
 /// The notice bar above the pages: the signature status first (Acrobat's signature bar), then
@@ -3984,7 +3994,7 @@ enum Notice {
 fn notices(
     view: &mut DocView,
     doc: &pdfcraft_engine::Document,
-    read_only: &str,
+    (read_only, licence): (&str, Option<EditLock>),
     secured: bool,
     repaired: bool,
     signed: Option<(&str, Color32, &str, String)>,
@@ -4030,6 +4040,9 @@ fn notices(
     let mut unlock = false;
     let mut open_repairs = false;
     let mut open_console = false;
+    // The licence lock's button, and whether it signs in.
+    let mut account = None;
+    let mut open_account = false;
     let mut toggled = None;
     // A form whose scripts were turned off no longer calculates or answers its buttons: that
     // comes before what else there is to say about the document.
@@ -4041,6 +4054,10 @@ fn notices(
             false,
         ))
     } else if doc.limits().view_only {
+        // The licence lock says how to lift it: sign in, or see why in the Account dialog.
+        if let Some(lock) = licence {
+            account = Some(lock == EditLock::SignIn);
+        }
         Some(("eye", read_only.to_string(), false))
     } else if scripts_off {
         Some(("triangle-alert", crate::js_ui::scripts_off_notice(), true))
@@ -4108,7 +4125,14 @@ fn notices(
         if repaired && !secured && info.fields.is_empty() && crate::widgets::pill_button(ui, tl!("Details"), false).clicked() {
             open_repairs = true;
         }
+        if let Some(sign_in) = account {
+            let label = if sign_in { tl!("Sign in") } else { tl!("Account") };
+            open_account = crate::widgets::pill_button(ui, label, sign_in).clicked();
+        }
     });
+    if let Some(sign_in) = account.filter(|_| open_account) {
+        return Some(Notice::Account { sign_in });
+    }
     if open_repairs {
         return Some(Notice::Repairs);
     }

@@ -2387,3 +2387,13 @@ animation effects	Off	Ανενεργά
 	This document is open for viewing only.	Αυτό το έγγραφο είναι ανοιχτό μόνο για προβολή.
 	Downloading, printing and copying are turned off for this document.	Η λήψη, η εκτύπωση και η αντιγραφή είναι απενεργοποιημένες για αυτό το έγγραφο.
 	Commenting on the web is coming later; for now this document can only be viewed.	Τα σχόλια στο web θα έρθουν αργότερα· προς το παρόν το έγγραφο είναι μόνο για προβολή.
+	Sign in to PI ID to edit.	Συνδεθείτε στο PI ID για επεξεργασία.
+	Choose an organization to edit.	Επιλέξτε οργανισμό για επεξεργασία.
+	This device was removed from your account. Sign in again to edit.	Αυτή η συσκευή αφαιρέθηκε από τον λογαριασμό σας. Συνδεθείτε ξανά για επεξεργασία.
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	Ο λογαριασμός σας έφτασε το όριο συσκευών. Αφαιρέστε μια συσκευή στο PI ID και πατήστε Επανάληψη στον Λογαριασμό.
+	This device is not activated for editing yet.	Αυτή η συσκευή δεν έχει ενεργοποιηθεί ακόμη για επεξεργασία.
+	Connect to the internet to renew your license and edit.	Συνδεθείτε στο διαδίκτυο για να ανανεώσετε την άδειά σας και να επεξεργαστείτε.
+	Your license could not be renewed yet. The app keeps trying.	Η άδειά σας δεν ανανεώθηκε ακόμη. Η εφαρμογή συνεχίζει να προσπαθεί.
+	This organization has no Office plan for editing.	Αυτός ο οργανισμός δεν έχει πρόγραμμα Office για επεξεργασία.
+	PI ID licensing is unavailable on this computer, so editing is off.	Η αδειοδότηση PI ID δεν είναι διαθέσιμη σε αυτόν τον υπολογιστή, οπότε η επεξεργασία είναι απενεργοποιημένη.
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	Το PdfCraft λειτουργεί εκτός σύνδεσης. Η επεξεργασία απαιτεί άδεια PI ID. Χωρίς τηλεμετρία και χωρίς επεξεργασία στο cloud, εκτός αν προσθέσετε πάροχο.

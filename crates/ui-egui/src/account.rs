@@ -5,8 +5,10 @@
 //!
 //! Only account state crosses the hook: never a document, its name or its path.
 
+mod lock;
 mod page;
 
+pub use lock::EditLock;
 pub(crate) use page::{body, help_menu_item, strip_button, warning_notice};
 
 use crate::{Dialog, PdfCraftApp};
@@ -24,6 +26,17 @@ pub trait AccountHook {
     fn warning_shown(&self, days: u32);
     /// Called once with the egui context so the adapter can request a repaint when its snapshot changes.
     fn attach(&self, ctx: &egui::Context);
+    /// Whether this host gates editing on a licence at all (the desktop app with PI licensing).
+    fn gates_editing(&self) -> bool {
+        false
+    }
+    /// Why editing is refused now, from cached state only: it is asked every frame. `None` (the
+    /// web) never locks.
+    fn edit_lock(&self) -> Option<EditLock> {
+        None
+    }
+    /// An edit was just refused for [`Self::edit_lock`]; the adapter may sync to lift it.
+    fn edit_refused(&self) {}
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -108,11 +121,16 @@ pub enum AccountError {
     Other,
 }
 
-/// Whether holding `feature` means a paid plan. `.view` and `.export` are pinned free and the built-in
-/// catalog lists `<product>.use` as free (products.md §2, §3); anything else needs an entitlement.
+/// Whether `feature` needs an entitlement or a lease. Only `.view` and `.export` are pinned free;
+/// `erpconsoffice.use` (editing) is `pro` from erpcons-account 0.5.0 (ADR 0013).
 pub fn is_pro_feature(feature: &str) -> bool {
-    let builtin_free = feature.split_once('.').is_some_and(|(_, name)| name == "use");
-    !(feature.ends_with(".view") || feature.ends_with(".export") || builtin_free)
+    !(feature.ends_with(".view") || feature.ends_with(".export"))
+}
+
+/// Whether holding `feature` means a paid plan: `pro`, but not `.use`, which the free Office plan
+/// grants too.
+pub fn is_paid_feature(feature: &str) -> bool {
+    is_pro_feature(feature) && !feature.ends_with(".use")
 }
 
 /// The avatar letter: the given name's first letter (Vietnamese names put it last, as the office
@@ -130,10 +148,19 @@ pub(crate) struct AccountState {
     snapshot: AccountSnapshot,
     /// The expiry warning closed in this run; hidden even before the adapter's snapshot drops it.
     dismissed: Option<WarningView>,
+    /// The hook's [`AccountHook::edit_lock`], read once per frame.
+    lock: Option<EditLock>,
+    /// The open documents are in view-only mode for `lock` (put on later than `lock` while a
+    /// dialog is open).
+    lock_applied: bool,
+    /// A locked document's notice button was pressed; whether it signs in. Handled next frame,
+    /// since the page that draws it holds the document.
+    lock_button: Option<bool>,
 }
 
 impl PdfCraftApp {
-    /// Whether `feature` may be used. True without an account hook; nothing is gated on it yet.
+    /// Whether `feature` may be used. True without an account hook; editing is gated through
+    /// [`AccountHook::edit_lock`] instead.
     pub fn allowed(&self, feature: &str) -> bool {
         self.account_hook.as_ref().is_none_or(|hook| hook.allowed(feature))
     }
@@ -216,12 +243,16 @@ mod tests {
     }
 
     #[test]
-    fn only_features_outside_the_free_built_ins_are_pro() {
-        for free in ["pdf.view", "pdf.export", "pdf.use", "vanban.view"] {
-            assert!(!is_pro_feature(free), "{free}");
+    fn only_view_and_export_are_free_and_use_is_not_paid() {
+        for free in ["erpconsoffice.view", "erpconsoffice.export", "vanban.view"] {
+            assert!(!is_pro_feature(free) && !is_paid_feature(free), "{free}");
         }
-        for pro in ["pdf.ocr", "pdf.redact", "pdf.use.extra", "pdf.viewer"] {
+        for pro in ["erpconsoffice.use", "pdf.use", "pdf.ocr", "pdf.redact", "pdf.use.extra", "pdf.viewer"] {
             assert!(is_pro_feature(pro), "{pro}");
+        }
+        assert!(!is_paid_feature("erpconsoffice.use"), "the free Office plan grants editing");
+        for paid in ["pdf.ocr", "erpconsoffice.redact", "pdf.use.extra"] {
+            assert!(is_paid_feature(paid), "{paid}");
         }
     }
 

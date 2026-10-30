@@ -2470,3 +2470,13 @@ animation effects	Off	オフ
 	This document is open for viewing only.	この文書は閲覧専用で開かれています。
 	Downloading, printing and copying are turned off for this document.	この文書ではダウンロード、印刷、コピーが無効になっています。
 	Commenting on the web is coming later; for now this document can only be viewed.	Web でのコメント機能は今後提供予定です。現在この文書は閲覧のみ可能です。
+	Sign in to PI ID to edit.	編集するには PI ID にサインインしてください。
+	Choose an organization to edit.	編集するには組織を選択してください。
+	This device was removed from your account. Sign in again to edit.	このデバイスはアカウントから削除されました。編集するにはもう一度サインインしてください。
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	アカウントのデバイス数が上限に達しました。PI ID でデバイスを削除してから、アカウントで「再試行」を押してください。
+	This device is not activated for editing yet.	このデバイスはまだ編集用に有効化されていません。
+	Connect to the internet to renew your license and edit.	ライセンスを更新して編集するには、インターネットに接続してください。
+	Your license could not be renewed yet. The app keeps trying.	ライセンスをまだ更新できていません。アプリは再試行を続けます。
+	This organization has no Office plan for editing.	この組織には編集用の Office プランがありません。
+	PI ID licensing is unavailable on this computer, so editing is off.	このコンピューターでは PI ID のライセンスを利用できないため、編集はオフです。
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft はオフラインで動作します。編集には PI ID のライセンスが必要です。使用状況の送信はなく、サービス提供元を追加しない限りクラウド処理も行いません。

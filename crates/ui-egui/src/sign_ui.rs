@@ -273,7 +273,7 @@ impl PdfCraftApp {
             return self.notify(crate::cert_guard::no_changes_notice().to_string());
         }
         if self.active_limits().view_only {
-            return self.notify(self.active_read_only_notice().to_string());
+            return self.refuse_active_read_only();
         }
         self.refresh_os_key_store_ids();
         let mut draft = SignDraft::new(page, rect, field, certify, &self.digital_ids);

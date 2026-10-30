@@ -2725,3 +2725,13 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	This document is open for viewing only.	Tài liệu này chỉ được mở để xem.
 	Downloading, printing and copying are turned off for this document.	Tải xuống, in và sao chép đã bị tắt với tài liệu này.
 	Commenting on the web is coming later; for now this document can only be viewed.	Nhận xét trên web sẽ có sau, hiện chỉ xem được
+	Sign in to PI ID to edit.	Đăng nhập PI ID để sửa.
+	Choose an organization to edit.	Chọn tổ chức để sửa.
+	This device was removed from your account. Sign in again to edit.	Thiết bị này đã bị gỡ khỏi tài khoản. Đăng nhập lại để sửa.
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	Tài khoản đã đạt giới hạn số thiết bị. Hãy gỡ bớt một thiết bị trong PI ID rồi bấm Thử lại trong Tài khoản.
+	This device is not activated for editing yet.	Thiết bị này chưa được kích hoạt để sửa.
+	Connect to the internet to renew your license and edit.	Kết nối Internet để gia hạn giấy phép và sửa tiếp.
+	Your license could not be renewed yet. The app keeps trying.	Chưa gia hạn được giấy phép. Ứng dụng sẽ tự thử lại.
+	This organization has no Office plan for editing.	Tổ chức này chưa có gói Office để sửa.
+	PI ID licensing is unavailable on this computer, so editing is off.	Không dùng được giấy phép PI ID trên máy này nên không sửa được.
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft hoạt động ngoại tuyến. Cần giấy phép PI ID để sửa. Không thu thập dữ liệu sử dụng và không xử lý trên đám mây, trừ khi bạn thêm một nhà cung cấp.

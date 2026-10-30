@@ -2290,3 +2290,13 @@ animation effects	Off	ఆఫ్
 	This document is open for viewing only.	ఈ పత్రం వీక్షించడానికి మాత్రమే తెరవబడింది.
 	Downloading, printing and copying are turned off for this document.	ఈ పత్రానికి డౌన్‌లోడ్, ముద్రణ మరియు కాపీ చేయడం ఆఫ్ చేయబడ్డాయి.
 	Commenting on the web is coming later; for now this document can only be viewed.	వెబ్‌లో వ్యాఖ్యలు తర్వాత అందుబాటులోకి వస్తాయి; ప్రస్తుతం ఈ పత్రాన్ని చూడటం మాత్రమే సాధ్యం.
+	Sign in to PI ID to edit.	సవరించడానికి PI IDకి సైన్ ఇన్ చేయండి.
+	Choose an organization to edit.	సవరించడానికి ఒక సంస్థను ఎంచుకోండి.
+	This device was removed from your account. Sign in again to edit.	ఈ పరికరం మీ ఖాతా నుండి తీసివేయబడింది. సవరించడానికి మళ్లీ సైన్ ఇన్ చేయండి.
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	మీ ఖాతా పరికరాల పరిమితిని చేరుకుంది. PI IDలో ఒక పరికరాన్ని తీసివేసి, ఆపై ఖాతాలో మళ్లీ ప్రయత్నించు నొక్కండి.
+	This device is not activated for editing yet.	ఈ పరికరం ఇంకా సవరణ కోసం యాక్టివేట్ కాలేదు.
+	Connect to the internet to renew your license and edit.	మీ లైసెన్స్‌ను పునరుద్ధరించి సవరించడానికి ఇంటర్నెట్‌కు కనెక్ట్ చేయండి.
+	Your license could not be renewed yet. The app keeps trying.	మీ లైసెన్స్ ఇంకా పునరుద్ధరించబడలేదు. యాప్ ప్రయత్నిస్తూనే ఉంటుంది.
+	This organization has no Office plan for editing.	ఈ సంస్థకు సవరణ కోసం Office ప్లాన్ లేదు.
+	PI ID licensing is unavailable on this computer, so editing is off.	ఈ కంప్యూటర్‌లో PI ID లైసెన్సింగ్ అందుబాటులో లేదు, కాబట్టి సవరణ ఆఫ్‌లో ఉంది.
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft ఆఫ్‌లైన్‌లో పనిచేస్తుంది. సవరించడానికి PI ID లైసెన్స్ అవసరం. టెలిమెట్రీ లేదు, మీరు ప్రొవైడర్‌ను జోడిస్తే తప్ప క్లౌడ్ ప్రాసెసింగ్ లేదు.

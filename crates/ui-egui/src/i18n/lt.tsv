@@ -2722,3 +2722,13 @@ key	Space	Tarpas
 	This document is open for viewing only.	Šis dokumentas atidarytas tik peržiūrai.
 	Downloading, printing and copying are turned off for this document.	Šiam dokumentui atsisiuntimas, spausdinimas ir kopijavimas išjungti.
 	Commenting on the web is coming later; for now this document can only be viewed.	Komentavimas žiniatinklyje bus vėliau; kol kas šį dokumentą galima tik peržiūrėti.
+	Sign in to PI ID to edit.	Prisijunkite prie PI ID, kad galėtumėte redaguoti.
+	Choose an organization to edit.	Pasirinkite organizaciją, kad galėtumėte redaguoti.
+	This device was removed from your account. Sign in again to edit.	Šis įrenginys pašalintas iš jūsų paskyros. Prisijunkite iš naujo, kad galėtumėte redaguoti.
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	Jūsų paskyra pasiekė įrenginių ribą. Pašalinkite įrenginį PI ID, tada skiltyje „Paskyra“ spustelėkite „Bandyti dar kartą“.
+	This device is not activated for editing yet.	Šis įrenginys dar neaktyvintas redagavimui.
+	Connect to the internet to renew your license and edit.	Prisijunkite prie interneto, kad atnaujintumėte licenciją ir galėtumėte redaguoti.
+	Your license could not be renewed yet. The app keeps trying.	Licencijos kol kas nepavyko atnaujinti. Programa bando toliau.
+	This organization has no Office plan for editing.	Ši organizacija neturi „Office“ plano redagavimui.
+	PI ID licensing is unavailable on this computer, so editing is off.	PI ID licencijavimas šiame kompiuteryje nepasiekiamas, todėl redaguoti negalima.
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	„PdfCraft“ veikia neprisijungus. Redaguoti reikia PI ID licencijos. Nerenkami telemetrijos duomenys ir nenaudojamos debesijos paslaugos, nebent pridėtumėte jų teikėją.

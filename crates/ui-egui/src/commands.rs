@@ -159,6 +159,9 @@ impl PdfCraftApp {
                 _ => tl!("Open a document first").to_string(),
             };
             self.notify(why);
+            if limited.is_some() {
+                self.licence_refused();
+            }
             return false;
         }
         let active = self.active;

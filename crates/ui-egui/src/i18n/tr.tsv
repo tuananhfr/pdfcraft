@@ -2466,3 +2466,13 @@ animation effects	Off	Kapalı
 	This document is open for viewing only.	Bu belge yalnızca görüntüleme için açık.
 	Downloading, printing and copying are turned off for this document.	Bu belge için indirme, yazdırma ve kopyalama kapatıldı.
 	Commenting on the web is coming later; for now this document can only be viewed.	Web'de yorum yapma daha sonra gelecek; şimdilik bu belge yalnızca görüntülenebilir.
+	Sign in to PI ID to edit.	Düzenlemek için PI ID'de oturum açın.
+	Choose an organization to edit.	Düzenlemek için bir kuruluş seçin.
+	This device was removed from your account. Sign in again to edit.	Bu cihaz hesabınızdan kaldırıldı. Düzenlemek için yeniden oturum açın.
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	Hesabınız cihaz sınırına ulaştı. PI ID'de bir cihazı kaldırın, ardından Hesap bölümünde Yeniden dene'ye basın.
+	This device is not activated for editing yet.	Bu cihaz henüz düzenleme için etkinleştirilmedi.
+	Connect to the internet to renew your license and edit.	Lisansınızı yenilemek ve düzenlemek için internete bağlanın.
+	Your license could not be renewed yet. The app keeps trying.	Lisansınız henüz yenilenemedi. Uygulama denemeye devam ediyor.
+	This organization has no Office plan for editing.	Bu kuruluşun düzenleme için Office planı yok.
+	PI ID licensing is unavailable on this computer, so editing is off.	PI ID lisanslaması bu bilgisayarda kullanılamıyor, bu yüzden düzenleme kapalı.
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft çevrimdışı çalışır. Düzenlemek için PI ID lisansı gerekir. Bir sağlayıcı eklemediğiniz sürece telemetri yok ve bulut işleme yok.

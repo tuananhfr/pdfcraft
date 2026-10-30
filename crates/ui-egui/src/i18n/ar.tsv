@@ -2491,3 +2491,13 @@ animation effects	Off	معطّلة
 	This document is open for viewing only.	هذا المستند مفتوح للعرض فقط.
 	Downloading, printing and copying are turned off for this document.	التنزيل والطباعة والنسخ معطّلة لهذا المستند.
 	Commenting on the web is coming later; for now this document can only be viewed.	التعليق على الويب سيتوفر لاحقًا؛ يمكن حاليًا عرض هذا المستند فقط.
+	Sign in to PI ID to edit.	سجّل الدخول إلى PI ID للتحرير.
+	Choose an organization to edit.	اختر مؤسسة للتحرير.
+	This device was removed from your account. Sign in again to edit.	أُزيل هذا الجهاز من حسابك. سجّل الدخول مجددًا للتحرير.
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	بلغ حسابك الحد الأقصى للأجهزة. أزل جهازًا من PI ID، ثم اضغط «إعادة المحاولة» في «الحساب».
+	This device is not activated for editing yet.	هذا الجهاز غير مفعّل للتحرير بعد.
+	Connect to the internet to renew your license and edit.	اتصل بالإنترنت لتجديد ترخيصك ومتابعة التحرير.
+	Your license could not be renewed yet. The app keeps trying.	تعذّر تجديد ترخيصك حتى الآن. يواصل التطبيق المحاولة.
+	This organization has no Office plan for editing.	لا تملك هذه المؤسسة خطة Office للتحرير.
+	PI ID licensing is unavailable on this computer, so editing is off.	ترخيص PI ID غير متاح على هذا الكمبيوتر، لذا التحرير متوقف.
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	يعمل PdfCraft دون اتصال. يتطلب التحرير ترخيص PI ID. لا قياس عن بُعد ولا معالجة سحابية إلا إذا أضفت مزوّدًا.

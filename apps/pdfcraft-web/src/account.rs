@@ -5,7 +5,7 @@
 //!
 //! The shell's snapshots are read as JSON, so an unexpected shape reads as a guest, never a panic.
 
-use pdfcraft_ui_egui::account::{AccountError, AccountSnapshot, AccountView, LicenceView, OrgView, SignedInView, is_pro_feature};
+use pdfcraft_ui_egui::account::{AccountError, AccountSnapshot, AccountView, LicenceView, OrgView, SignedInView, is_paid_feature};
 use serde_json::Value;
 
 #[cfg(target_arch = "wasm32")]
@@ -75,7 +75,7 @@ fn signed_in(snapshot: &Value, error: Option<AccountError>) -> SignedInView {
     let pro = snapshot
         .get("entitlements")
         .and_then(Value::as_array)
-        .is_some_and(|list| list.iter().filter_map(|e| e.get("feature").and_then(Value::as_str)).any(is_pro_feature));
+        .is_some_and(|list| list.iter().filter_map(|e| e.get("feature").and_then(Value::as_str)).any(is_paid_feature));
     SignedInView {
         name: text(user, "name").unwrap_or_default(),
         email: text(user, "email").filter(|e| !e.is_empty()),
@@ -95,7 +95,7 @@ mod browser {
 
     use eframe::wasm_bindgen::closure::Closure;
     use eframe::wasm_bindgen::{JsCast as _, JsValue};
-    use pdfcraft_ui_egui::account::{AccountError, AccountHook, AccountSnapshot, is_pro_feature};
+    use pdfcraft_ui_egui::account::{AccountError, AccountHook, AccountSnapshot, EditLock, is_pro_feature};
 
     use super::{enabled, error_of, snapshot_of};
 
@@ -270,6 +270,10 @@ mod browser {
         }
         // No lease, so no lease warning, on the web.
         fn warning_shown(&self, _days: u32) {}
+        // The web's free tier keeps editing: PI licensing gates the desktop apps only (ADR 0013).
+        fn edit_lock(&self) -> Option<EditLock> {
+            None
+        }
         fn attach(&self, ctx: &egui::Context) {
             with_bridge(|b| b.ctx = Some(ctx.clone()));
             ctx.request_repaint();
@@ -291,7 +295,7 @@ mod tests {
             "orgs": [{"id": "o1", "name": "Công ty A", "role": "member"}, {"id": "o2", "name": "Công ty B", "role": null}, {"name": "no id"}],
             "activeOrg": {"id": "o2", "name": "Công ty B", "role": null},
             "product": "pdf",
-            "entitlements": [{"id": "e1", "feature": "pdf.use", "scope": "personal", "orgId": null, "validTo": null, "offlineAllowed": true}],
+            "entitlements": [{"id": "e1", "feature": "erpconsoffice.use", "scope": "personal", "orgId": null, "validTo": null, "offlineAllowed": true}],
             "entitlementsFresh": true,
             "error": null
         })
@@ -319,7 +323,7 @@ mod tests {
         assert_eq!(view.orgs[0], OrgView { id: "o1".into(), name: "Công ty A".into(), role: Some("member".into()) });
         assert_eq!(view.orgs[1].role, None);
         assert_eq!(view.active_org.as_deref(), Some("o2"));
-        assert_eq!(view.licence, LicenceView::Free);
+        assert_eq!(view.licence, LicenceView::Free, "the free Office plan's erpconsoffice.use is no paid plan");
         assert!(view.online && !view.session_only && !view.reauth_required && view.warning.is_none());
 
         let mut pro = signed_in_snapshot();

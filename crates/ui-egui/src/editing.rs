@@ -156,7 +156,7 @@ impl PdfCraftApp {
                 false
             }
             Err(pdfcraft_engine::EditError::ViewOnly) => {
-                self.notify(self.read_only_notice(id).to_string());
+                self.refuse_read_only(id);
                 false
             }
             Err(e) => {

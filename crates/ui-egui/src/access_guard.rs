@@ -1,7 +1,8 @@
 //! What the app offers on a document whose embedding limits it ([`SessionLimits`], an online
-//! document of the office shell): opened for viewing or commenting, nothing may change it; with
-//! downloading turned off, it is not saved as a copy, exported, printed or copied from. The engine
-//! refuses such changes at its entry points; this greys the commands and drops the tools first.
+//! document of the office shell, or any document under the desktop's licence lock): opened for
+//! viewing or commenting, nothing may change it; with downloading turned off, it is not saved as a
+//! copy, exported, printed or copied from. The engine refuses such changes at its entry points;
+//! this greys the commands and drops the tools first.
 
 use pdfcraft_engine::catalog::ToolGroup;
 use pdfcraft_engine::commands::{self, CommandSpec, Needs};
@@ -77,9 +78,28 @@ impl PdfCraftApp {
         self.active_ids().and_then(|(_, id)| self.session.get(id)).map(pdfcraft_engine::Document::limits).unwrap_or_default()
     }
 
-    /// What view-only document `id` says when it refuses a change.
+    /// What view-only document `id` says when it refuses a change: the office shell's mode, else
+    /// the licence lock's reason.
     pub(crate) fn read_only_notice(&self, id: DocId) -> &'static str {
-        if self.host_comment_only(id) { comment_only_notice() } else { view_only_notice() }
+        if self.host_comment_only(id) {
+            return comment_only_notice();
+        }
+        match self.licence_locked(id) {
+            Some(lock) => lock.reason(),
+            None => view_only_notice(),
+        }
+    }
+
+    /// Say why view-only document `id` refused a change.
+    pub(crate) fn refuse_read_only(&mut self, id: DocId) {
+        self.notify(self.read_only_notice(id).to_string());
+        self.licence_refused();
+    }
+
+    /// [`Self::refuse_read_only`] for the active document.
+    pub(crate) fn refuse_active_read_only(&mut self) {
+        self.notify(self.active_read_only_notice().to_string());
+        self.licence_refused();
     }
 
     /// [`Self::read_only_notice`] of the active document.
@@ -89,7 +109,12 @@ impl PdfCraftApp {
 
     /// Why the active document's limits refuse command `spec` (its tooltip and notice), if they do.
     pub(crate) fn limits_refusal(&self, spec: &CommandSpec) -> Option<&'static str> {
-        refusal(self.active_limits(), spec, self.active_read_only_notice())
+        let mut limits = self.active_limits();
+        // Save stays under the licence lock, so changes made before it came are never stranded.
+        if spec.id == "file.save" && self.active_ids().is_some_and(|(_, id)| self.licence_locked(id).is_some()) {
+            limits.view_only = false;
+        }
+        refusal(limits, spec, self.active_read_only_notice())
     }
 
     /// Why the active document's limits refuse tool group `g` in All tools: something in it is
@@ -123,6 +148,9 @@ impl PdfCraftApp {
         if let Some(why) = why {
             self.quick_tool = QuickTool::Select;
             self.notify(why.to_string());
+            if limits.view_only {
+                self.licence_refused();
+            }
         }
     }
 }

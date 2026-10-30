@@ -2,7 +2,7 @@
 
 use egui::{Align2, Color32, RichText, Sense, TextWrapMode, vec2};
 
-use super::{AccountError, AccountSnapshot, AccountView, LicenceView, SignedInView, date_text, error_text};
+use super::{AccountError, AccountSnapshot, AccountView, EditLock, LicenceView, SignedInView, date_text, error_text};
 use crate::theme::{self, Tokens};
 use crate::{PdfCraftApp, i18n, icons, widgets};
 
@@ -22,15 +22,16 @@ enum Action {
 pub(crate) fn body(app: &mut PdfCraftApp, ui: &mut egui::Ui) -> bool {
     let Some(hook) = app.account_hook.clone() else { return true };
     let snapshot = app.account.snapshot.clone();
+    let lock = app.account.lock;
     let t = Tokens::get(ui.ctx());
     ui.label(RichText::new(tl!("Account")).font(theme::semibold(18.0)));
     ui.add_space(8.0);
     let mut action = None;
     match &snapshot.view {
         AccountView::Guest => {
-            ui.add(
-                egui::Label::new(RichText::new(tl!("Signing in is optional: every feature works without an account.")).color(t.text_muted)).wrap(),
-            );
+            // A host that gates editing says so instead: signing in is not optional there.
+            let intro = lock.map_or(tl!("Signing in is optional: every feature works without an account."), EditLock::reason);
+            ui.add(egui::Label::new(RichText::new(intro).color(t.text_muted)).wrap());
             ui.add_space(12.0);
             if ui.add_enabled_ui(!snapshot.busy, |ui| widgets::pill_button(ui, tl!("Sign in with PI ID"), true)).inner.clicked() {
                 action = Some(Action::SignIn);
@@ -47,7 +48,7 @@ pub(crate) fn body(app: &mut PdfCraftApp, ui: &mut egui::Ui) -> bool {
             }
         }
         AccountView::SignedIn(view) => {
-            ui.add_enabled_ui(!snapshot.busy, |ui| signed_in(ui, &app.session, view, &t, &mut action));
+            ui.add_enabled_ui(!snapshot.busy, |ui| signed_in(ui, &app.session, view, lock, &t, &mut action));
         }
     }
     if snapshot.busy && snapshot.view != AccountView::SigningIn {
@@ -83,7 +84,14 @@ fn shown_error(snapshot: &AccountSnapshot) -> Option<AccountError> {
     (!repeated).then_some(error)
 }
 
-fn signed_in(ui: &mut egui::Ui, session: &pdfcraft_engine::Session, view: &SignedInView, t: &Tokens, action: &mut Option<Action>) {
+fn signed_in(
+    ui: &mut egui::Ui,
+    session: &pdfcraft_engine::Session,
+    view: &SignedInView,
+    lock: Option<EditLock>,
+    t: &Tokens,
+    action: &mut Option<Action>,
+) {
     let name = display_name(view);
     // Wrapping would split a long name or address mid-word in a phone-wide dialog.
     one_line_label(ui, RichText::new(&name).font(theme::semibold(15.0)));
@@ -107,10 +115,15 @@ fn signed_in(ui: &mut egui::Ui, session: &pdfcraft_engine::Session, view: &Signe
         }
     }
     widgets::section_title(ui, tl!("License"));
-    for line in licence_lines(session, view.licence) {
-        ui.add(egui::Label::new(line).wrap());
+    if !lock_restates_licence(lock, view.licence) {
+        for line in licence_lines(session, view.licence) {
+            ui.add(egui::Label::new(line).wrap());
+        }
     }
-    if view.licence == LicenceView::DeviceCapReached {
+    if let Some(lock) = lock {
+        ui.add(egui::Label::new(RichText::new(lock.reason()).color(t.accent_text)).wrap());
+    }
+    if view.licence == LicenceView::DeviceCapReached || lock.is_some_and(EditLock::retry_offered) {
         ui.add_space(4.0);
         if widgets::pill_button(ui, tl!("Retry"), false).clicked() {
             *action = Some(Action::RetryActivation);
@@ -170,6 +183,14 @@ fn licence_lines(session: &pdfcraft_engine::Session, licence: LicenceView) -> Ve
         LicenceView::DeviceCapReached => vec![tl!("Your account has reached its device limit, so this device is not activated.").into()],
         LicenceView::SessionOnly => vec![tl!("Signed in for this session only: this computer has no credential store.").into()],
     }
+}
+
+/// The lock's reason states the licence line's fact too (one message per fact).
+fn lock_restates_licence(lock: Option<EditLock>, licence: LicenceView) -> bool {
+    matches!(
+        (lock, licence),
+        (Some(EditLock::DeviceRevoked), LicenceView::DeviceRevoked) | (Some(EditLock::DeviceCap), LicenceView::DeviceCapReached)
+    )
 }
 
 fn display_name(view: &SignedInView) -> String {

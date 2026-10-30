@@ -2544,3 +2544,13 @@ animation effects	Off	Vypnuto
 	This document is open for viewing only.	Tento dokument je otevřen pouze pro čtení.
 	Downloading, printing and copying are turned off for this document.	Stahování, tisk a kopírování jsou u tohoto dokumentu vypnuté.
 	Commenting on the web is coming later; for now this document can only be viewed.	Komentování na webu bude k dispozici později; zatím lze tento dokument jen prohlížet.
+	Sign in to PI ID to edit.	Pro úpravy se přihlaste k PI ID.
+	Choose an organization to edit.	Pro úpravy vyberte organizaci.
+	This device was removed from your account. Sign in again to edit.	Toto zařízení bylo odebráno z vašeho účtu. Pro úpravy se znovu přihlaste.
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	Váš účet dosáhl limitu zařízení. Odeberte zařízení v PI ID a pak klikněte na Zkusit znovu v části Účet.
+	This device is not activated for editing yet.	Toto zařízení zatím není aktivováno pro úpravy.
+	Connect to the internet to renew your license and edit.	Připojte se k internetu, abyste obnovili licenci a mohli upravovat.
+	Your license could not be renewed yet. The app keeps trying.	Licenci se zatím nepodařilo obnovit. Aplikace to dál zkouší.
+	This organization has no Office plan for editing.	Tato organizace nemá tarif Office pro úpravy.
+	PI ID licensing is unavailable on this computer, so editing is off.	Licencování PI ID není na tomto počítači dostupné, úpravy jsou proto vypnuté.
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft funguje offline. Úpravy vyžadují licenci PI ID. Žádná telemetrie a žádné zpracování v cloudu, pokud nepřidáte poskytovatele.

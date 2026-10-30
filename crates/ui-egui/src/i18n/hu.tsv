@@ -2469,3 +2469,13 @@ animation effects	Off	Ki
 	This document is open for viewing only.	Ez a dokumentum csak megtekintésre van megnyitva.
 	Downloading, printing and copying are turned off for this document.	A letöltés, a nyomtatás és a másolás ki van kapcsolva ennél a dokumentumnál.
 	Commenting on the web is coming later; for now this document can only be viewed.	A webes megjegyzések később érkeznek; egyelőre a dokumentum csak megtekinthető.
+	Sign in to PI ID to edit.	Jelentkezz be a PI ID-be a szerkesztéshez.
+	Choose an organization to edit.	Válassz szervezetet a szerkesztéshez.
+	This device was removed from your account. Sign in again to edit.	Ezt az eszközt eltávolították a fiókodból. Jelentkezz be újra a szerkesztéshez.
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	A fiókod elérte az eszközkorlátot. Távolíts el egy eszközt a PI ID-ben, majd kattints az Újrapróbálkozás gombra a Fiók részben.
+	This device is not activated for editing yet.	Ez az eszköz még nincs aktiválva a szerkesztéshez.
+	Connect to the internet to renew your license and edit.	Csatlakozz az internethez a licenc megújításához és a szerkesztéshez.
+	Your license could not be renewed yet. The app keeps trying.	A licencet még nem sikerült megújítani. Az alkalmazás tovább próbálkozik.
+	This organization has no Office plan for editing.	Ennek a szervezetnek nincs Office-csomagja a szerkesztéshez.
+	PI ID licensing is unavailable on this computer, so editing is off.	A PI ID-licencelés nem érhető el ezen a számítógépen, ezért a szerkesztés ki van kapcsolva.
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	A PdfCraft offline működik. A szerkesztéshez PI ID-licenc kell. Nincs telemetria, és nincs felhőfeldolgozás, amíg nem adsz hozzá szolgáltatót.

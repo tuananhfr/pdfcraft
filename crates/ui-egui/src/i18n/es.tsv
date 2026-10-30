@@ -2507,3 +2507,13 @@ animation effects	Off	Desactivados
 	This document is open for viewing only.	Este documento está abierto solo para lectura.
 	Downloading, printing and copying are turned off for this document.	La descarga, la impresión y la copia están desactivadas para este documento.
 	Commenting on the web is coming later; for now this document can only be viewed.	Los comentarios en la web llegarán más adelante; por ahora este documento solo se puede ver.
+	Sign in to PI ID to edit.	Inicia sesión en PI ID para editar.
+	Choose an organization to edit.	Elige una organización para editar.
+	This device was removed from your account. Sign in again to edit.	Este dispositivo se quitó de tu cuenta. Vuelve a iniciar sesión para editar.
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	Tu cuenta alcanzó su límite de dispositivos. Quita un dispositivo en PI ID y luego pulsa Reintentar en Cuenta.
+	This device is not activated for editing yet.	Este dispositivo aún no está activado para editar.
+	Connect to the internet to renew your license and edit.	Conéctate a Internet para renovar tu licencia y editar.
+	Your license could not be renewed yet. The app keeps trying.	Aún no se pudo renovar tu licencia. La aplicación lo sigue intentando.
+	This organization has no Office plan for editing.	Esta organización no tiene un plan de Office para editar.
+	PI ID licensing is unavailable on this computer, so editing is off.	Las licencias de PI ID no están disponibles en este equipo, así que la edición está desactivada.
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft funciona sin conexión. Para editar necesitas una licencia de PI ID. Sin telemetría y sin procesamiento en la nube, salvo que añadas un proveedor.

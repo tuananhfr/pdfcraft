@@ -2383,3 +2383,13 @@ animation effects	Off	Выкл
 	This document is open for viewing only.	Этот документ открыт только для просмотра.
 	Downloading, printing and copying are turned off for this document.	Скачивание, печать и копирование для этого документа отключены.
 	Commenting on the web is coming later; for now this document can only be viewed.	Комментирование в веб-версии появится позже; пока документ доступен только для просмотра.
+	Sign in to PI ID to edit.	Войдите в PI ID, чтобы редактировать.
+	Choose an organization to edit.	Выберите организацию, чтобы редактировать.
+	This device was removed from your account. Sign in again to edit.	Это устройство удалено из вашего аккаунта. Войдите снова, чтобы редактировать.
+	Your account has reached its device limit. Remove a device in PI ID, then press Retry in Account.	Ваш аккаунт достиг лимита устройств. Удалите устройство в PI ID, затем нажмите «Повторить» в разделе «Аккаунт».
+	This device is not activated for editing yet.	Это устройство ещё не активировано для редактирования.
+	Connect to the internet to renew your license and edit.	Подключитесь к интернету, чтобы продлить лицензию и редактировать.
+	Your license could not be renewed yet. The app keeps trying.	Лицензию пока не удалось продлить. Приложение продолжает попытки.
+	This organization has no Office plan for editing.	У этой организации нет тарифа Office для редактирования.
+	PI ID licensing is unavailable on this computer, so editing is off.	Лицензирование PI ID недоступно на этом компьютере, поэтому редактирование отключено.
+	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft работает офлайн. Для редактирования нужна лицензия PI ID. Без телеметрии и облачной обработки, если вы не добавите провайдера.

@@ -185,7 +185,9 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
             }
             ui.add_space(20.0);
             widgets::section_title(ui, tl!("Privacy"));
-            let privacy = if app.account_hook.is_some() {
+            let privacy = if app.account_hook.as_ref().is_some_and(|hook| hook.gates_editing()) {
+                tl!("PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.")
+            } else if app.account_hook.is_some() {
                 tl!("PdfCraft works offline. Signing in with PI ID is optional. No telemetry, and no cloud processing unless you add a provider.")
             } else {
                 tl!("PdfCraft works offline. No telemetry, no account, and no cloud processing unless you add a provider.")

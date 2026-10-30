@@ -2065,7 +2065,7 @@ impl PdfCraftApp {
             return self.notify(cert_guard::no_changes_notice().to_string());
         }
         if said == pdfcraft_engine::EditError::ViewOnly.to_string() {
-            return self.notify(self.active_read_only_notice().to_string());
+            return self.refuse_active_read_only();
         }
         if said == pdfcraft_engine::EditError::NoExtract.to_string() {
             return self.notify(access_guard::no_extract_notice().to_string());
@@ -3097,6 +3097,7 @@ impl eframe::App for PdfCraftApp {
         }
         self.poll_updates();
         self.poll_account(ctx);
+        self.apply_licence_lock();
         self.poll_print();
         // Shortcuts deferred last frame: the text field has taken that frame's typing since.
         let deferred = std::mem::take(&mut self.deferred_commands);
@@ -3129,6 +3130,8 @@ impl eframe::App for PdfCraftApp {
         self.process_file_requests();
         #[cfg(not(target_arch = "wasm32"))]
         self.process_picked();
+        // Documents opened this frame are drawn this frame: they take the licence lock first.
+        self.apply_licence_lock();
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
