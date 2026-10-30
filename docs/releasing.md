@@ -106,11 +106,12 @@ packaging/macos/package.sh --arch aarch64     # quicker, host-only; --arch unive
 ### Windows
 
 `packaging/windows/package.ps1 -Arch x64|x86|arm64` builds with `-C target-feature=+crt-static`, so
-neither the MSI nor the portable zip needs the Visual C++ redistributable.
+neither the MSI nor the portable zip needs the Visual C++ redistributable. In the ERPCons fork
+neither of them contains `pdfcraft-cli.exe`: the CLI edits PDFs without the PI licence gate the app
+enforces, so Windows releases ship the app alone (`ERPCONS-CHANGES.md`).
 
-- Before packaging, it reads both executables' PE headers: the machine type must match `-Arch`, and
-  `pdfcraft.exe` must be a GUI-subsystem program (no console window, #57) while `pdfcraft-cli.exe`
-  stays a console program.
+- Before packaging, it reads `pdfcraft.exe`'s PE header: the machine type must match `-Arch`, and it
+  must be a GUI-subsystem program (no console window, #57).
 - `pdfcraft.wxs` (WiX v5) installs per machine into Program Files with a Start Menu shortcut, a
   desktop shortcut (on by default) and an App Paths entry. Both shortcuts are plain links to
   `pdfcraft.exe`, not advertised MSI shortcuts (#107, #143). The MSI version is the numeric `X.Y.Z`
@@ -240,7 +241,7 @@ a match of the `CobaltStrikeBeacon` family rule.
    bundles neither, and the helper never runs in the app, the installer or CI:
 
    ```powershell
-   pwsh packaging/windows/security-audit.ps1 -Path .\pdfcraft.exe, .\pdfcraft-cli.exe -YaraExe C:\tools\yara64.exe -YaraRule C:\rules\CobaltStrikeBeacon.yar
+   pwsh packaging/windows/security-audit.ps1 -Path .\pdfcraft.exe -YaraExe C:\tools\yara64.exe -YaraRule C:\rules\CobaltStrikeBeacon.yar
    ```
 
    The output lists each matched identifier with its offset, and the SHA-256 of the rule file.

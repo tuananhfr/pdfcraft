@@ -16,7 +16,7 @@
   pwsh packaging/windows/security-audit.ps1 -Path dist\release\ERPCons-PDF-0.5.0-x64\pdfcraft.exe
 
 .EXAMPLE
-  pwsh packaging/windows/security-audit.ps1 -Path .\pdfcraft.exe, .\pdfcraft-cli.exe -YaraExe C:\tools\yara64.exe -YaraRule C:\rules\CobaltStrikeBeacon.yar
+  pwsh packaging/windows/security-audit.ps1 -Path .\pdfcraft.exe -YaraExe C:\tools\yara64.exe -YaraRule C:\rules\CobaltStrikeBeacon.yar
 #>
 param(
   [Parameter(Mandatory)] [string[]] $Path,

@@ -169,9 +169,8 @@
         <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.pdf\shell\ERPCons.PDF.Edit\command" Value="&quot;[#PdfcraftExe]&quot; &quot;%1&quot;" Type="string" />
       </Component>
 
-      <Component Id="PdfcraftCli" Guid="F34B0B24-5E7C-45A7-8F44-F3CD0772E21C">
-        <File Id="PdfcraftCliExe" Source="$(var.BinDir)\pdfcraft-cli.exe" KeyPath="yes" />
-      </Component>
+      <!-- No pdfcraft-cli.exe: it would edit PDFs without the PI licence gate. The major upgrade
+           removes the copy that earlier MSIs installed. -->
       <!-- The embedded ERPCons PDF icon's notice and project licences travel with the binaries. -->
       <Component Id="PdfcraftDocumentIconLicense" Guid="4B8B2A3E-9B91-4FA4-B4D1-A4428B9B3FAA">
         <File Id="PdfcraftDocumentIconLicenseFile" Source="$(var.BinDir)\LICENSE-document.txt" KeyPath="yes" />
