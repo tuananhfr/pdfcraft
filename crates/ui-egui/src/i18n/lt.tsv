@@ -2718,3 +2718,7 @@ key	Space	Tarpas
 	Share…	Bendrinti…
 	Couldn't share {name}: {e}	Nepavyko bendrinti {name}: {e}
 	Share changes after signing?	Bendrinti pakeitimus po pasirašymo?
+	AutoSave is off for signed documents. Choose Save to save your changes.	Pasirašytiems dokumentams automatinis įrašymas išjungtas. Norėdami įrašyti pakeitimus, pasirinkite „Įrašyti“.
+	This document is open for viewing only.	Šis dokumentas atidarytas tik peržiūrai.
+	Downloading, printing and copying are turned off for this document.	Šiam dokumentui atsisiuntimas, spausdinimas ir kopijavimas išjungti.
+	Commenting on the web is coming later; for now this document can only be viewed.	Komentavimas žiniatinklyje bus vėliau; kol kas šį dokumentą galima tik peržiūrėti.

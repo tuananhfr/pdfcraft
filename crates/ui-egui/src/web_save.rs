@@ -341,6 +341,15 @@ impl PdfCraftApp {
         let Some(doc) = self.session.get(p.doc) else { return };
         let name = if name.trim().is_empty() { p.name } else { name };
         let unchanged = doc.edit_generation() == p.generation;
+        // Save As of a server document writes a local copy: it stays the server's document, as
+        // unsaved as before and under its own name (erp-host rule 9).
+        if self.is_host_doc(p.doc) {
+            self.notify_fmt(if p.download { "Downloaded {name}" } else { "Saved {name}" }, &[("name", &name)]);
+            if unchanged {
+                (p.after)(self);
+            }
+            return;
+        }
         if unchanged && let Err(e) = self.session.mark_saved(p.doc, p.bytes, None) {
             self.save_failed(p.doc, "Saved, but reopening failed: {e}", &[("e", &e.to_string())]);
             return;

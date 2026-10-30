@@ -2465,3 +2465,7 @@ animation effects	Off	Ki
 	Share…	Megosztás…
 	Couldn't share {name}: {e}	{name} nem osztható meg: {e}
 	Share changes after signing?	Megosztja az aláírás utáni módosításokat?
+	AutoSave is off for signed documents. Choose Save to save your changes.	Az aláírt dokumentumoknál az automatikus mentés ki van kapcsolva. A módosítások mentéséhez válassza a Mentés lehetőséget.
+	This document is open for viewing only.	Ez a dokumentum csak megtekintésre van megnyitva.
+	Downloading, printing and copying are turned off for this document.	A letöltés, a nyomtatás és a másolás ki van kapcsolva ennél a dokumentumnál.
+	Commenting on the web is coming later; for now this document can only be viewed.	A webes megjegyzések később érkeznek; egyelőre a dokumentum csak megtekinthető.

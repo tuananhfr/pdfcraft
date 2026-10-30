@@ -2383,3 +2383,7 @@ animation effects	Off	Ανενεργά
 	Share…	Κοινή χρήση…
 	Couldn't share {name}: {e}	Δεν ήταν δυνατή η κοινή χρήση του {name}: {e}
 	Share changes after signing?	Κοινή χρήση των αλλαγών μετά την υπογραφή;
+	AutoSave is off for signed documents. Choose Save to save your changes.	Η αυτόματη αποθήκευση είναι απενεργοποιημένη για υπογεγραμμένα έγγραφα. Επιλέξτε Αποθήκευση για να αποθηκεύσετε τις αλλαγές σας.
+	This document is open for viewing only.	Αυτό το έγγραφο είναι ανοιχτό μόνο για προβολή.
+	Downloading, printing and copying are turned off for this document.	Η λήψη, η εκτύπωση και η αντιγραφή είναι απενεργοποιημένες για αυτό το έγγραφο.
+	Commenting on the web is coming later; for now this document can only be viewed.	Τα σχόλια στο web θα έρθουν αργότερα· προς το παρόν το έγγραφο είναι μόνο για προβολή.

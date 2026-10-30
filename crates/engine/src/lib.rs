@@ -26,6 +26,7 @@ mod copy_image;
 pub mod dates;
 pub mod export;
 pub mod js;
+mod limits;
 pub mod links;
 pub mod memory;
 pub mod ocr;
@@ -40,6 +41,7 @@ mod upright_image;
 pub mod xfa;
 
 pub use certification::{Breach as CertificationBreach, Conflict as CertificationConflict};
+pub use limits::SessionLimits;
 pub use signature_image::{ImageSignaturePreview, SignatureImage};
 pub use signature_scan::{PhotoRect, ScanError, SignaturePhoto, Turn};
 pub use text_preview::TextEditPreview;
@@ -358,6 +360,7 @@ pub struct Document {
     /// Why the document cannot be edited (e.g. encryption), if so.
     pub read_only_reason: Option<String>,
     read_only_permissions: Option<pdfcraft_cos::Permissions>,
+    limits: SessionLimits,
     /// Interactive form fields of the current state (empty without a form).
     pub form: Arc<Vec<pdfcraft_forms::Field>>,
     /// Page marks present (headers and footers, watermarks, backgrounds), for Update/Remove.
@@ -692,7 +695,7 @@ impl Document {
     }
 
     pub fn editable(&self) -> bool {
-        self.editor.is_some()
+        self.editor.is_some() && !self.limits.view_only
     }
 
     /// What the opening password allows; `None` when the document is not encrypted.
@@ -702,18 +705,21 @@ impl Document {
 
     /// Printing is allowed (Table 22, bit 3).
     pub fn allows_printing(&self) -> bool {
-        self.permissions().is_none_or(|p| p.print())
+        !self.limits.no_extract && self.permissions().is_none_or(|p| p.print())
     }
 
     /// Copying or otherwise extracting text and images is allowed (Table 22, bit 5): copying
     /// selected text, snapshots, Save Image As, exporting. Assistive technology may read the
     /// content regardless (§7.6.4.2), so reading aloud and accessibility tools don't ask.
     pub fn allows_copying(&self) -> bool {
-        self.permissions().is_none_or(|p| p.copy())
+        !self.limits.no_extract && self.permissions().is_none_or(|p| p.copy())
     }
 
     /// [`Self::allows_copying`], as the error to report when it isn't.
     pub fn check_copying(&self) -> Result<(), EditError> {
+        if self.limits.no_extract {
+            return Err(EditError::NoExtract);
+        }
         if self.allows_copying() { Ok(()) } else { Err(EditError::NotPermitted("copying text and images")) }
     }
 
@@ -2764,6 +2770,10 @@ pub enum EditError {
     Signed,
     #[error("this document is certified and its certification allows no changes")]
     CertifiedNoChanges,
+    #[error("this document is open for viewing only")]
+    ViewOnly,
+    #[error("copying, printing and exporting are turned off for this document")]
+    NoExtract,
     #[error("the unsaved changes would invalidate {0}: undo them, or save them to a copy")]
     BreaksSignatures(String),
     #[error("{0}")]
@@ -3415,6 +3425,7 @@ impl Session {
             unsaved_snapshot: false,
             read_only_reason,
             read_only_permissions: None,
+            limits: SessionLimits::default(),
             form: Arc::new(form),
             marks,
             added,
@@ -3446,6 +3457,10 @@ impl Session {
         let today = self.today();
         let scripts = self.scripts_allowed(id);
         let doc = self.doc_mut(id)?;
+        if doc.limits.view_only {
+            // Save As bakes Fill & Sign in first: the copy is written as the document stands.
+            return if matches!(&edit, Edit::FlattenFillSign) { Ok(()) } else { Err(EditError::ViewOnly) };
+        }
         doc.edit_notices.clear();
         let name = doc.name.clone();
         let is_xfa = doc.info.xfa.is_some();
@@ -3665,6 +3680,7 @@ impl Session {
 
     pub fn undo(&mut self, id: DocId) -> Result<Label, EditError> {
         let doc = self.doc_mut(id)?;
+        doc.check_not_view_only()?;
         doc.edit_notices.clear();
         let editor = doc.editor.as_mut().ok_or(EditError::NothingToUndo)?;
         let (label, prev, keys, scope, entry) = editor.undo.pop().ok_or(EditError::NothingToUndo)?;
@@ -3681,6 +3697,7 @@ impl Session {
 
     pub fn redo(&mut self, id: DocId) -> Result<Label, EditError> {
         let doc = self.doc_mut(id)?;
+        doc.check_not_view_only()?;
         doc.edit_notices.clear();
         let editor = doc.editor.as_mut().ok_or(EditError::NothingToRedo)?;
         let (label, next, keys, scope, entry) = editor.redo.pop().ok_or(EditError::NothingToRedo)?;
@@ -3924,6 +3941,7 @@ impl Session {
     /// signature: the signed file includes them.
     fn check_signing(&self, id: DocId, signing: bool) -> Result<(), EditError> {
         let doc = self.get(id).ok_or(EditError::NoDocument)?;
+        doc.check_not_view_only()?;
         if signing && doc.no_changes_certification().is_some() {
             return Err(EditError::CertifiedNoChanges);
         }
@@ -4062,6 +4080,7 @@ impl Session {
     /// cleared, as in Acrobat.
     pub fn revert(&mut self, id: DocId) -> Result<(), EditError> {
         let doc = self.doc_mut(id)?;
+        doc.check_not_view_only()?;
         let editor = doc.editor.as_mut().ok_or_else(|| EditError::ReadOnly(doc.read_only_reason.clone().unwrap_or_default()))?;
         let base = editor.cos.bytes().clone();
         // The saved file opens with the passwords of the state that was saved: try the current
@@ -4099,7 +4118,7 @@ impl Session {
     pub(crate) fn reload_with(&mut self, id: DocId, bytes: Arc<Vec<u8>>, scripts: bool) -> Result<(), OpenError> {
         let old = self.docs.iter().position(|d| d.id == id).ok_or_else(|| OpenError::Invalid("the document is not open".into()))?;
         let doc = &self.docs[old];
-        let (name, path, generation) = (doc.name.clone(), doc.path.clone(), doc.generation);
+        let (name, path, generation, limits) = (doc.name.clone(), doc.path.clone(), doc.generation, doc.limits);
         let next_transaction_id = doc.next_transaction_id;
         let password = doc.editor.as_ref().and_then(|e| e.keys.reopen.clone()).or_else(|| doc.password.clone());
         let context = OpenContext { scripts, ..self.open_context() };
@@ -4107,6 +4126,7 @@ impl Session {
         let at = self.docs.iter().position(|d| d.id == new_id).ok_or_else(|| OpenError::Invalid("the new version was not kept".into()))?;
         let mut doc = self.docs.remove(at);
         doc.id = id;
+        doc.limits = limits;
         doc.next_transaction_id = doc.next_transaction_id.max(next_transaction_id);
         // Caches keyed by the edit generation (edit lines, images, measurements) must see a new
         // one; there is nothing new to autosave.

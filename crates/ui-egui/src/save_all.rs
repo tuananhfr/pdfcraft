@@ -158,7 +158,7 @@ impl PdfCraftApp {
     /// held for a signature) ends the run (every frame).
     pub(crate) fn poll_save_all(&mut self) {
         let Some(current) = self.save_all.as_ref().and_then(|r| r.current) else { return };
-        if !self.web_save.as_ref().is_some_and(|w| w.is_pending(current)) {
+        if !self.web_save.as_ref().is_some_and(|w| w.is_pending(current)) && !self.host_save_pending(current) {
             self.save_all = None;
         }
     }

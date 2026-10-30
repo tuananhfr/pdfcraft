@@ -1,5 +1,5 @@
 //! Logs never name the user's documents (spec §07): no log line in the app, the shared UI or
-//! the engine interpolates something called a name, path, URL or file unless it goes through
+//! the engine interpolates something called a name, title, document id, path, URL or file unless it goes through
 //! `log_safe`, or is on the allowlist below with its reason. Command-line tools print the paths
 //! their user typed to the terminal; that is output, not a log, so `pdfcraft-cli` is not scanned.
 
@@ -22,7 +22,8 @@ const ALLOWED: [(&str, &str, &str); 2] =
     [("apps/pdfcraft/src/main.rs", "adapter.name", "the GPU adapter's name"), ("apps/pdfcraft/src/main.rs", "info.name", "the GPU device's name")];
 
 fn suspicious(word: &str) -> bool {
-    const WORDS: [&str; 7] = ["name", "path", "url", "uri", "file", "filename", "dir"];
+    // `title` and `doc_id`: how the office server's documents (erp-host) are known.
+    const WORDS: [&str; 9] = ["name", "path", "url", "uri", "file", "filename", "dir", "title", "doc_id"];
     WORDS.contains(&word) || WORDS.iter().any(|w| word.ends_with(&format!("_{w}")))
 }
 
@@ -196,6 +197,9 @@ fn the_scan_tells_a_leak_from_a_safe_line() {
     assert_eq!(leaks(r#""{} is too large to keep for reopening", closed.name"#), ["name"]);
     assert_eq!(leaks(r#""reveal {}: {e}", path.display()"#), ["path", ".display()"]);
     assert_eq!(leaks(r#""could not fetch {url}: {e}""#), ["url"]);
+    assert_eq!(leaks(r#""save of {} failed", record.doc_id"#), ["doc_id"]);
+    assert_eq!(leaks(r#""opened {}", doc.title"#), ["title"]);
+    assert_eq!(leaks(r#""{doc_id} is not open""#), ["doc_id"]);
     assert!(leaks(r#""a closed {} is too large", crate::log_safe::document(&closed.name, None)"#).is_empty());
     assert!(leaks(r#""no log file: {e}""#).is_empty(), "words of the message itself don't count");
     assert_eq!(

@@ -2466,3 +2466,7 @@ animation effects	Off	Désactivés
 	Share…	Partager…
 	Couldn't share {name}: {e}	Impossible de partager {name} : {e}
 	Share changes after signing?	Partager les modifications après signature ?
+	AutoSave is off for signed documents. Choose Save to save your changes.	L'enregistrement automatique est désactivé pour les documents signés. Choisissez Enregistrer pour enregistrer vos modifications.
+	This document is open for viewing only.	Ce document est ouvert en lecture seule.
+	Downloading, printing and copying are turned off for this document.	Le téléchargement, l'impression et la copie sont désactivés pour ce document.
+	Commenting on the web is coming later; for now this document can only be viewed.	Les commentaires sur le web arriveront plus tard ; pour l’instant, ce document est en lecture seule.

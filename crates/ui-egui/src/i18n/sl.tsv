@@ -2471,3 +2471,7 @@ animation effects	Off	Izklopljeni
 	Share…	Deli…
 	Couldn't share {name}: {e}	{name} ni bilo mogoče deliti: {e}
 	Share changes after signing?	Delim spremembe po podpisu?
+	AutoSave is off for signed documents. Choose Save to save your changes.	Samodejno shranjevanje je za podpisane dokumente izklopljeno. Spremembe shranite z ukazom Shrani.
+	This document is open for viewing only.	Ta dokument je odprt samo za ogled.
+	Downloading, printing and copying are turned off for this document.	Prenos, tiskanje in kopiranje so za ta dokument izklopljeni.
+	Commenting on the web is coming later; for now this document can only be viewed.	Komentiranje na spletu bo na voljo pozneje; zaenkrat si lahko dokument le ogledate.

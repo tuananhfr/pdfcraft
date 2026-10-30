@@ -2540,3 +2540,7 @@ animation effects	Off	Vypnuto
 	Share…	Sdílet…
 	Couldn't share {name}: {e}	{name} nelze sdílet: {e}
 	Share changes after signing?	Sdílet změny po podpisu?
+	AutoSave is off for signed documents. Choose Save to save your changes.	Automatické ukládání je u podepsaných dokumentů vypnuté. Změny uložíte volbou Uložit.
+	This document is open for viewing only.	Tento dokument je otevřen pouze pro čtení.
+	Downloading, printing and copying are turned off for this document.	Stahování, tisk a kopírování jsou u tohoto dokumentu vypnuté.
+	Commenting on the web is coming later; for now this document can only be viewed.	Komentování na webu bude k dispozici později; zatím lze tento dokument jen prohlížet.

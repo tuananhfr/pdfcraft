@@ -2503,3 +2503,7 @@ animation effects	Off	Desactivados
 	Share…	Compartir…
 	Couldn't share {name}: {e}	No se pudo compartir {name}: {e}
 	Share changes after signing?	¿Compartir los cambios posteriores a la firma?
+	AutoSave is off for signed documents. Choose Save to save your changes.	El guardado automático está desactivado en los documentos firmados. Elige Guardar para guardar los cambios.
+	This document is open for viewing only.	Este documento está abierto solo para lectura.
+	Downloading, printing and copying are turned off for this document.	La descarga, la impresión y la copia están desactivadas para este documento.
+	Commenting on the web is coming later; for now this document can only be viewed.	Los comentarios en la web llegarán más adelante; por ahora este documento solo se puede ver.

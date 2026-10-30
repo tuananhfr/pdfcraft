@@ -108,6 +108,16 @@ impl PdfCraftApp {
         same && (!self.session.certification_conflicts(id).is_empty() || self.session.signatures_affected(id).iter().any(|s| s.doc_mdp == Some(1)))
     }
 
+    /// The held save's "Save": the user confirmed writing these changes of the signed document.
+    pub(crate) fn confirm_held_save(&mut self) {
+        if let Some(held) = self.held_save.take()
+            && let Some(index) = self.views.iter().position(|v| v.id == held.doc)
+        {
+            self.signature_save_ack = self.session.get(held.doc).map(|d| (held.doc, d.edit_generation()));
+            self.save_guarded(index, held.target, held.after, false);
+        }
+    }
+
     /// The held save's "Save a copy…": Save As, unguarded, since the copy is a new file.
     fn save_held_as_copy(&mut self) {
         let Some(held) = self.held_save.take() else { return };
@@ -254,12 +264,7 @@ pub(crate) fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
             app.share_document(held.doc, by_pointer);
         }
     } else if confirm {
-        if let Some(held) = app.held_save.take()
-            && let Some(index) = app.views.iter().position(|v| v.id == held.doc)
-        {
-            app.signature_save_ack = app.session.get(held.doc).map(|d| (held.doc, d.edit_generation()));
-            app.save_guarded(index, held.target, held.after, false);
-        }
+        app.confirm_held_save();
     } else if copy {
         app.save_held_as_copy();
     } else if cancel || modal.should_close() {

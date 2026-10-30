@@ -2464,3 +2464,7 @@ animation effects	Off	Өшірулі
 	Share…	Бөлісу…
 	Couldn't share {name}: {e}	{name} бөлісу мүмкін болмады: {e}
 	Share changes after signing?	Қол қойылғаннан кейінгі өзгерістерді бөлісу керек пе?
+	AutoSave is off for signed documents. Choose Save to save your changes.	Қол қойылған құжаттар үшін автоматты сақтау өшірулі. Өзгерістерді сақтау үшін «Сақтау» пәрменін таңдаңыз.
+	This document is open for viewing only.	Бұл құжат тек қарауға ашылған.
+	Downloading, printing and copying are turned off for this document.	Бұл құжат үшін жүктеп алу, басып шығару және көшіру өшірілген.
+	Commenting on the web is coming later; for now this document can only be viewed.	Вебте пікір қалдыру кейінірек қосылады; әзірге бұл құжатты тек қарауға болады.

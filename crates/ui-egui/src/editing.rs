@@ -155,6 +155,10 @@ impl PdfCraftApp {
                 self.notify(crate::cert_guard::no_changes_notice().to_string());
                 false
             }
+            Err(pdfcraft_engine::EditError::ViewOnly) => {
+                self.notify(self.read_only_notice(id).to_string());
+                false
+            }
             Err(e) => {
                 let message = if matches!(edit, Edit::MoveObjects { .. }) { crate::object_ui::move_error(&e) } else { e.to_string() };
                 self.notify_fmt("{label} failed: {e}", &[("label", &crate::i18n::edit_label(&label)), ("e", &message)]);
@@ -611,6 +615,11 @@ impl PdfCraftApp {
         } else {
             after
         };
+        // A server document's Save goes to the shell, never a picker; its Save As stays a local
+        // copy (erp-host rule 9).
+        if target == SaveTarget::InPlace && self.is_host_doc(id) {
+            return self.online_save(id, after);
+        }
         if self.host_save.is_none() && self.web_save.is_some() {
             return self.web_save_then(id, target, after);
         }
@@ -917,8 +926,11 @@ impl PdfCraftApp {
     }
 
     /// Publish whether any document has unsaved work, for the browser's reload warning (#812).
+    /// The office shell guards its server documents itself (erp-host rule 10): counted here too,
+    /// the page would still ask right after a flush handed them over.
     pub(crate) fn sync_unsaved_flag(&self) {
-        self.unsaved_flag.store(self.first_dirty().is_some(), std::sync::atomic::Ordering::Relaxed);
+        let local_unsaved = self.views.iter().enumerate().any(|(i, v)| !self.is_host_doc(v.id) && self.has_unsaved_work(i));
+        self.unsaved_flag.store(local_unsaved, std::sync::atomic::Ordering::Relaxed);
     }
 
     /// Intercept window close while documents have unsaved changes.

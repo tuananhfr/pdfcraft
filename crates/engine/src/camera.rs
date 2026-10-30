@@ -133,6 +133,7 @@ impl Session {
         if let Some(why) = &doc.read_only_reason {
             return Err(EditError::ReadOnly(why.clone()));
         }
+        doc.check_not_view_only()?;
         let info = doc.info.pages.get(page).ok_or_else(|| EditError::Invalid(format!("there is no page {}", page.saturating_add(1))))?;
         let native = doc
             .page_images(page)

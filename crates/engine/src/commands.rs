@@ -436,8 +436,8 @@ pub fn is_enabled(spec: &CommandSpec, session: &Session, active: Option<DocId>) 
         Security => doc.is_some_and(|d| d.allows_security_change() || d.can_unlock()),
         ProtectedSecurity => doc.is_some_and(|d| (d.allows_security_change() || d.can_unlock()) && d.security_summary().is_some()),
         Unlock => doc.is_some_and(|d| d.can_unlock()),
-        Undo => doc.is_some_and(|d| d.can_undo().is_some()),
-        Redo => doc.is_some_and(|d| d.can_redo().is_some()),
+        Undo => doc.is_some_and(|d| d.editable() && d.can_undo().is_some()),
+        Redo => doc.is_some_and(|d| d.editable() && d.can_redo().is_some()),
     }
 }
 

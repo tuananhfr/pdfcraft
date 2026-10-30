@@ -58,7 +58,8 @@ fn all_tools(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &Tokens) {
     egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
         let shown = if app.all_tools_expanded { TOOL_GROUPS.len() } else { COLLAPSED_TOOLS.min(TOOL_GROUPS.len()) };
         for g in &TOOL_GROUPS[..shown] {
-            if tool_row(ui, t, g).clicked() {
+            let refused = app.tool_group_refusal(g);
+            if tool_row(ui, t, g, refused).clicked() && refused.is_none() {
                 app.select_tool(g.id);
             }
         }
@@ -89,13 +90,15 @@ fn row_label(ui: &mut egui::Ui, text: &str, font: egui::FontId, color: Color32, 
     elided
 }
 
-fn tool_row(ui: &mut egui::Ui, t: &Tokens, g: &ToolGroup) -> egui::Response {
+/// One group of All tools; `refused` greys it, saying why, as the ribbon does a refused command.
+fn tool_row(ui: &mut egui::Ui, t: &Tokens, g: &ToolGroup, refused: Option<&str>) -> egui::Response {
     let (rect, resp) = ui.allocate_exact_size(vec2(ui.available_width(), 34.0), Sense::click());
-    resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, tl!(g.label)));
+    resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, refused.is_none(), tl!(g.label)));
     let press = theme::Press::track(ui, &resp);
     press.wash(ui, rect, 6, false);
     let body = rect.translate(press.offset());
-    icons::paint(ui, Rect::from_min_size(body.min + vec2(6.0, 7.0), vec2(20.0, 20.0)), g.icon, 19.0, hue(g));
+    let (icon, label) = if refused.is_some() { (t.text_faint, t.text_muted) } else { (hue(g), t.text) };
+    icons::paint(ui, Rect::from_min_size(body.min + vec2(6.0, 7.0), vec2(20.0, 20.0)), g.icon, 19.0, icon);
     let right_reserved = match (g.badge, g.availability) {
         (Some(b), _) => ui.fonts_mut(|f| f.layout_no_wrap(tl!(b).to_owned(), theme::semibold(9.5), Color32::WHITE).size().x) + 26.0,
         (None, Availability::Planned(m)) if resp.hovered() => {
@@ -105,7 +108,7 @@ fn tool_row(ui: &mut egui::Ui, t: &Tokens, g: &ToolGroup) -> egui::Response {
         _ => 8.0,
     };
     let clipped =
-        row_label(ui, tl!(g.label), theme::regular(13.5), t.text, body.left_center() + vec2(36.0, 0.0), rect.width() - 36.0 - right_reserved);
+        row_label(ui, tl!(g.label), theme::regular(13.5), label, body.left_center() + vec2(36.0, 0.0), rect.width() - 36.0 - right_reserved);
     match (g.badge, g.availability) {
         (Some(b), _) => {
             let font = theme::semibold(9.5);
@@ -133,7 +136,10 @@ fn tool_row(ui: &mut egui::Ui, t: &Tokens, g: &ToolGroup) -> egui::Response {
         Availability::Provider => tl!("Optional: needs an AI provider you configure").into(),
     };
     let tip = if clipped { format!("{} — {tip}", tl!(g.label)) } else { tip };
-    theme::hand(resp).on_hover_text(tip)
+    match refused {
+        Some(why) => resp.on_hover_cursor(egui::CursorIcon::NotAllowed).on_hover_text(format!("{}\n{why}", tl!(g.label))),
+        None => theme::hand(resp).on_hover_text(tip),
+    }
 }
 
 fn tool_detail(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &Tokens, g: &'static ToolGroup) {
@@ -207,10 +213,11 @@ fn tool_detail(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &Tokens, g: &'static
                 if g.id == "fill_sign" && (item.command.starts_with("sign.fill.signature") || item.command.starts_with("sign.fill.initials")) {
                     continue;
                 }
-                // A certification greys what it forbids; the tooltip says so (the command would too).
+                // Session limits and a certification grey what they forbid; the tooltip says so
+                // (the command would too).
                 let refused = pdfcraft_engine::commands::command(item.command)
                     .filter(|spec| !app.command_enabled(spec))
-                    .and_then(|spec| app.certification_refusal(spec.needs));
+                    .and_then(|spec| app.limits_refusal(spec).or_else(|| app.certification_refusal(spec.needs)));
                 let (rect, resp) = ui.allocate_exact_size(vec2(ui.available_width(), 34.0), Sense::click());
                 resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, refused.is_none(), tl!(item.label)));
                 let ready = item.availability == Availability::Ready && refused.is_none();

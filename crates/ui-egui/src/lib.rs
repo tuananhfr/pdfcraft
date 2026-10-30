@@ -23,6 +23,7 @@ macro_rules! tl_ctx {
 }
 
 mod a11y_ui;
+mod access_guard;
 pub mod account;
 mod actions_ui;
 mod appearance;
@@ -95,10 +96,12 @@ mod home;
 mod icon_data;
 mod intake_result;
 pub mod icons;
+mod inline_edits;
 pub mod last_session;
 pub mod log_safe;
 pub mod motion;
 pub mod narrow;
+pub mod online;
 mod page_selection_ui;
 mod pageboxes;
 mod palette;
@@ -441,6 +444,8 @@ pub struct PasswordPrompt {
     /// The bytes are a web draft stored under this key ([`drafts`]): the document opens unsaved
     /// and keeps the key. Cancelling leaves the draft in the store.
     draft_key: Option<String>,
+    /// The bytes are a document the office server holds ([`online`]): once open it saves there.
+    host_doc: Option<online::PendingOpen>,
     /// The tool that asked for this file (a tool chosen with no document open): it runs once
     /// the document is unlocked.
     then: Option<&'static str>,
@@ -649,6 +654,7 @@ pub struct PdfCraftApp {
     /// Asynchronous opens that failed (web `?file=` fetches), shown as a notice.
     pub failed_inbox: FailedInbox,
     /// Mirrors "some document has unsaved work" each frame, so the web page's `beforeunload` handler can read it (#812).
+    /// Documents the office server holds are left out: the shell guards those ([`online`]).
     pub unsaved_flag: std::sync::Arc<std::sync::atomic::AtomicBool>,
     /// Requests from the operating system, polled every frame (macOS Apple events).
     pub os_events: Option<OsEventsFn>,
@@ -658,6 +664,9 @@ pub struct PdfCraftApp {
     pub host_dirty: Option<HostDirtyFn>,
     /// Web draft autosave into the page's draft store (`None`: off, as on desktop).
     pub drafts: Option<drafts::Drafts>,
+    /// Documents the office server holds, opened and saved through `window.erpHost` (web; `None`
+    /// on desktop and without the shell).
+    pub online: Option<online::Online>,
     /// Save through the browser's picker or a download (web; `None` on desktop). An embedding
     /// page's [`HostSaveFn`] comes first.
     pub web_save: Option<web_save::WebSaves>,
@@ -1023,6 +1032,7 @@ impl PdfCraftApp {
             host_save: None,
             host_dirty: None,
             drafts: None,
+            online: None,
             #[cfg(target_arch = "wasm32")]
             web_save: Some(web_save::WebSaves::new(Box::new(web_save_browser::Browser::default()))),
             #[cfg(not(target_arch = "wasm32"))]
@@ -1320,6 +1330,7 @@ impl PdfCraftApp {
                         activate: pending.activate,
                         recovered: pending.recovered,
                         draft_key: None,
+                        host_doc: None,
                         then: pending.then,
                         after_open: pending.after_open,
                     });
@@ -1355,6 +1366,7 @@ impl PdfCraftApp {
                     activate,
                     recovered: None,
                     draft_key: None,
+                    host_doc: None,
                     then: None,
                     after_open: None,
                 });
@@ -1653,6 +1665,9 @@ impl PdfCraftApp {
             if let Some(meta) = p.recovered {
                 self.recoverable.push(meta);
             }
+            if let Some(pending) = &p.host_doc {
+                self.host_open_cancelled(pending);
+            }
             return;
         };
         #[cfg(not(target_arch = "wasm32"))]
@@ -1701,6 +1716,9 @@ impl PdfCraftApp {
                 if let Some(key) = p.draft_key {
                     self.finish_draft_restore(key);
                 }
+                if let Some(pending) = p.host_doc {
+                    self.finish_host_open(pending);
+                }
                 if let Some(command) = p.then {
                     self.execute(command);
                 }
@@ -1711,6 +1729,7 @@ impl PdfCraftApp {
                 if let Some(prompt) = self.password_prompt.as_mut() {
                     prompt.recovered = p.recovered;
                     prompt.draft_key = p.draft_key;
+                    prompt.host_doc = p.host_doc;
                     prompt.then = p.then;
                     prompt.after_open = after_open;
                 }
@@ -1935,6 +1954,7 @@ impl PdfCraftApp {
         let id = self.views.remove(index).id;
         self.keep_closed(id);
         self.forget_recovery(id);
+        self.forget_host_doc(id);
         self.session.close(id);
         self.active = match self.active {
             _ if self.views.is_empty() => None,
@@ -2043,6 +2063,12 @@ impl PdfCraftApp {
         // A certification's refusal answers an editing tool, so it is said in the UI language.
         if said == pdfcraft_engine::EditError::CertifiedNoChanges.to_string() {
             return self.notify(cert_guard::no_changes_notice().to_string());
+        }
+        if said == pdfcraft_engine::EditError::ViewOnly.to_string() {
+            return self.notify(self.active_read_only_notice().to_string());
+        }
+        if said == pdfcraft_engine::EditError::NoExtract.to_string() {
+            return self.notify(access_guard::no_extract_notice().to_string());
         }
         self.notify(said);
     }
@@ -2278,7 +2304,7 @@ impl PdfCraftApp {
             "date_format": self.session.date_format(),
             // Null follows the interface language.
             "date_language": self.session.date_language(),
-            "author": self.comment_prefs.author,
+            "author": self.saved_author(),
             // Per-tool comment defaults (colours, opacity, widths), so Make Current
             // Properties Default survives a restart (#340).
             "comment_styles": self
@@ -2854,10 +2880,9 @@ impl PdfCraftApp {
     /// not. Reading aloud and accessibility tools don't ask (assistive technology may read
     /// anything, §7.6.4.2).
     pub(crate) fn may_copy(&mut self, id: DocId) -> bool {
-        if self.session.get(id).is_none_or(pdfcraft_engine::Document::allows_copying) {
-            return true;
-        }
-        self.notify(copy_refused().to_string());
+        let Some(doc) = self.session.get(id).filter(|d| !d.allows_copying()) else { return true };
+        let why = if doc.limits().no_extract { access_guard::no_extract_notice() } else { copy_refused() };
+        self.notify(why.to_string());
         false
     }
 
@@ -3010,6 +3035,7 @@ impl eframe::App for PdfCraftApp {
         }
         self.open_dropped_files();
         self.open_draft_restores();
+        self.open_host_documents();
         // Don't replace a pending prompt or import. A startup file may need its own password
         // prompt, so its bytes stay queued until the current interaction finishes.
         #[cfg(not(target_arch = "wasm32"))]
@@ -3076,6 +3102,7 @@ impl eframe::App for PdfCraftApp {
         let deferred = std::mem::take(&mut self.deferred_commands);
         self.shortcuts(ctx);
         self.refuse_tools_on_certified();
+        self.refuse_tools_on_limited();
         // Scrolling and group-drag previews are transient: never resume after changing tabs,
         // opening a modal/palette, or returning to a window that lost focus.
         let blocked = self.modal_open() || self.palette_open || !ctx.input(|i| i.focused);
@@ -3212,6 +3239,7 @@ impl PdfCraftApp {
         }
         // Last, so the drafts and the hidden-page flush include this frame's edits.
         self.drafts_tick(ctx);
+        self.online_tick(ctx);
     }
 }
 

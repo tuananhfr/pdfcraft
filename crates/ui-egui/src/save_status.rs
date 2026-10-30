@@ -24,7 +24,7 @@ pub(crate) struct SaveFailures(HashMap<DocId, (String, u64)>);
 impl PdfCraftApp {
     /// How the save of document `id` stands, if there is anything to say.
     pub fn save_state(&self, id: DocId) -> Option<SaveState> {
-        if self.web_save.as_ref().is_some_and(|s| s.is_pending(id)) {
+        if self.web_save.as_ref().is_some_and(|s| s.is_pending(id)) || self.host_save_pending(id) {
             return Some(SaveState::Saving);
         }
         let (message, generation) = self.save_failures.0.get(&id)?;
@@ -35,7 +35,11 @@ impl PdfCraftApp {
 
     /// A save of document `id` failed: tell the user now, and keep saying so on its tab.
     pub(crate) fn save_failed(&mut self, id: DocId, template: &str, args: &[(&str, &str)]) {
-        let message = crate::i18n::fmt(tl!(template), args);
+        self.save_failed_message(id, crate::i18n::fmt(tl!(template), args));
+    }
+
+    /// [`Self::save_failed`] with a message already in the user's words (the office shell's).
+    pub(crate) fn save_failed_message(&mut self, id: DocId, message: String) {
         self.notify(message.clone());
         let open: Vec<DocId> = self.views.iter().map(|v| v.id).collect();
         self.save_failures.0.retain(|doc, _| open.contains(doc));

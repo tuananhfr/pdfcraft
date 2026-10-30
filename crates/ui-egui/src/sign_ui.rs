@@ -272,6 +272,9 @@ impl PdfCraftApp {
         if self.active_ids().and_then(|(_, id)| self.session.get(id)).is_some_and(|d| d.no_changes_certification().is_some()) {
             return self.notify(crate::cert_guard::no_changes_notice().to_string());
         }
+        if self.active_limits().view_only {
+            return self.notify(self.active_read_only_notice().to_string());
+        }
         self.refresh_os_key_store_ids();
         let mut draft = SignDraft::new(page, rect, field, certify, &self.digital_ids);
         draft.graphic = match &self.sign_graphic {

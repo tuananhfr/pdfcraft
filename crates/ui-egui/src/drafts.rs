@@ -371,6 +371,10 @@ impl PdfCraftApp {
         let states: Vec<DocState> = (0..self.views.len())
             .filter_map(|i| {
                 let id = self.views.get(i)?.id;
+                // The server holds these and the shell their unsent bytes (erp-host rule 8).
+                if self.is_host_doc(id) {
+                    return None;
+                }
                 let doc = self.session.get(id)?;
                 // A browser save leaves the document dirty until the file is written (`web_save`),
                 // and a host's save settles at once, so dirty is all of Unsaved.

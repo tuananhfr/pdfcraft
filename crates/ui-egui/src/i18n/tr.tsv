@@ -2462,3 +2462,7 @@ animation effects	Off	Kapalı
 	Share…	Paylaş…
 	Couldn't share {name}: {e}	{name} paylaşılamadı: {e}
 	Share changes after signing?	İmzadan sonraki değişiklikler paylaşılsın mı?
+	AutoSave is off for signed documents. Choose Save to save your changes.	İmzalı belgelerde otomatik kaydetme kapalıdır. Değişikliklerinizi kaydetmek için Kaydet'i seçin.
+	This document is open for viewing only.	Bu belge yalnızca görüntüleme için açık.
+	Downloading, printing and copying are turned off for this document.	Bu belge için indirme, yazdırma ve kopyalama kapatıldı.
+	Commenting on the web is coming later; for now this document can only be viewed.	Web'de yorum yapma daha sonra gelecek; şimdilik bu belge yalnızca görüntülenebilir.

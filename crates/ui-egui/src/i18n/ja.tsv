@@ -2466,3 +2466,7 @@ animation effects	Off	オフ
 	Share…	共有…
 	Couldn't share {name}: {e}	{name} を共有できませんでした: {e}
 	Share changes after signing?	署名後の変更を共有しますか？
+	AutoSave is off for signed documents. Choose Save to save your changes.	署名済みの文書では自動保存はオフです。変更を保存するには［保存］を選んでください。
+	This document is open for viewing only.	この文書は閲覧専用で開かれています。
+	Downloading, printing and copying are turned off for this document.	この文書ではダウンロード、印刷、コピーが無効になっています。
+	Commenting on the web is coming later; for now this document can only be viewed.	Web でのコメント機能は今後提供予定です。現在この文書は閲覧のみ可能です。

@@ -186,6 +186,10 @@ impl PdfCraftApp {
             self.notify(why);
             return;
         }
+        if self.active_limits().view_only {
+            self.notify(self.active_read_only_notice().to_string());
+            return;
+        }
         self.ocr_draft.initialize_language(crate::i18n::Lang::from_pref(&self.language).code());
         let d = &self.ocr_draft;
         let pages: Vec<usize> = match d.pages {
