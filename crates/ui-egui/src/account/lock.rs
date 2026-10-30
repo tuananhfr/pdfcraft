@@ -1,8 +1,10 @@
 //! The licence lock: while the host's [`super::AccountHook::edit_lock`] says editing is refused (the
 //! desktop app without a PI lease), every open document is in the session's view-only mode, the
-//! same one the office shell's view mode uses, with the licence reason as its notice. Opening,
-//! viewing, saving, exporting and printing stay; lifting the lock needs no reopening.
+//! same one the office shell's view mode uses, with the licence reason as its notice. Tools that
+//! make new PDFs are refused with the same reason. Opening, viewing, saving, exporting and printing
+//! stay; lifting the lock needs no reopening.
 
+use pdfcraft_engine::commands::CommandSpec;
 use pdfcraft_engine::{DocId, SessionLimits};
 
 use crate::PdfCraftApp;
@@ -118,13 +120,53 @@ impl PdfCraftApp {
 
     /// The licence lock refused an edit: the host may sync, since a new lease would lift it.
     pub(crate) fn licence_refused(&self) {
-        if self.account.lock_applied
+        if (self.account.lock_applied || self.account.lock.is_some())
             && let Some(hook) = &self.account_hook
         {
             hook.edit_refused();
         }
     }
+
+    /// The licence lock that refuses making new files now (it does not wait for a dialog to close).
+    pub(crate) fn creation_lock(&self) -> Option<EditLock> {
+        self.account.lock
+    }
+
+    /// Why the licence lock refuses command `spec`, which writes a new file without changing the
+    /// open document, if it does.
+    pub(crate) fn creation_refusal(&self, spec: &CommandSpec) -> Option<&'static str> {
+        if !CREATING.contains(&spec.id) {
+            return None;
+        }
+        self.account.lock.map(EditLock::reason)
+    }
+
+    /// Refuse making a new PDF outside a command (a file converted on opening, the Combine tab,
+    /// a comparison report) under the licence lock, saying why. Returns whether it refused.
+    pub(crate) fn refuse_creation(&mut self) -> bool {
+        let Some(lock) = self.account.lock else { return false };
+        self.notify(lock.reason().to_string());
+        self.licence_refused();
+        true
+    }
 }
+
+/// Commands that write a new file from other files or from nothing. PI's `use` feature covers
+/// creating as well as editing, so the licence lock refuses them; exporting the open document doesn't.
+const CREATING: &[&str] = &[
+    "create.blank",
+    "create.file",
+    "create.multiple",
+    "create.multiple_separate",
+    "create.images",
+    "create.clipboard",
+    "page.combine",
+    "actions.wizard",
+    "actions.distribution",
+    "actions.optimize_scans",
+    "ocr.recognize_batch",
+    "form.merge_data",
+];
 
 #[cfg(test)]
 mod tests {
@@ -150,5 +192,13 @@ mod tests {
         }
         i18n::set_current(Lang::EN);
         assert_eq!(EditLock::SignIn.reason(), "Sign in to PI ID to edit.");
+    }
+
+    #[test]
+    fn creating_commands_exist_and_need_no_document() {
+        for id in super::CREATING {
+            let spec = pdfcraft_engine::commands::command(id).unwrap_or_else(|| panic!("{id} is not a command"));
+            assert_eq!(spec.needs, pdfcraft_engine::commands::Needs::Nothing, "{id}");
+        }
     }
 }

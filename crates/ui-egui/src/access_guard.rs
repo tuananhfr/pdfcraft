@@ -109,6 +109,9 @@ impl PdfCraftApp {
 
     /// Why the active document's limits refuse command `spec` (its tooltip and notice), if they do.
     pub(crate) fn limits_refusal(&self, spec: &CommandSpec) -> Option<&'static str> {
+        if let Some(why) = self.creation_refusal(spec) {
+            return Some(why);
+        }
         let mut limits = self.active_limits();
         // Save stays under the licence lock, so changes made before it came are never stranded.
         if spec.id == "file.save" && self.active_ids().is_some_and(|(_, id)| self.licence_locked(id).is_some()) {
@@ -121,13 +124,13 @@ impl PdfCraftApp {
     /// refused and what is left only views the document (a tool for viewing stays offered).
     pub(crate) fn tool_group_refusal(&self, g: &ToolGroup) -> Option<&'static str> {
         let limits = self.active_limits();
-        if limits == SessionLimits::default() {
+        if limits == SessionLimits::default() && self.creation_lock().is_none() {
             return None;
         }
         let mut why = None;
         for item in g.sections.iter().flat_map(|s| s.items) {
             let Some(spec) = commands::command(item.command).filter(|spec| self.command_shown(spec)) else { continue };
-            match refusal(limits, spec, self.active_read_only_notice()) {
+            match self.creation_refusal(spec).or_else(|| refusal(limits, spec, self.active_read_only_notice())) {
                 Some(refused) => why = why.or(Some(refused)),
                 None if matches!(spec.needs, Needs::Document | Needs::Nothing) => {}
                 None => return None,

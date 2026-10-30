@@ -207,6 +207,7 @@ impl PdfCraftApp {
                 }
                 Err(e) => self.notify_error(e),
             },
+            PanelAction::Report if self.refuse_creation() => {}
             PanelAction::Report => match self.session.compare_report(old, new) {
                 Ok(bytes) => {
                     if let Err(e) = self.open_bytes("Compare Report.pdf", None, bytes.to_vec()) {

@@ -93,6 +93,11 @@ impl PdfCraftApp {
         if !matches!(pdfcraft_engine::source_kind(name, bytes), Some(SourceKind::Image | SourceKind::Text)) {
             return None;
         }
+        // Opening an image or a text file creates a PDF, which the licence lock refuses like Create.
+        if let Some(lock) = self.creation_lock() {
+            self.licence_refused();
+            return Some(Err(lock.reason().to_string()));
+        }
         let created = self.session.convert_to_pdf(name, &Arc::new(bytes.to_vec())).map(|(_, pdf)| pdf);
         Some(self.open_created_bytes(&format!("{}.pdf", stem(name)), created.map_err(|e| e.to_string())))
     }
@@ -197,7 +202,7 @@ impl PdfCraftApp {
 
     /// Stage selected images for the DPI chooser; no document is created until confirmed.
     pub fn begin_image_import(&mut self, images: Vec<(String, Vec<u8>)>) {
-        if images.is_empty() {
+        if images.is_empty() || self.refuse_creation() {
             return;
         }
         self.image_import = Some(ImageImport { images, choice: ResolutionChoice::Image, dpi: 300.0 });
@@ -205,6 +210,11 @@ impl PdfCraftApp {
     }
 
     pub(crate) fn finish_image_import(&mut self) {
+        // `--create-images` stages before the first frame has read the lock, so check again here.
+        if self.refuse_creation() {
+            self.image_import = None;
+            return;
+        }
         let Some(draft) = self.image_import.take() else { return };
         let resolution = match draft.choice {
             ResolutionChoice::Image => pdfcraft_engine::ImageResolution::Embedded,

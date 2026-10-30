@@ -2570,6 +2570,10 @@ impl PdfCraftApp {
     /// Combine the listed files into a new, unsaved document; the tab makes way for it.
     /// Files that can't be read are left out (the user was asked).
     pub fn combine_staged(&mut self) {
+        // The tab may have been open before the lock came; the list stays for later.
+        if self.combine_draft.iter().any(|f| !f.unreadable()) && self.refuse_creation() {
+            return;
+        }
         let files: Vec<&CombineFile> = self.combine_draft.iter().filter(|f| !f.unreadable()).collect();
         if files.is_empty() {
             return;

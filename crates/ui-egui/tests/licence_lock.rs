@@ -1,6 +1,7 @@
 //! The desktop's licence lock through a fake account hook: while the hook names a lock, every open
 //! document is view-only with the lock's reason, yet opens, saves, exports and prints; lifting it
-//! restores editing with the undo history; a hook without a lock (the web's) never locks.
+//! restores editing with the undo history; tools that make new PDFs are refused too; a hook without
+//! a lock (the web's) never locks.
 //!
 //! `PDFCRAFT_ACCOUNT_SHOTS=<dir>` also saves screenshots of the locked states.
 
@@ -317,4 +318,86 @@ fn a_hook_without_a_lock_never_locks_like_the_web() {
     h.get_by_label("Home").click();
     h.run_steps(2);
     h.get_by_label_contains("Editing needs a PI ID license");
+}
+
+/// Every command that writes a new file from other files or from nothing.
+const CREATING: [&str; 12] = [
+    "create.blank",
+    "create.file",
+    "create.multiple",
+    "create.multiple_separate",
+    "create.images",
+    "create.clipboard",
+    "page.combine",
+    "actions.wizard",
+    "actions.distribution",
+    "actions.optimize_scans",
+    "ocr.recognize_batch",
+    "form.merge_data",
+];
+
+#[test]
+fn creating_pdfs_is_locked_for_a_guest_and_allowed_with_a_lease() {
+    let hook = Licensed::locked(EditLock::SignIn);
+    let mut h = harness(hook.clone(), None);
+    for id in CREATING {
+        assert!(!h.state_mut().execute(id), "{id} is refused");
+        h.run_steps(1);
+        assert_eq!(toast(&h).as_deref(), Some("Sign in to PI ID to edit."), "{id} says why");
+        assert_eq!(h.state().dialog, None, "{id} opens nothing");
+    }
+    assert!(!h.state().combine_showing(), "Combine files doesn't open");
+    assert_eq!(h.state().views.len(), 1, "no new document");
+    assert!(hook.calls().contains(&"edit_refused".to_owned()), "the refusal asks the host to sync");
+
+    // Opening a text file or an image creates a PDF too.
+    let error = h.state_mut().open_bytes("Ghi chu.txt", None, b"Xin chao".to_vec()).unwrap_err();
+    assert_eq!(error, "Sign in to PI ID to edit.");
+    assert_eq!(h.state().views.len(), 1);
+    // Opening a PDF stays free.
+    h.state_mut().open_bytes("Second.pdf", None, fixture()).unwrap();
+    h.run_steps(2);
+    assert_eq!(h.state().views.len(), 2);
+
+    hook.set_lock(None);
+    h.run_steps(2);
+    assert!(h.state_mut().execute("create.blank"), "a lease allows Create");
+    assert_eq!(h.state().views.len(), 3);
+    h.state_mut().open_bytes("Ghi chu.txt", None, b"Xin chao".to_vec()).unwrap();
+    assert_eq!(h.state().views.len(), 4, "the text file became a PDF");
+    assert!(h.state_mut().execute("page.combine"), "a lease allows Combine");
+    h.run_steps(2);
+    assert!(h.state().combine_showing());
+}
+
+#[test]
+fn the_combine_tab_open_before_the_lock_combines_only_with_a_lease() {
+    let hook = Arc::new(Licensed::default());
+    let mut h = harness(hook.clone(), None);
+    h.state_mut().use_files(pdfcraft_ui_egui::FilePurpose::Combine, vec![("A.pdf".into(), fixture()), ("B.pdf".into(), fixture())]);
+    h.run_steps(4);
+    assert!(h.state().combine_showing());
+    hook.set_lock(Some(EditLock::NoPlan));
+    h.run_steps(2);
+    h.state_mut().combine_staged();
+    h.run_steps(1);
+    assert_eq!(toast(&h).as_deref(), Some("This organization has no Office plan for editing."));
+    assert_eq!(h.state().views.len(), 1, "nothing combined");
+    assert_eq!(h.state().combine_draft.len(), 2, "the list stays");
+    assert!(hook.calls().contains(&"edit_refused".to_owned()));
+
+    hook.set_lock(None);
+    h.run_steps(2);
+    h.state_mut().combine_staged();
+    h.run_steps(2);
+    assert_eq!(h.state().views.len(), 2, "combined into a new document");
+    assert!(!h.state().combine_showing());
+}
+
+#[test]
+fn creating_pdfs_is_never_locked_on_the_web() {
+    let mut h = harness(Arc::new(Ungated), None);
+    assert!(h.state_mut().execute("create.blank"));
+    assert_eq!(h.state().views.len(), 2);
+    assert!(h.state_mut().execute("page.combine"));
 }
