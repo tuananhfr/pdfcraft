@@ -2225,12 +2225,13 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     let editing_content =
         (app.left_open && app.left == crate::LeftPanel::Tool("edit")) || matches!(app.quick_tool, QuickTool::AddText | QuickTool::EditText);
     let text_style = app.text_style.clone();
+    let read_only = app.read_only_notice(app.views[index].id);
     let view = &mut app.views[index];
     // Opened without the owner password and something is restricted.
     let secured = doc.security_summary().is_some_and(|s| !(s.owner || (s.permissions.modify() && s.permissions.assemble())));
     let repaired = !doc.repair_log().is_empty();
     crate::script_bar::show(&mut view.scripts_bar, doc, app.session.scripts_allowed(view.id), ui, &t);
-    match notices(view, doc, secured, repaired, crate::sign_ui::banner(&doc.signatures), ui, &t) {
+    match notices(view, doc, read_only, secured, repaired, crate::sign_ui::banner(&doc.signatures), ui, &t) {
         #[cfg(not(target_arch = "wasm32"))]
         Some(Notice::Reload) => app.watch.reload_request = Some(view.id),
         #[cfg(target_arch = "wasm32")]
@@ -3652,6 +3653,9 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
             crate::forms_ui::FormNotice::Security if app.session.get(app.views[index].id).is_some_and(|d| d.no_changes_certification().is_some()) => {
                 app.notify(crate::cert_guard::no_changes_notice().to_string())
             }
+            crate::forms_ui::FormNotice::Security if app.session.get(app.views[index].id).is_some_and(|d| d.limits().view_only) => {
+                app.notify(app.read_only_notice(app.views[index].id).to_string())
+            }
             crate::forms_ui::FormNotice::Security => app.notify_tr("The document's security settings don't allow filling in form fields"),
             crate::forms_ui::FormNotice::ReadOnly(name) => app.notify_fmt("{name} is read-only", &[("name", &name)]),
             crate::forms_ui::FormNotice::NoAction(name) => app.notify_fmt("{name} has no action", &[("name", &name)]),
@@ -3976,9 +3980,11 @@ enum Notice {
 
 /// The notice bar above the pages: the signature status first (Acrobat's signature bar), then
 /// a form's scripts having been turned off, security, forms and warnings.
+#[allow(clippy::too_many_arguments)]
 fn notices(
     view: &mut DocView,
     doc: &pdfcraft_engine::Document,
+    read_only: &str,
     secured: bool,
     repaired: bool,
     signed: Option<(&str, Color32, &str, String)>,
@@ -4034,6 +4040,8 @@ fn notices(
             tl!("Opened in light read-only mode to limit memory use. Editing and large thumbnails are disabled.").to_string(),
             false,
         ))
+    } else if doc.limits().view_only {
+        Some(("eye", read_only.to_string(), false))
     } else if scripts_off {
         Some(("triangle-alert", crate::js_ui::scripts_off_notice(), true))
     } else if secured {
@@ -4147,8 +4155,11 @@ pub(crate) fn notice_bar(ui: &mut egui::Ui, t: &Tokens, icon: &str, icon_color: 
 /// The floating quick-action bar at the left edge of the document area.
 fn quick_bar(app: &mut PdfCraftApp, area: Rect, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
-    // A level-2 certification greys the comment and Fill & Sign tools, saying why.
-    let annotate_refusal = app.certification_refusal(pdfcraft_engine::commands::Needs::Annotate);
+    // A view-only document or a level-2 certification greys the comment and Fill & Sign tools,
+    // saying why.
+    let annotate_refusal = (app.active_limits().view_only)
+        .then(|| app.active_read_only_notice())
+        .or_else(|| app.certification_refusal(pdfcraft_engine::commands::Needs::Annotate));
     let refusable = |resp: egui::Response| match annotate_refusal {
         Some(why) => resp.on_disabled_hover_ui(|ui| crate::widgets::fitted_tip(ui, why)),
         None => resp,

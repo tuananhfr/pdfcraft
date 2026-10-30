@@ -23,6 +23,7 @@ macro_rules! tl_ctx {
 }
 
 mod a11y_ui;
+mod access_guard;
 pub mod account;
 mod actions_ui;
 mod appearance;
@@ -95,6 +96,7 @@ mod home;
 mod icon_data;
 mod intake_result;
 pub mod icons;
+mod inline_edits;
 pub mod last_session;
 pub mod log_safe;
 pub mod motion;
@@ -2062,6 +2064,12 @@ impl PdfCraftApp {
         if said == pdfcraft_engine::EditError::CertifiedNoChanges.to_string() {
             return self.notify(cert_guard::no_changes_notice().to_string());
         }
+        if said == pdfcraft_engine::EditError::ViewOnly.to_string() {
+            return self.notify(self.active_read_only_notice().to_string());
+        }
+        if said == pdfcraft_engine::EditError::NoExtract.to_string() {
+            return self.notify(access_guard::no_extract_notice().to_string());
+        }
         self.notify(said);
     }
 
@@ -2296,7 +2304,7 @@ impl PdfCraftApp {
             "date_format": self.session.date_format(),
             // Null follows the interface language.
             "date_language": self.session.date_language(),
-            "author": self.comment_prefs.author,
+            "author": self.saved_author(),
             // Per-tool comment defaults (colours, opacity, widths), so Make Current
             // Properties Default survives a restart (#340).
             "comment_styles": self
@@ -2872,10 +2880,9 @@ impl PdfCraftApp {
     /// not. Reading aloud and accessibility tools don't ask (assistive technology may read
     /// anything, §7.6.4.2).
     pub(crate) fn may_copy(&mut self, id: DocId) -> bool {
-        if self.session.get(id).is_none_or(pdfcraft_engine::Document::allows_copying) {
-            return true;
-        }
-        self.notify(copy_refused().to_string());
+        let Some(doc) = self.session.get(id).filter(|d| !d.allows_copying()) else { return true };
+        let why = if doc.limits().no_extract { access_guard::no_extract_notice() } else { copy_refused() };
+        self.notify(why.to_string());
         false
     }
 
@@ -3095,6 +3102,7 @@ impl eframe::App for PdfCraftApp {
         let deferred = std::mem::take(&mut self.deferred_commands);
         self.shortcuts(ctx);
         self.refuse_tools_on_certified();
+        self.refuse_tools_on_limited();
         // Scrolling and group-drag previews are transient: never resume after changing tabs,
         // opening a modal/palette, or returning to a window that lost focus.
         let blocked = self.modal_open() || self.palette_open || !ctx.input(|i| i.focused);

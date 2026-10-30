@@ -1053,22 +1053,56 @@ pub(crate) fn overlay(ctx: &egui::Context, view: &mut DocView, info: &DocInfo) -
     match done {
         Some(apply) => {
             let ed = view.line_editor.take()?;
-            let style = ed.style();
-            (apply && (ed.text != ed.original || style != pdfcraft_engine::BlockStyle::default())).then_some(Edit::EditTextBlock {
-                page: ed.page,
-                block: ed.block,
-                text: ed.text,
-                style,
-            })
+            if apply { applied(ed) } else { None }
         }
         None => None,
     }
+}
+
+/// The edit applying `ed` makes, if its text or style changed.
+pub(crate) fn applied(ed: LineEditor) -> Option<Edit> {
+    let style = ed.style();
+    (ed.text != ed.original || style != pdfcraft_engine::BlockStyle::default()).then_some(Edit::EditTextBlock {
+        page: ed.page,
+        block: ed.block,
+        text: ed.text,
+        style,
+    })
 }
 
 /// Caret colour that stays visible on a field filled with `fill`: black on light fills, white on dark ones.
 pub(crate) fn caret_color_on(fill: Color32) -> Color32 {
     let luma = 299 * u32::from(fill.r()) + 587 * u32::from(fill.g()) + 114 * u32::from(fill.b());
     if luma > 127_500 { Color32::BLACK } else { Color32::WHITE }
+}
+
+#[cfg(test)]
+impl LineEditor {
+    /// Paragraph `block` of `page` open for editing, as clicking it opens it, retyped as `text`.
+    pub(crate) fn retyped(doc: &pdfcraft_engine::Document, page: usize, block: usize, text: &str) -> Self {
+        let source = doc.text_blocks(page).remove(block);
+        LineEditor {
+            selection: None,
+            font_resource: None,
+            page,
+            block,
+            text: text.into(),
+            original: source.text.clone(),
+            rect: Rect::NOTHING,
+            source_rect: source.rect.map(|v| v as f32),
+            multiline: source.rows.len() > 1,
+            source: None,
+            fonts: BTreeMap::new(),
+            overflow: false,
+            max_width: 400.0,
+            size: source.size as f32,
+            focus: false,
+            look: look_of(&source),
+            look0: look_of(&source),
+            extras: Extras::default(),
+            extras0: Extras::default(),
+        }
+    }
 }
 
 #[cfg(test)]

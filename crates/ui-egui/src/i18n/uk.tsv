@@ -2489,3 +2489,6 @@ animation effects	Off	Вимкнено
 	Couldn't share {name}: {e}	Не вдалося поділитися {name}: {e}
 	Share changes after signing?	Поділитися змінами після підписання?
 	AutoSave is off for signed documents. Choose Save to save your changes.	Автозбереження для підписаних документів вимкнено. Щоб зберегти зміни, виберіть «Зберегти».
+	This document is open for viewing only.	Цей документ відкрито лише для перегляду.
+	Downloading, printing and copying are turned off for this document.	Завантаження, друк і копіювання для цього документа вимкнено.
+	Commenting on the web is coming later; for now this document can only be viewed.	Коментування у вебверсії з’явиться пізніше; поки що документ можна лише переглядати.

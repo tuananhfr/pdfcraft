@@ -91,6 +91,7 @@ impl PdfCraftApp {
             return self.can_reopen_closed();
         }
         commands::is_enabled(spec, &self.session, self.active_ids().map(|(_, id)| id))
+            && self.limits_refusal(spec).is_none()
             && (spec.needs != commands::Needs::TwoPageView || self.active.and_then(|i| self.views.get(i)).is_some_and(crate::DocView::cover_applies))
     }
 
@@ -109,17 +110,21 @@ impl PdfCraftApp {
         }
     }
 
-    /// Whether `spec` exists in this app: in this build, and Share… only with a way to share.
+    /// Whether `spec` exists in this app: in this build, and Share… only with a way to share and
+    /// not inside an office shell that shares documents itself.
     pub(crate) fn command_shown(&self, spec: &commands::CommandSpec) -> bool {
-        commands::available(spec) && (spec.id != "file.share" || self.share.is_some())
+        commands::available(spec)
+            && (spec.id != "file.share" || (self.share.is_some() && !self.online.as_ref().is_some_and(crate::online::Online::shell_shares)))
     }
 
     fn execute_unguarded(&mut self, id: &str) -> bool {
         let Some(spec) = commands::command(id).filter(|s| self.command_shown(s)) else { return false };
         if !self.command_enabled(spec) {
             let certified = self.certification_refusal(spec.needs);
+            let limited = self.limits_refusal(spec);
             let why = match spec.needs {
                 _ if spec.id == "file.reopen_closed" => tl!("No closed document to reopen.").to_string(),
+                _ if limited.is_some() => limited.map(str::to_string).unwrap_or_default(),
                 _ if certified.is_some() => certified.map(str::to_string).unwrap_or_default(),
                 commands::Needs::Undo => tl!("Nothing to undo").to_string(),
                 commands::Needs::Redo => tl!("Nothing to redo").to_string(),
@@ -787,7 +792,7 @@ pub(crate) fn registry_menu(app: &mut PdfCraftApp, ui: &mut egui::Ui, menu: &str
         let shortcut = spec.shortcut.map(|s| shortcut_label(ui.ctx(), s)).unwrap_or_default();
         let enabled = app.command_enabled(spec);
         let mut resp = ui.add_enabled(enabled, egui::Button::new(label).shortcut_text(shortcut));
-        if !enabled && let Some(why) = app.certification_refusal(spec.needs) {
+        if !enabled && let Some(why) = app.limits_refusal(spec).or_else(|| app.certification_refusal(spec.needs)) {
             resp = resp.on_disabled_hover_ui(|ui| widgets::fitted_tip(ui, why));
         }
         if resp.clicked() {

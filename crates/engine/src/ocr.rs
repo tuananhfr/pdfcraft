@@ -11,7 +11,7 @@ use pdfcraft_render::{PageInfo, PageRenderer, RenderConfig, RenderRequest, Reque
 
 pub use pdfcraft_ocr::{LANGUAGES, Models, Ocr, OcrError, PlacedWord};
 
-use crate::{DocId, Edit, EditError, Session};
+use crate::{DocId, Document, Edit, EditError, Session};
 
 /// Recognize Text settings.
 #[derive(Clone, Debug, PartialEq)]
@@ -206,6 +206,7 @@ impl Session {
         if let Some(why) = self.get(id).and_then(|d| d.read_only_reason.clone()) {
             return Err(why);
         }
+        self.get(id).map_or(Ok(()), Document::check_not_view_only).map_err(|e| e.to_string())?;
         let ocr = engine_for_language(&job.settings.language)?;
         let found = job.run(&ocr, |_, _| true);
         self.apply_ocr(id, &found).map_err(|e| e.to_string())?;

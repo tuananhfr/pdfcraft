@@ -7,14 +7,15 @@ use pdfcraft_engine::DocId;
 
 use super::autosave::{MAX_WAKE_MS, Tick};
 use super::wire::{Outgoing, Settled};
-use super::{Acknowledged, After, FORMAT, PendingOpen, REASON_PARSER_FAILED, REASON_UNSUPPORTED, Record, SaveReason, SaveResult, Stop};
+use super::{Access, Acknowledged, After, FORMAT, PendingOpen, REASON_PARSER_FAILED, REASON_UNSUPPORTED, Record, SaveReason, SaveResult, Stop};
 use crate::PdfCraftApp;
 use crate::editing::SaveTarget;
 
 impl Record {
-    fn new(doc_id: String, slot: u64, version: Option<u64>) -> Self {
+    fn new(doc_id: String, slot: u64, version: Option<u64>, access: Access) -> Self {
         Self {
             doc_id,
+            access,
             slot,
             version,
             timer: Default::default(),
@@ -68,7 +69,7 @@ impl PdfCraftApp {
             }
             self.startup_superseded = true;
             let title = if doc.title.trim().is_empty() { "document.pdf".to_string() } else { doc.title };
-            let pending = PendingOpen { doc_id: doc.doc_id, version: doc.version };
+            let pending = PendingOpen { doc_id: doc.doc_id, version: doc.version, access: doc.access, preserve_view: doc.preserve_view };
             // Not `open_bytes`: the server's document is a PDF, never a file to convert.
             match self.try_open(&title, None, Arc::new(doc.bytes), None, true) {
                 Ok(()) if self.password_prompt.is_none() => {
@@ -91,12 +92,14 @@ impl PdfCraftApp {
     }
 
     /// The newest tab is host document `pending`. A reload of a document already open (the shell
-    /// after a conflict) takes the earlier tab's place.
+    /// after a conflict, or a viewer catching up) takes the earlier tab's place, where the reader
+    /// was when `preserveView` asks.
     pub(crate) fn finish_host_open(&mut self, pending: PendingOpen) {
         let Some(id) = self.views.last().map(|v| v.id) else { return };
+        let (access, preserve_view) = (pending.access, pending.preserve_view);
         let Some(online) = self.online.as_mut() else { return };
         online.next_slot = online.next_slot.wrapping_add(1);
-        let mut record = Record::new(pending.doc_id, online.next_slot, pending.version);
+        let mut record = Record::new(pending.doc_id, online.next_slot, pending.version, access);
         let earlier = online.records.iter_mut().find(|(other, r)| **other != id && r.doc_id == record.doc_id).map(|(other, r)| {
             r.replaced = true;
             (*other, r.reported_dirty)
@@ -106,9 +109,13 @@ impl PdfCraftApp {
             record.reported_dirty = dirty;
         }
         online.records.insert(id, record);
+        self.session.set_limits(id, access.limits());
         if let Some((earlier, _)) = earlier
             && let Some(index) = self.views.iter().position(|v| v.id == earlier)
         {
+            if preserve_view {
+                self.keep_view(earlier, id);
+            }
             self.close_tab(index);
             if let Some(from) = self.views.iter().position(|v| v.id == id) {
                 self.move_tab(from, index);
@@ -138,6 +145,11 @@ impl PdfCraftApp {
     /// picker, after a save already in flight (rule 3). Returns `true` only when there was nothing
     /// to send, and `after` has run; otherwise `after` runs once the shell answers `saved`.
     pub(crate) fn online_save(&mut self, id: DocId, after: After) -> bool {
+        // Rule 13: nothing goes to the shell in view or comment mode.
+        if self.host_read_only(id) {
+            self.notify(self.read_only_notice(id).to_string());
+            return false;
+        }
         let Some(online) = self.online.as_mut() else { return false };
         let Some(record) = online.records.get_mut(&id) else { return false };
         if online.wire.busy(&record.doc_id) {
@@ -202,6 +214,8 @@ impl PdfCraftApp {
 
     /// One tick; returns how soon the next one is needed.
     pub(crate) fn online_step(&mut self) -> Option<f64> {
+        self.apply_host_user();
+        self.apply_set_modes();
         let online = self.online.as_ref()?;
         let now = online.host.now_ms();
         let acks = online.acks.lock().map(|mut q| std::mem::take(&mut *q)).unwrap_or_default();
@@ -302,6 +316,9 @@ impl PdfCraftApp {
         let (generation, changed, signed, bytes) = (doc.edit_generation(), doc.dirty, doc.is_signed(), doc.bytes.clone());
         let online = self.online.as_mut()?;
         let record = online.records.get_mut(&id)?;
+        // Rule 13: in view or comment mode Save and AutoSave send nothing, a Save queued before
+        // included; only flush still hands over edits made before a downgrade.
+        let read_only = record.access.read_only();
         if unsaved != record.reported_dirty {
             record.reported_dirty = unsaved;
             online.host.dirty(&record.doc_id, unsaved);
@@ -313,10 +330,11 @@ impl PdfCraftApp {
         if (!signed || confirmed) && changed && record.stopped.is_none() && record.acked != Some(generation) {
             flushable.push(Outgoing { doc_id: record.doc_id.clone(), slot: record.slot, revision: generation, bytes, reason: SaveReason::Flush });
         }
-        let notice = signed && changed && !std::mem::replace(&mut record.signed_notice, true);
-        let unsent = changed && !signed && record.stopped.is_none() && record.sent != Some(generation);
+        let notice = !read_only && signed && changed && !std::mem::replace(&mut record.signed_notice, true);
+        let unsent = !read_only && changed && !signed && record.stopped.is_none() && record.sent != Some(generation);
         let mut wake = None;
-        let action = match (busy, record.queued.take()) {
+        let queued = record.queued.take().filter(|_| !read_only);
+        let action = match (busy, queued) {
             (false, Some(after)) => Action::Manual(after),
             (true, queued) => {
                 record.queued = queued;

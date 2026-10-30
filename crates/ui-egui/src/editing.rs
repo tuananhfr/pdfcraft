@@ -155,6 +155,10 @@ impl PdfCraftApp {
                 self.notify(crate::cert_guard::no_changes_notice().to_string());
                 false
             }
+            Err(pdfcraft_engine::EditError::ViewOnly) => {
+                self.notify(self.read_only_notice(id).to_string());
+                false
+            }
             Err(e) => {
                 let message = if matches!(edit, Edit::MoveObjects { .. }) { crate::object_ui::move_error(&e) } else { e.to_string() };
                 self.notify_fmt("{label} failed: {e}", &[("label", &crate::i18n::edit_label(&label)), ("e", &message)]);

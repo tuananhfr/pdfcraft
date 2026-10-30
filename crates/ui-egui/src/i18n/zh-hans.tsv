@@ -2431,3 +2431,6 @@ animation effects	Off	关
 	Couldn't share {name}: {e}	无法共享 {name}：{e}
 	Share changes after signing?	共享签署后的更改？
 	AutoSave is off for signed documents. Choose Save to save your changes.	已签名的文档不会自动保存。请选择“保存”来保存更改。
+	This document is open for viewing only.	此文档以只读方式打开。
+	Downloading, printing and copying are turned off for this document.	此文档已禁用下载、打印和复制。
+	Commenting on the web is coming later; for now this document can only be viewed.	网页版评论功能即将推出；目前此文档仅可查看。

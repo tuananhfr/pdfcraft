@@ -2468,3 +2468,6 @@ animation effects	Off	Aus
 	Couldn't share {name}: {e}	{name} konnte nicht geteilt werden: {e}
 	Share changes after signing?	Änderungen nach dem Signieren teilen?
 	AutoSave is off for signed documents. Choose Save to save your changes.	Automatisches Speichern ist bei signierten Dokumenten aus. Wähle Speichern, um deine Änderungen zu speichern.
+	This document is open for viewing only.	Dieses Dokument ist nur zum Ansehen geöffnet.
+	Downloading, printing and copying are turned off for this document.	Herunterladen, Drucken und Kopieren sind für dieses Dokument deaktiviert.
+	Commenting on the web is coming later; for now this document can only be viewed.	Kommentieren im Web folgt später; vorerst kann dieses Dokument nur angesehen werden.

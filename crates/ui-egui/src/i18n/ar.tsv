@@ -2488,3 +2488,6 @@ animation effects	Off	معطّلة
 	Couldn't share {name}: {e}	تعذّرت مشاركة {name}: {e}
 	Share changes after signing?	مشاركة التغييرات بعد التوقيع؟
 	AutoSave is off for signed documents. Choose Save to save your changes.	الحفظ التلقائي متوقف للمستندات الموقّعة. اختر حفظ لحفظ تغييراتك.
+	This document is open for viewing only.	هذا المستند مفتوح للعرض فقط.
+	Downloading, printing and copying are turned off for this document.	التنزيل والطباعة والنسخ معطّلة لهذا المستند.
+	Commenting on the web is coming later; for now this document can only be viewed.	التعليق على الويب سيتوفر لاحقًا؛ يمكن حاليًا عرض هذا المستند فقط.

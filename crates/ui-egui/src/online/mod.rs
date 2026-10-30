@@ -1,16 +1,23 @@
-//! Documents that live on the office server (`window.erpHost` v1, web only; `docs/erp-host.md` in
-//! erpcons-office). The shell opens them with `open(doc)`; the app saves them back with
+//! Documents that live on the office server (`window.erpHost` v1 and v2, web only; `docs/erp-host.md`
+//! in erpcons-office). The shell opens them with `open(doc)`; the app saves them back with
 //! `erpHost.save` (AutoSave, Save and the shell's `flush`) and counts one saved only once the shell
-//! answers `saved`, as of the revision it sent. Save As, export and print stay local.
+//! answers `saved`, as of the revision it sent. Save As, export and print stay local. v2 adds access
+//! modes (view and comment open a document read-only, `canDownload` false keeps it in the app),
+//! `preserveView` and `setUser`.
 //!
 //! The JavaScript side is a [`Host`] (`apps/pdfcraft-web/src/erp_host` on wasm, a fake in tests),
 //! so all of this runs natively. Without it (`PdfCraftApp::online` is `None`, as on the desktop)
 //! nothing here runs.
 
+mod access;
 mod app;
 mod autosave;
+mod preserve;
+mod user;
 mod wire;
 
+#[cfg(test)]
+mod access_tests;
 #[cfg(test)]
 mod tests;
 
@@ -20,7 +27,9 @@ use std::sync::{Arc, Mutex};
 
 use pdfcraft_engine::DocId;
 
+pub use access::{Access, AccessMode, ModeInbox, SetMode};
 pub use autosave::{CHECKPOINT_MS, IDLE_MS, MAX_WAKE_MS};
+pub use user::UserInbox;
 
 /// The only format the server stores for this editor.
 pub const FORMAT: &str = "pdf";
@@ -122,11 +131,20 @@ pub struct HostDocument {
     pub title: String,
     pub format: String,
     pub bytes: Vec<u8>,
+    /// v2: the mode and `canDownload`; v1 documents are editable.
+    pub access: Access,
+    /// v2: a newer version of a document already open, replacing it where the reader was.
+    pub preserve_view: bool,
 }
 
 impl HostDocument {
     pub fn new(doc_id: String, version: Option<f64>, title: String, format: String, bytes: Vec<u8>) -> Self {
-        Self { doc_id, version: version.and_then(whole), title, format, bytes }
+        Self { doc_id, version: version.and_then(whole), title, format, bytes, access: Access::default(), preserve_view: false }
+    }
+
+    /// With the v2 fields `mode`, `canDownload` and `preserveView`.
+    pub fn with_access(self, access: Access, preserve_view: bool) -> Self {
+        Self { access, preserve_view, ..self }
     }
 }
 
@@ -157,6 +175,8 @@ pub type AckInbox = Arc<Mutex<Vec<Acknowledged>>>;
 pub(crate) struct PendingOpen {
     doc_id: String,
     version: Option<u64>,
+    access: Access,
+    preserve_view: bool,
 }
 
 /// Why AutoSave stopped for a document.
@@ -172,6 +192,7 @@ type After = crate::cert_guard::After;
 /// One open host document.
 struct Record {
     doc_id: String,
+    access: Access,
     /// Tells this opening of `doc_id` from an earlier one whose save may still be answered.
     slot: u64,
     version: Option<u64>,
@@ -199,8 +220,14 @@ pub struct Online {
     wire: wire::Wire,
     inbox: OpenInbox,
     acks: AckInbox,
+    modes: ModeInbox,
+    user: UserInbox,
+    /// The local author preference while the account's name (`setUser`) stands in for it.
+    local_author: Option<String>,
     records: HashMap<DocId, Record>,
     next_slot: u64,
+    /// `erpHost` v2: the shell's own Share is the only one, so File ▸ Share… is not offered.
+    shell_shares: bool,
 }
 
 impl Online {
@@ -211,9 +238,22 @@ impl Online {
             host,
             inbox: OpenInbox::default(),
             acks: AckInbox::default(),
+            modes: ModeInbox::default(),
+            user: UserInbox::default(),
+            local_author: None,
             records: HashMap::new(),
             next_slot: 0,
+            shell_shares: false,
         }
+    }
+
+    /// For `erpHost` v2, whose shell shares documents itself.
+    pub fn with_shell_share(self) -> Self {
+        Self { shell_shares: true, ..self }
+    }
+
+    pub(crate) fn shell_shares(&self) -> bool {
+        self.shell_shares
     }
 
     /// Where `open(doc)` queues documents.
@@ -224,6 +264,16 @@ impl Online {
     /// Where `acknowledged(docId, revision, version)` queues the shell's late confirmations.
     pub fn acknowledgements(&self) -> AckInbox {
         self.acks.clone()
+    }
+
+    /// Where `setMode(docId, mode, canDownload)` queues access changes.
+    pub fn modes(&self) -> ModeInbox {
+        self.modes.clone()
+    }
+
+    /// Where `setUser(user)` leaves the account's name (`None` for `null`).
+    pub fn user(&self) -> UserInbox {
+        self.user.clone()
     }
 
     /// What the shell's `flush()` calls, outside the app's frame.

@@ -528,6 +528,15 @@ pub(crate) fn editor(ctx: &egui::Context, view: &mut DocView, info: &DocInfo, ad
     (edit, done)
 }
 
+/// The open draft as an edit, as clicking away commits it. Text that can't be drawn stays open.
+pub(crate) fn commit_draft(view: &mut DocView, added: &[Added]) -> Option<Edit> {
+    if view.content.blocked().is_some() {
+        return None;
+    }
+    let d = view.content.draft.take()?;
+    finish(&mut view.content, d, added)
+}
+
 /// A finished draft as an edit: new text is added (and selected once it exists), retyped text
 /// updated, and text emptied by retyping removed. Empty new text adds nothing.
 fn finish(cv: &mut ContentView, d: TextDraft, added: &[Added]) -> Option<Edit> {

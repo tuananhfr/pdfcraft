@@ -107,6 +107,14 @@ impl NarrowLayout {
         }
     }
 
+    /// Document `to` took the place of `from` with its view: it is not fitted again, and gets the
+    /// wide zoom `from` had back once the window widens.
+    pub fn adopt(&mut self, from: DocId, to: DocId) {
+        for wide in self.wide_zooms.iter_mut().filter(|w| w.id == from) {
+            wide.id = to;
+        }
+    }
+
     /// The panels as the user last chose them at a wide width: what settings persist, so a
     /// phone-width session doesn't overwrite the desktop layout.
     pub fn wide_choice(&self, current: Panels) -> Panels {

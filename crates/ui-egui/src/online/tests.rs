@@ -1,4 +1,4 @@
-//! `erpHost` rules 1–9 against a fake shell, natively.
+//! `erpHost` rules 1–9 against a fake shell, natively. The fake and the helpers serve the v2 tests too.
 
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
@@ -10,7 +10,7 @@ use super::*;
 use crate::PdfCraftApp;
 use crate::editing::SaveTarget;
 
-const FORM: &[u8] = include_bytes!("../../tests/data/form.pdf");
+pub(super) const FORM: &[u8] = include_bytes!("../../tests/data/form.pdf");
 
 #[derive(Default)]
 struct Log {
@@ -21,7 +21,7 @@ struct Log {
 }
 
 #[derive(Clone, Default)]
-struct Fake(Rc<RefCell<Log>>);
+pub(super) struct Fake(Rc<RefCell<Log>>);
 
 impl Host for Fake {
     fn save(&self, doc_id: &str, bytes: &[u8], revision: u64, reason: SaveReason, reply: Reply) {
@@ -46,22 +46,22 @@ impl Host for Fake {
 
 impl Fake {
     /// The shell answers the oldest save waiting.
-    fn answer(&self, result: SaveResult) {
+    pub(super) fn answer(&self, result: SaveResult) {
         let reply = self.0.borrow_mut().waiting.remove(0);
         reply(result);
     }
-    fn saves(&self) -> Vec<(String, u64, SaveReason)> {
+    pub(super) fn saves(&self) -> Vec<(String, u64, SaveReason)> {
         self.0.borrow().saves.clone()
     }
     fn waiting(&self) -> usize {
         self.0.borrow().waiting.len()
     }
-    fn take_calls(&self) -> Vec<String> {
+    pub(super) fn take_calls(&self) -> Vec<String> {
         std::mem::take(&mut self.0.borrow_mut().calls)
     }
 }
 
-fn app() -> (PdfCraftApp, Fake) {
+pub(super) fn app() -> (PdfCraftApp, Fake) {
     let fake = Fake::default();
     let mut app = PdfCraftApp::new();
     app.online = Some(Online::new(Box::new(fake.clone())));
@@ -74,19 +74,19 @@ fn deliver(app: &PdfCraftApp, doc_id: &str, format: &str, bytes: Vec<u8>) {
 }
 
 /// Host document `doc_id` (form.pdf), open and active.
-fn open(app: &mut PdfCraftApp, doc_id: &str) -> DocId {
+pub(super) fn open(app: &mut PdfCraftApp, doc_id: &str) -> DocId {
     deliver(app, doc_id, "pdf", FORM.to_vec());
     app.open_host_documents();
     app.active_ids().unwrap().1
 }
 
-fn edit(app: &mut PdfCraftApp, id: DocId, value: &str) {
+pub(super) fn edit(app: &mut PdfCraftApp, id: DocId, value: &str) {
     app.active = app.views.iter().position(|v| v.id == id);
     assert!(app.apply_edit(Edit::SetFieldValue { name: "name".into(), value: FieldValue::Text(value.into()) }));
 }
 
 /// One frame at `now`.
-fn tick(app: &mut PdfCraftApp, fake: &Fake, now: f64) {
+pub(super) fn tick(app: &mut PdfCraftApp, fake: &Fake, now: f64) {
     fake.0.borrow_mut().now = now;
     app.online_step();
 }
@@ -672,7 +672,7 @@ fn signed() -> Vec<u8> {
 }
 
 /// `bytes` protected with an open password (AES-256).
-fn encrypted(bytes: &[u8], password: &str) -> Vec<u8> {
+pub(super) fn encrypted(bytes: &[u8], password: &str) -> Vec<u8> {
     let mut doc = pdfcraft_cos::Document::open(Arc::new(bytes.to_vec())).unwrap();
     doc.set_encryption(&pdfcraft_cos::NewEncryption {
         algorithm: pdfcraft_cos::Algorithm::Aes256,

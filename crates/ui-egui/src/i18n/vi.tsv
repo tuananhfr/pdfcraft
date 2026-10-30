@@ -2722,3 +2722,6 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	Couldn't share {name}: {e}	Không chia sẻ được {name}: {e}
 	Share changes after signing?	Chia sẻ thay đổi sau khi ký?
 	AutoSave is off for signed documents. Choose Save to save your changes.	Tự động lưu đã tắt với tài liệu đã ký. Chọn Lưu để lưu thay đổi.
+	This document is open for viewing only.	Tài liệu này chỉ được mở để xem.
+	Downloading, printing and copying are turned off for this document.	Tải xuống, in và sao chép đã bị tắt với tài liệu này.
+	Commenting on the web is coming later; for now this document can only be viewed.	Nhận xét trên web sẽ có sau, hiện chỉ xem được

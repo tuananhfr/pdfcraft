@@ -2430,3 +2430,6 @@ animation effects	Off	Изключени
 	Couldn't share {name}: {e}	{name} не може да бъде споделен: {e}
 	Share changes after signing?	Споделяне на промените след подписването?
 	AutoSave is off for signed documents. Choose Save to save your changes.	Автоматичното записване е изключено за подписани документи. Изберете Запиши, за да запишете промените си.
+	This document is open for viewing only.	Този документ е отворен само за преглед.
+	Downloading, printing and copying are turned off for this document.	Изтеглянето, отпечатването и копирането са изключени за този документ.
+	Commenting on the web is coming later; for now this document can only be viewed.	Коментирането в уеб ще бъде налично по-късно; засега документът може само да се преглежда.

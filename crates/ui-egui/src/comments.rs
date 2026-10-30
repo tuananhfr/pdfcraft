@@ -1164,7 +1164,11 @@ fn erase(cx: &PageCx<'_>, path: &[[f64; 2]]) -> Option<Edit> {
 }
 
 fn new_comment(cx: &PageCx<'_>, tool: CommentTool, shape: Shape, contents: String) -> Edit {
-    Edit::AddAnnotation(NewAnnotation { page: cx.page, shape, style: cx.prefs.style(tool), contents, author: cx.prefs.author.clone() })
+    comment_on(cx.page, cx.prefs, tool, shape, contents)
+}
+
+fn comment_on(page: usize, prefs: &CommentPrefs, tool: CommentTool, shape: Shape, contents: String) -> Edit {
+    Edit::AddAnnotation(NewAnnotation { page, shape, style: prefs.style(tool), contents, author: prefs.author.clone() })
 }
 
 /// The floating composer card (new note, new text box, edit). Returns the edit to apply.
@@ -1243,16 +1247,32 @@ pub(crate) fn composer(ctx: &egui::Context, view: &mut DocView, info: &DocInfo, 
         return None;
     }
     let c = view.comments.composer.take()?;
+    posted(view, c, prefs)
+}
+
+/// Post the composer of `view` as its Post button would, if it has something to post.
+pub(crate) fn post_composer(view: &mut DocView, prefs: &CommentPrefs) -> Option<Edit> {
+    let c = view.comments.composer.as_ref()?;
+    if c.text.trim().is_empty() && !matches!(c.kind, ComposerKind::Edit(_)) {
+        return None;
+    }
+    let c = view.comments.composer.take()?;
+    posted(view, c, prefs)
+}
+
+/// The edit posting composer `c` makes.
+fn posted(view: &mut DocView, c: Composer, prefs: &CommentPrefs) -> Option<Edit> {
+    let page = c.page;
     let text = c.text.trim_end().to_string();
     match c.kind {
         ComposerKind::Edit(index) => Some(Edit::SetAnnotationContents { page, index, text }),
         ComposerKind::Note => {
             view.comments.tool_done = true;
-            Some(new_comment(&cx, CommentTool::Note, Shape::Note { at: c.at, icon: NoteIcon::Comment }, text))
+            Some(comment_on(page, prefs, CommentTool::Note, Shape::Note { at: c.at, icon: NoteIcon::Comment }, text))
         }
         ComposerKind::TextBox => {
             view.comments.tool_done = true;
-            Some(new_comment(&cx, CommentTool::TextBox, Shape::TextBox { rect: text_box_rect(c.at, &text, 12.0), font_size: 12.0 }, text))
+            Some(comment_on(page, prefs, CommentTool::TextBox, Shape::TextBox { rect: text_box_rect(c.at, &text, 12.0), font_size: 12.0 }, text))
         }
         ComposerKind::Callout { point } => {
             view.comments.tool_done = true;
@@ -1265,7 +1285,13 @@ pub(crate) fn composer(ctx: &egui::Context, view: &mut DocView, info: &DocInfo, 
                 (rect[0] + rect[2]) / 2.0
             };
             let knee = [(point[0] + side) / 2.0, (rect[1] + rect[3]) / 2.0];
-            Some(new_comment(&cx, CommentTool::Callout, Shape::Callout { rect, knee, point, font_size: 10.0, ending: LineEnding::OpenArrow }, text))
+            Some(comment_on(
+                page,
+                prefs,
+                CommentTool::Callout,
+                Shape::Callout { rect, knee, point, font_size: 10.0, ending: LineEnding::OpenArrow },
+                text,
+            ))
         }
         ComposerKind::Replace => {
             view.comments.tool_done = true;
@@ -1283,7 +1309,7 @@ pub(crate) fn composer(ctx: &egui::Context, view: &mut DocView, info: &DocInfo, 
             view.comments.tool_done = true;
             let [x, y] = c.at;
             let half = size / 2.0;
-            Some(new_comment(&cx, CommentTool::Caret, Shape::Caret { rect: [x - half, y - size, x + half, y] }, text))
+            Some(comment_on(page, prefs, CommentTool::Caret, Shape::Caret { rect: [x - half, y - size, x + half, y] }, text))
         }
     }
 }

@@ -2287,3 +2287,6 @@ animation effects	Off	ఆఫ్
 	Couldn't share {name}: {e}	{name}ను షేర్ చేయడం సాధ్యపడలేదు: {e}
 	Share changes after signing?	సంతకం తర్వాతి మార్పులను షేర్ చేయాలా?
 	AutoSave is off for signed documents. Choose Save to save your changes.	సంతకం చేసిన పత్రాలకు ఆటోసేవ్ ఆఫ్‌లో ఉంది. మీ మార్పులను సేవ్ చేయడానికి సేవ్ చేయి ఎంచుకోండి.
+	This document is open for viewing only.	ఈ పత్రం వీక్షించడానికి మాత్రమే తెరవబడింది.
+	Downloading, printing and copying are turned off for this document.	ఈ పత్రానికి డౌన్‌లోడ్, ముద్రణ మరియు కాపీ చేయడం ఆఫ్ చేయబడ్డాయి.
+	Commenting on the web is coming later; for now this document can only be viewed.	వెబ్‌లో వ్యాఖ్యలు తర్వాత అందుబాటులోకి వస్తాయి; ప్రస్తుతం ఈ పత్రాన్ని చూడటం మాత్రమే సాధ్యం.
