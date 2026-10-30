@@ -59,7 +59,7 @@ struct Shared {
     account: OnceLock<Arc<Account>>,
     snapshot: Mutex<AccountSnapshot>,
     ctx: OnceLock<egui::Context>,
-    /// Cancel pressed before the library started waiting; its own flag is reset when `sign_in` starts.
+    /// Cancel pressed before the library started waiting; its own flag is reset when `sign_in` or `select_org` starts.
     cancelled: AtomicBool,
 }
 
@@ -104,6 +104,16 @@ impl DesktopAccount {
         }
     }
 
+    /// Shows the browser step, with its Cancel, at once; the worker opens the browser.
+    fn wait_for_browser(&self, command: Command) {
+        self.shared.cancelled.store(false, Ordering::SeqCst);
+        self.shared.publish(|s| {
+            s.view = AccountView::SigningIn;
+            s.error = None;
+        });
+        self.send(command);
+    }
+
     fn start(&self) {
         let Some(mut pending) = self.pending.lock().unwrap_or_else(PoisonError::into_inner).take() else { return };
         // Runs on the UI thread, whose current language is the interface's.
@@ -131,16 +141,11 @@ impl AccountHook for DesktopAccount {
     }
 
     fn sign_in(&self) {
-        self.shared.cancelled.store(false, Ordering::SeqCst);
-        self.shared.publish(|s| {
-            s.view = AccountView::SigningIn;
-            s.error = None;
-        });
-        self.send(Command::SignIn);
+        self.wait_for_browser(Command::SignIn);
     }
 
     fn cancel_sign_in(&self) {
-        // Not queued: the worker is blocked inside `sign_in` until this unblocks it.
+        // Not queued: the worker is blocked inside `sign_in` or `select_org` until this unblocks it.
         self.shared.cancelled.store(true, Ordering::SeqCst);
         if let Some(account) = self.shared.account.get() {
             account.cancel_sign_in();
@@ -152,7 +157,8 @@ impl AccountHook for DesktopAccount {
     }
 
     fn select_org(&self, org_id: Option<String>) {
-        self.send(Command::SelectOrg(org_id));
+        // PI switches organization only through its authorize page (ADR 0011), so this waits like a sign-in.
+        self.wait_for_browser(Command::SelectOrg(org_id));
     }
 
     fn retry_activation(&self) {
@@ -278,7 +284,7 @@ impl Worker {
             }
             Command::SignIn => self.sign_in(),
             Command::SignOut => self.busy(|account| account.sign_out()),
-            Command::SelectOrg(org) => self.busy(|account| account.select_org(org.as_deref())),
+            Command::SelectOrg(org) => self.account.select_org(org.as_deref(), self.browser()),
             Command::RetryActivation => self.busy(Account::retry_activation),
         };
         if let Err(error) = &result {
@@ -297,19 +303,23 @@ impl Worker {
     }
 
     fn sign_in(&mut self) -> Result<(), Error> {
-        let (shared, account, opener) = (&self.shared, &self.account, &self.opener);
-        let result = account.sign_in(|url| {
-            if shared.cancelled.load(Ordering::SeqCst) {
-                // Cancelled before the browser opened: the wait then returns `Cancelled` at once.
-                account.cancel_sign_in();
-                return Ok(());
-            }
-            opener(url)
-        });
+        let result = self.account.sign_in(self.browser());
         if result.is_ok() {
             self.next_refresh = Instant::now() + REFRESH_EVERY;
         }
         result
+    }
+
+    /// The opener for a sign-in or organization switch.
+    fn browser(&self) -> impl FnOnce(&str) -> Result<(), String> + '_ {
+        move |url| {
+            if self.shared.cancelled.load(Ordering::SeqCst) {
+                // Cancelled before the browser opened: the wait then returns `Cancelled` at once.
+                self.account.cancel_sign_in();
+                return Ok(());
+            }
+            (self.opener)(url)
+        }
     }
 
     fn publish(&self, error: Option<AccountError>) {
@@ -321,8 +331,8 @@ impl Worker {
     fn publish_status(&self) {
         let view = view_of(&self.account.status());
         self.shared.publish(|s| {
-            // A sign-in the user just started stays on the browser step until it returns.
-            if s.view != AccountView::SigningIn || view != AccountView::Guest {
+            // A sign-in or organization switch the user just started stays on the browser step until it returns.
+            if s.view != AccountView::SigningIn {
                 s.view = view;
             }
         });
@@ -367,6 +377,8 @@ fn licence_of(licence: &LicenceState) -> LicenceView {
         LicenceState::Inactive { expires_at, .. } => LicenceView::Inactive { expires_at: *expires_at },
         LicenceState::DeviceRevoked => LicenceView::DeviceRevoked,
         LicenceState::DeviceCapReached => LicenceView::DeviceCapReached,
+        // Only with offline licensing, which Office keeps off; the plan is then the free one.
+        LicenceState::NotEntitled => LicenceView::Free,
         LicenceState::SessionOnly => LicenceView::SessionOnly,
     }
 }

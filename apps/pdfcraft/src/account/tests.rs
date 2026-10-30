@@ -43,7 +43,7 @@ fn status_maps_to_the_view() {
         s.user = None;
     }
     let AccountView::SignedIn(view) = view_of(&no_user) else { panic!("signed in") };
-    assert_eq!((view.name.as_str(), view.email), ("", None), "before /v1/me answered");
+    assert_eq!((view.name.as_str(), view.email), ("", None), "before PI's /me answered");
 }
 
 #[test]
@@ -57,6 +57,7 @@ fn licence_states_map_to_the_view() {
     assert_eq!(licence_of(&LicenceState::DeviceRevoked), LicenceView::DeviceRevoked);
     assert_eq!(licence_of(&LicenceState::DeviceCapReached), LicenceView::DeviceCapReached);
     assert_eq!(licence_of(&LicenceState::SessionOnly), LicenceView::SessionOnly);
+    assert_eq!(licence_of(&LicenceState::NotEntitled), LicenceView::Free);
 }
 
 #[test]
@@ -69,6 +70,7 @@ fn library_errors_map_to_the_error_line() {
             retry_after: retry.map(Duration::from_secs),
             max_devices: None,
             active_devices: None,
+            errors: Box::default(),
         })
     };
     let cases = [
@@ -98,6 +100,7 @@ fn library_errors_map_to_the_error_line() {
         (api(ApiCode::ClientVersionUnsupported, None), Some(AccountError::ClientTooOld)),
         (api(ApiCode::Forbidden, None), Some(AccountError::Denied)),
         (api(ApiCode::ValidationFailed, None), Some(AccountError::Other)),
+        (api(ApiCode::NoEntitlement, None), Some(AccountError::Other)),
         (Error::Lease(erpcons_account::VerifyError::Signature), Some(AccountError::Other)),
     ];
     for (error, expected) in cases {
@@ -190,12 +193,13 @@ fn signs_in_switches_org_and_signs_out_against_pi_mock() {
     assert_eq!(view.email.as_deref(), Some("an.nguyen@example.com"));
     assert!(!view.name.is_empty());
     assert_eq!(view.active_org, None);
-    assert!(matches!(view.licence, LicenceView::Active { pro: false, .. }), "{:?}", view.licence);
+    assert_eq!(view.licence, LicenceView::Free, "Office turns offline licensing off: no device activation");
     assert!(view.online && !view.session_only && !view.reauth_required);
     assert_eq!(view.warning, None);
     assert!(hook.allowed("pdf.use"));
 
     hook.select_org(Some(ORG_A.into()));
+    assert_eq!(hook.snapshot().view, AccountView::SigningIn, "the switch waits for the browser");
     wait_for(&hook, "org switch", |s| matches!(&s.view, AccountView::SignedIn(v) if v.active_org.as_deref() == Some(ORG_A)));
     hook.select_org(None);
     wait_for(&hook, "personal context", |s| matches!(&s.view, AccountView::SignedIn(v) if v.active_org.is_none()));
@@ -246,5 +250,41 @@ fn cancel_before_the_browser_opens_never_opens_it() {
     let snapshot = wait_for(&hook, "cancel", |s| s.view == AccountView::Guest);
     assert_eq!(snapshot.error, Some(AccountError::Cancelled));
     assert!(!opened.load(Ordering::SeqCst), "the browser stays closed");
-    assert_eq!(server.requests().iter().filter(|r| r.path == "/token").count(), 0);
+    assert_eq!(server.requests().iter().filter(|r| r.path == "/id/token").count(), 0);
+}
+
+#[test]
+fn cancel_unblocks_an_org_switch_waiting_for_the_browser() {
+    let server = Server::start(Scenario::default());
+    let dir = tempfile::tempdir().unwrap();
+    let urls = Arc::new(Mutex::new(Vec::<String>::new()));
+    let seen = urls.clone();
+    // The sign-in comes back; the organization switch's browser never does.
+    let hook = started(
+        &server,
+        &dir,
+        Box::new(move |url| {
+            let mut urls = seen.lock().unwrap();
+            urls.push(url.to_owned());
+            if urls.len() == 1 { follow_redirect(url) } else { Ok(()) }
+        }),
+    );
+    hook.sign_in();
+    wait_for(&hook, "sign-in", |s| matches!(&s.view, AccountView::SignedIn(v) if v.orgs.len() == 2 && v.active_org.is_none()));
+
+    hook.select_org(Some(ORG_A.into()));
+    assert_eq!(hook.snapshot().view, AccountView::SigningIn, "shown at once");
+    let until = Instant::now() + Duration::from_secs(10);
+    while urls.lock().unwrap().len() < 2 {
+        assert!(Instant::now() < until, "the switch did not open the browser");
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    assert!(urls.lock().unwrap()[1].contains(&format!("org_hint={ORG_A}")), "PI is asked for the organization");
+    assert_eq!(hook.snapshot().view, AccountView::SigningIn, "waits for the browser");
+    hook.cancel_sign_in();
+    let snapshot = wait_for(&hook, "cancel", |s| matches!(s.view, AccountView::SignedIn(_)));
+    assert_eq!(snapshot.error, Some(AccountError::Cancelled));
+    let AccountView::SignedIn(view) = snapshot.view else { panic!("signed in") };
+    assert_eq!(view.active_org, None, "the session keeps its context");
+    assert_eq!(server.requests().iter().filter(|r| r.path == "/id/token").count(), 1, "only the sign-in's code was exchanged");
 }
