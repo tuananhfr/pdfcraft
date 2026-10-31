@@ -43,6 +43,7 @@ mod reopen;
 mod single_instance;
 mod text_scale;
 mod updates;
+mod window_fit;
 #[cfg(test)]
 #[path = "windows_manifest.rs"]
 mod windows_manifest;
@@ -291,8 +292,8 @@ fn retry_with_gl(choice: RendererChoice, app_started: bool) -> bool {
 fn native_options(integrated: bool, app_frame: bool, renderer: eframe::Renderer) -> eframe::NativeOptions {
     let mut viewport = egui::ViewportBuilder::default()
         .with_title(PRODUCT_NAME)
-        .with_inner_size([1440.0, 920.0])
-        .with_min_inner_size([820.0, 520.0])
+        .with_inner_size(window_fit::DEFAULT_INNER_SIZE)
+        .with_min_inner_size(window_fit::MIN_INNER_SIZE)
         .with_drag_and_drop(true)
         // Wayland app id: matches packaging/linux/vn.erpcons.pdf.desktop.
         .with_app_id(APP_ID);
@@ -432,7 +433,9 @@ fn app_creator<'a>(
                 log::warn!("--{k} <value>: {e}");
             }
         }
-        Ok(Box::new(language::DesktopApp::new(app, language_path)))
+        // eframe's own key for the window geometry it saved (persist_window).
+        let saved_window = cc.storage.and_then(|s| s.get_string("window")).is_some();
+        Ok(Box::new(language::DesktopApp::new(app, language_path).with_window_fit(window_fit::WindowFit::new(saved_window))))
     })
 }
 

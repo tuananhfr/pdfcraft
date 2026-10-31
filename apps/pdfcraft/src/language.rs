@@ -42,12 +42,17 @@ pub struct DesktopApp {
     app: PdfCraftApp,
     path: Option<PathBuf>,
     saved: String,
+    window_fit: Option<crate::window_fit::WindowFit>,
 }
 
 impl DesktopApp {
     pub fn new(app: PdfCraftApp, path: Option<PathBuf>) -> Self {
         let saved = app.language.clone();
-        Self { app, path, saved }
+        Self { app, path, saved, window_fit: None }
+    }
+
+    pub fn with_window_fit(self, window_fit: crate::window_fit::WindowFit) -> Self {
+        Self { window_fit: Some(window_fit), ..self }
     }
 
     fn save_language(&mut self) {
@@ -69,6 +74,9 @@ impl eframe::App for DesktopApp {
     }
 
     fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        if let Some(window_fit) = &mut self.window_fit {
+            window_fit.apply(ctx);
+        }
         self.app.logic(ctx, frame);
         self.save_language();
     }
