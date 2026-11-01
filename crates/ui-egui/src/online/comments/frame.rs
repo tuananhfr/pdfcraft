@@ -10,7 +10,7 @@ use crate::PdfCraftApp;
 
 /// `label` of an anchor: the page as people count it.
 fn label(index: usize) -> String {
-    crate::i18n::fmt(tl!("Page {n}"), &[("n", &index.saturating_add(1).to_string())])
+    crate::i18n::fmt(tl!("Page {label}"), &[("label", &index.saturating_add(1).to_string())])
 }
 
 fn anchor_json(anchor: &Anchor) -> String {
