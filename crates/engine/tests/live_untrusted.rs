@@ -4,8 +4,9 @@
 
 use std::sync::Arc;
 
+use pdfcraft_engine::anchors::Anchor;
 use pdfcraft_engine::live::{LiveError, MAX_PAYLOAD_BYTES};
-use pdfcraft_engine::{ClientPrefix, DocId, Session};
+use pdfcraft_engine::{ClientPrefix, DocId, Edit, NewAnnotation, NoteIcon, Session, Shape, Style};
 
 /// Three pages. Page 1 has the note `file-note-1` (8) and the widget of the field `name` (10);
 /// page 2 a note without `/NM` (11). Object 12 is a note no page lists any more.
@@ -98,4 +99,189 @@ fn an_oversized_payload_is_refused_unread() {
         let err = refused(&mut s, id, region, &format!(r#"{{"v":1,"pdf":"{pad}"}}"#));
         assert_eq!(err, LiveError::TooLarge, "{region}");
     }
+}
+
+// ── fuzzing ───────────────────────────────────────────────────────────────────────────────────
+
+/// A small deterministic generator (xorshift64*): the same cases on every run.
+struct Rng(u64);
+
+impl Rng {
+    fn next(&mut self) -> u64 {
+        self.0 ^= self.0 >> 12;
+        self.0 ^= self.0 << 25;
+        self.0 ^= self.0 >> 27;
+        self.0.wrapping_mul(0x2545_F491_4F6C_DD1D)
+    }
+
+    fn below(&mut self, n: usize) -> usize {
+        usize::try_from(self.next() % n.max(1) as u64).unwrap_or(0)
+    }
+
+    fn pick<'a, T>(&mut self, xs: &'a [T]) -> &'a T {
+        &xs[self.below(xs.len())]
+    }
+}
+
+const NUMBERS: [&str; 12] =
+    ["0", "1", "-1", "7", "4294967295", "4294967296", "18446744073709551615", "-9223372036854775808", "1e308", "-1e308", "0.5", "99999999"];
+
+/// `json` with one random change: a byte flipped or dropped, a cut, a number swapped for an
+/// extreme one, a reference pointed elsewhere, or a list or object nested deep.
+fn mutate(rng: &mut Rng, json: &str) -> String {
+    let mut bytes = json.as_bytes().to_vec();
+    match rng.below(8) {
+        0 if !bytes.is_empty() => {
+            let i = rng.below(bytes.len());
+            bytes[i] = *rng.pick(b"{}[]\":,0123456789-.erpsdgxnbav\\ ");
+        }
+        1 if !bytes.is_empty() => {
+            let i = rng.below(bytes.len());
+            bytes.remove(i);
+        }
+        2 => bytes.truncate(rng.below(bytes.len() + 1)),
+        3 => {
+            // Every number in turn may become an extreme one.
+            let s = String::from_utf8_lossy(&bytes).into_owned();
+            let mut out = String::new();
+            let mut chars = s.chars().peekable();
+            while let Some(c) = chars.next() {
+                if c.is_ascii_digit() && rng.below(3) == 0 {
+                    while chars.peek().is_some_and(char::is_ascii_digit) {
+                        chars.next();
+                    }
+                    out.push_str(rng.pick(&NUMBERS));
+                } else {
+                    out.push(c);
+                }
+            }
+            return out;
+        }
+        4 => {
+            let s = String::from_utf8_lossy(&bytes).into_owned();
+            let target = rng.pick(&["{\"r\":0}", "{\"r\":4096}", "{\"r\":-1}", "{\"p\":\"f1.0\"}", "{\"a\":\"obj:1.0\"}", "{\"p\":\"nzzzzzz.1\"}"]);
+            return s.replacen("{\"r\":", &format!("{target},\"_\":{{\"r\":"), 1);
+        }
+        5 => {
+            let depth = 1 + rng.below(300);
+            let s = String::from_utf8_lossy(&bytes).into_owned();
+            return s.replacen("\"g\":[", &format!("\"g\":[{}0{},", "[".repeat(depth), "]".repeat(depth)), 1);
+        }
+        6 => {
+            let s = String::from_utf8_lossy(&bytes).into_owned();
+            let key = rng.pick(&["\"page\":\"f3.0\"", "\"page\":\"f4.0\"", "\"at\":18446744073709551615", "\"del\":1", "\"v\":2"]);
+            return s.replacen("\"v\":1", &format!("\"v\":1,{key}"), 1);
+        }
+        _ => {}
+    }
+    String::from_utf8_lossy(&bytes).into_owned()
+}
+
+/// The payloads a real editor sends for each kind of region, made by editing a second session.
+fn genuine_payloads() -> Vec<(String, String)> {
+    let (mut s, id) = open("0000bb");
+    let shape = Shape::Note { at: [100.0, 120.0], icon: NoteIcon::Comment };
+    s.apply(id, Edit::AddAnnotation(NewAnnotation { page: 1, style: Style::default_for(&shape), shape, contents: "Hi".into(), author: "B".into() }))
+        .unwrap();
+    s.apply(id, Edit::MovePages { pages: vec![2], to: 0 }).unwrap();
+    let mut out = Vec::new();
+    for change in s.take_live_changes(id) {
+        for region in change.regions {
+            if let Ok(payload) = s.live_payload(id, &region) {
+                out.push((region.to_string(), payload));
+            }
+        }
+    }
+    for region in ["annot:nm:file-note-1", "annot:obj:11.0", "field:name", "pages", "*"] {
+        let region = pdfcraft_engine::live::Region::parse(region).unwrap();
+        if let Ok(payload) = s.live_payload(id, &region) {
+            out.push((region.to_string(), payload));
+        }
+    }
+    assert!(out.len() >= 5, "a payload of each kind: {:?}", out.iter().map(|o| &o.0).collect::<Vec<_>>());
+    out
+}
+
+const REGIONS: [&str; 14] = [
+    "*",
+    "pages",
+    "annot:nm:file-note-1",
+    "annot:obj:11.0",
+    "annot:obj:1.0",
+    "annot:obj:4294967295.65535",
+    "annot:nm:x",
+    "field:name",
+    "field:nope",
+    "field:\u{202e}",
+    "annot:",
+    "page",
+    "",
+    "annot:obj:12.0",
+];
+
+/// Thousands of mutated genuine payloads under random region ids: none panics, and every one
+/// refused leaves the document as it was.
+#[test]
+fn mutated_payloads_never_panic_and_a_refused_one_changes_nothing() {
+    let genuine = genuine_payloads();
+    let mut rng = Rng(0x9E37_79B9_7F4A_7C15);
+    let (mut s, mut id) = open("0000aa");
+    let (mut applied, mut refused_count) = (0, 0);
+    for round in 0..1500 {
+        // A fresh document now and then, so later cases don't all hit one already mangled.
+        if round % 100 == 99 {
+            (s, id) = open("0000aa");
+        }
+        let (region, payload) = rng.pick(&genuine).clone();
+        let region = if rng.below(4) == 0 { (*rng.pick(&REGIONS)).to_owned() } else { region };
+        let mut payload = payload;
+        for _ in 0..=rng.below(3) {
+            payload = mutate(&mut rng, &payload);
+        }
+        let before = saved(&s, id);
+        match s.apply_remote(id, &region, &payload) {
+            Ok(_) => applied += 1,
+            Err(_) => {
+                refused_count += 1;
+                assert_eq!(saved(&s, id), before, "round {round}: {region} refused but the document changed");
+            }
+        }
+    }
+    assert!(applied > 0 && refused_count > 0, "both kinds were tried: {applied} applied, {refused_count} refused");
+}
+
+/// Random and mutated anchors: reading, placing and resolving them never panics and never
+/// touches the document.
+#[test]
+fn mutated_anchors_never_panic_and_never_change_the_document() {
+    let (mut s, id) = open("0000aa");
+    let genuine = [
+        r#"{"v":1,"region":"annot:nm:file-note-1","pos":{"page":"f3.0","quads":[[40,60,60,60,40,40,60,40]]},"soft":{"index":0,"text":""},"label":"Trang 1"}"#,
+        r#"{"v":1,"region":null,"pos":{"page":"f3.0","quads":[[20,265,100,265,20,248,100,248]]},"soft":{"index":0,"text":"Page one"},"label":"Trang 1"}"#,
+        r#"{"v":1,"region":"field:name","pos":{"page":null,"quads":[]},"soft":{"index":2,"text":"Page"},"label":"Trang 3"}"#,
+    ];
+    let before = saved(&s, id);
+    let mut rng = Rng(0xD1B5_4A32_D192_ED03);
+    let mut anchors = Vec::new();
+    for round in 0..3000 {
+        let mut json = (*rng.pick(&genuine)).to_owned();
+        for _ in 0..=rng.below(3) {
+            json = mutate(&mut rng, &json);
+        }
+        if round % 500 == 0 {
+            // Huge lists of quads and long text.
+            json = format!(
+                r#"{{"v":1,"pos":{{"quads":[{}]}},"soft":{{"index":0,"text":"{}"}}}}"#,
+                vec!["[1,2,3,4,5,6,7,8]"; 5000].join(","),
+                "é".repeat(5000)
+            );
+        }
+        if let Ok(anchor) = Anchor::parse(&json) {
+            let _ = s.anchor_place(id, &anchor);
+            anchors.push(anchor);
+        }
+    }
+    assert!(!anchors.is_empty());
+    let _ = s.resolve_anchors(id, &anchors);
+    assert_eq!(saved(&s, id), before, "anchors changed the document");
 }
