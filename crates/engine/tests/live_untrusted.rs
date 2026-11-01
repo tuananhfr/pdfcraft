@@ -10,8 +10,8 @@ use pdfcraft_engine::{ClientPrefix, DocId, Edit, NewAnnotation, NoteIcon, Sessio
 
 /// Three pages. Page 1 has the note `file-note-1` (8) and the widget of the field `name` (10);
 /// page 2 a note without `/NM` (11). Object 12 is a note no page lists any more.
-fn fixture() -> Vec<u8> {
-    let objs = [
+fn objects() -> Vec<String> {
+    [
         "<< /Type /Catalog /Pages 2 0 R /AcroForm << /Fields [10 0 R] /DA (/Helv 0 Tf 0 g) /DR << /Font << /Helv 6 0 R >> >> >> >>",
         "<< /Type /Pages /Kids [3 0 R 4 0 R 5 0 R] /Count 3 >>",
         "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 300] /Contents 7 0 R /Resources << /Font << /F1 6 0 R >> >> /Annots [8 0 R 10 0 R] >>",
@@ -24,17 +24,32 @@ fn fixture() -> Vec<u8> {
         "<< /Type /Annot /Subtype /Widget /FT /Tx /T (name) /Rect [20 200 180 220] /P 3 0 R /F 4 /DA (/Helv 10 Tf 0 g) >>",
         "<< /Type /Annot /Subtype /Text /Rect [40 40 60 60] /P 4 0 R /Contents (No name) >>",
         "<< /Type /Annot /Subtype /Text /Rect [10 10 20 20] /Contents (Gone) >>",
-    ];
+    ]
+    .map(str::to_owned)
+    .to_vec()
+}
+
+fn fixture() -> Vec<u8> {
+    pdf(&objects().into_iter().map(Some).collect::<Vec<_>>())
+}
+
+/// A file of `objs` numbered from 1; `None` is a free entry of generation 1.
+fn pdf(objs: &[Option<String>]) -> Vec<u8> {
     let mut out = b"%PDF-1.7\n".to_vec();
-    let mut offsets = Vec::new();
+    let mut entries = Vec::new();
     for (i, o) in objs.iter().enumerate() {
-        offsets.push(out.len());
-        out.extend_from_slice(format!("{} 0 obj\n{o}\nendobj\n", i + 1).as_bytes());
+        match o {
+            Some(o) => {
+                entries.push(format!("{:010} 00000 n \n", out.len()));
+                out.extend_from_slice(format!("{} 0 obj\n{o}\nendobj\n", i + 1).as_bytes());
+            }
+            None => entries.push("0000000000 00001 f \n".to_owned()),
+        }
     }
     let xref = out.len();
     out.extend_from_slice(format!("xref\n0 {}\n0000000000 65535 f \n", objs.len() + 1).as_bytes());
-    for o in offsets {
-        out.extend_from_slice(format!("{o:010} 00000 n \n").as_bytes());
+    for e in entries {
+        out.extend_from_slice(e.as_bytes());
     }
     out.extend_from_slice(format!("trailer\n<< /Size {} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n", objs.len() + 1).as_bytes());
     out
@@ -80,6 +95,47 @@ fn a_comment_payload_writes_no_object_outside_its_region() {
     // The note no page lists comes back under its own number.
     s.apply_remote(id, "annot:obj:12.0", &note_payload("f3.0")).unwrap();
     assert!(s.annotation_ids(id).iter().any(|a| a.id.to_string() == "obj:12.0" && a.page == 0));
+}
+
+/// A comment's `/Popup` set to a page or another comment by one payload doesn't make that
+/// object the comment's own for the next: it is never written, nor moved in any `/Annots`.
+#[test]
+fn a_popup_pointing_outside_the_comment_is_not_its_own() {
+    let (mut s, id) = open("0000aa");
+    let page_two = s.page_ids(id)[1].to_string();
+    for target in [format!(r#"{{"p":"{page_two}"}}"#), r#"{"a":"obj-11-0"}"#.to_owned(), r#"{"a":"nm:obj-11-0"}"#.to_owned()] {
+        let pointing = format!(
+            r#"{{"v":1,"page":"f3.0","at":0,"g":[{{"d":{{"Type":{{"n":"Annot"}},"Subtype":{{"n":"Text"}},"NM":{{"s":"file-note-1"}},"Rect":[40,40,60,60],"Popup":{target}}}}}]}}"#
+        );
+        // Accepted or refused, the next payload must not reach the target.
+        let _ = s.apply_remote(id, "annot:nm:file-note-1", &pointing);
+        let others =
+            |s: &mut Session| (s.page_ids(id), s.annotation_ids(id).into_iter().filter(|a| a.id.to_string() != "nm:file-note-1").collect::<Vec<_>>());
+        let before = others(&mut s);
+        let hijack = r#"{"v":1,"page":"f3.0","at":0,"g":[{"d":{"Type":{"n":"Annot"},"Subtype":{"n":"Text"},"NM":{"s":"file-note-1"},"Rect":[40,40,60,60],"Popup":{"r":1}}},{"d":{"Type":{"n":"Annot"},"Subtype":{"n":"Popup"},"Rect":[0,0,1,1]}}]}"#;
+        let _ = s.apply_remote(id, "annot:nm:file-note-1", hijack);
+        assert_eq!(others(&mut s), before, "{target}: another page or comment changed");
+        assert_eq!(s.get(id).unwrap().info.pages.len(), 3, "{target}");
+    }
+}
+
+/// A free object number may still be referred to from elsewhere (here the catalogue's
+/// `/OpenAction`): a comment is never written at one, only at a comment's own object.
+#[test]
+fn a_comment_payload_never_fills_a_free_object_number() {
+    let mut objs: Vec<Option<String>> = objects().into_iter().map(Some).collect();
+    objs[0] = objs[0].take().map(|c| c.replace("/Pages 2 0 R", "/Pages 2 0 R /OpenAction 9 0 R"));
+    objs[8] = None;
+    let bytes = pdf(&objs);
+    let mut s = Session::new().with_clock(|| 1_800_000_000);
+    s.set_client_prefix(ClientPrefix::parse("0000aa").unwrap());
+    let id = s.open("live.pdf", None, Arc::new(bytes), None).unwrap();
+    s.set_live(id, true).unwrap();
+    let payload =
+        r#"{"v":1,"page":"f3.0","at":0,"g":[{"d":{"S":{"n":"JavaScript"},"JS":{"s":"app.alert(1)"},"Subtype":{"n":"Text"},"Rect":[1,1,2,2]}}]}"#;
+    for region in ["annot:obj:9.1", "annot:obj:9.0"] {
+        refused(&mut s, id, region, payload);
+    }
 }
 
 /// A page listed twice in the order is a malformed payload, not thousands of page moves.

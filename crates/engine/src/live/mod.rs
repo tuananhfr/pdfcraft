@@ -392,28 +392,9 @@ impl Session {
         if !applied {
             return Ok(Applied { region, pages: Some(Vec::new()), changed: false });
         }
-        // The room checks only who holds the region id; what the payload wrote is checked here.
-        if let Some(writable) = regions::writable_objects(&View::new(&prev, &prev_ids), &region) {
-            let added = prev.next_object_number();
-            let outside = |n: u32| {
-                if n >= added || writable.objects.contains(&n) {
-                    return false;
-                }
-                // A freed object reads as a fresh null each time: compare values, not pointers.
-                let (Ok(a), Ok(b)) = (prev.try_get(n), next.try_get(n)) else { return true };
-                match (a.as_dict(), b.as_dict()) {
-                    (Some(x), Some(y)) if writable.annots_of.contains(&n) => {
-                        let (mut x, mut y) = (x.clone(), y.clone());
-                        x.remove(b"Annots");
-                        y.remove(b"Annots");
-                        x != y
-                    }
-                    _ => a != b,
-                }
-            };
-            if changed_objects(&prev, &next).into_iter().any(outside) {
-                return Err(codec::malformed("a change outside its region"));
-            }
+        // Comment and field payloads leave the pages as they are: `prev_ids` name both sides' pages.
+        if !regions::confined(&View::new(&prev, &prev_ids), &View::new(&next, &prev_ids), &region, changed_objects(&prev, &next)) {
+            return Err(codec::malformed("a change outside its region"));
         }
         if region == Region::Document {
             doc.page_ids.clear();

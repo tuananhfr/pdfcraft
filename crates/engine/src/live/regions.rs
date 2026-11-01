@@ -92,8 +92,16 @@ fn set_annots(cos: &mut Cos, page: ObjRef, list: Vec<Object>) -> Result<(), Live
     Ok(())
 }
 
+/// `annot`'s pop-up: only a pop-up annotation that belongs to it, since a payload sets `/Popup`
+/// and a page or another comment must never become this comment's to write or move.
 fn popup_of(cos: &Cos, annot: ObjRef) -> Option<ObjRef> {
-    cos.get(annot).as_dict().and_then(|d| d.reference(b"Popup"))
+    let p = cos.get(annot).as_dict().and_then(|d| d.reference(b"Popup")).filter(|p| *p != annot)?;
+    let obj = cos.get(p);
+    let d = obj.as_dict()?;
+    let own = matches!(d.name(b"Subtype"), Some(b"Popup"))
+        && d.name(b"Type").is_none_or(|t| t == b"Annot")
+        && d.get(b"Parent").is_none_or(|parent| parent.as_ref() == Some(annot));
+    own.then_some(p)
 }
 
 fn rotation(cos: &Cos, page: ObjRef) -> i64 {
@@ -202,6 +210,11 @@ pub(crate) fn apply_comment(cos: &mut Cos, ids: &[PageId], id: &AnnotId, payload
     }
     let refs = decode_objects(cos, g, &preset, &Targets { pages: &pages, comments: &comments })?;
     let root = *refs.first().ok_or_else(|| malformed("the comment"))?;
+    if let Some(p) = cos.get(root).as_dict().and_then(|d| d.reference(b"Popup"))
+        && (pages.values().any(|r| *r == p) || comments.values().any(|r| *r == p))
+    {
+        return Err(malformed("a pop-up that is a page or a comment"));
+    }
     let popup = popup_of(cos, root);
     if let Some((Some(old_page), _)) = existing
         && old_page != page
@@ -226,26 +239,23 @@ pub(crate) fn apply_comment(cos: &mut Cos, ids: &[PageId], id: &AnnotId, payload
     Ok(true)
 }
 
-/// Whether a comment named by object number may be written at `r` while no page lists it: a free
-/// number below the next one, or a comment's own object that no page lists any more. Anything
-/// else (the catalogue, a page, a widget, another comment) belongs to another region.
+/// Whether a comment named by object number may be written at `r` while no page lists it: only
+/// a comment's own object that no page lists any more. Anything else (the catalogue, a page, a
+/// widget, another comment) belongs to another region, and a free number may still be referred
+/// to from elsewhere (comments are never freed, so their own object is always there).
 fn reusable_comment_object(view: &View, r: ObjRef) -> bool {
     let cos = view.cos;
-    if r.num == 0 || r.num >= cos.next_object_number() {
+    if r.num == 0 || r.num >= cos.next_object_number() || cos.generation(r.num) != r.generation {
         return false;
     }
-    match &*cos.get(r) {
-        Object::Null => true,
-        Object::Dict(d) => {
-            // `is_comment` assumes an annotation; a font or an image has a `/Subtype` too.
-            cos.generation(r.num) == r.generation
-                && d.name(b"Type").is_none_or(|t| t == b"Annot")
-                && d.contains(b"Rect")
-                && stable_ids::is_comment(d)
-                && !view.pages.iter().any(|(page, _)| annots(cos, *page).iter().any(|o| o.as_ref() == Some(r)))
-        }
-        _ => false,
-    }
+    let Ok(obj) = cos.try_get(r.num) else { return false };
+    // `is_comment` assumes an annotation; a font or an image has a `/Subtype` too.
+    obj.as_dict().is_some_and(|d| {
+        d.name(b"Type").is_none_or(|t| t == b"Annot")
+            && d.contains(b"Rect")
+            && stable_ids::is_comment(d)
+            && !view.pages.iter().any(|(page, _)| annots(cos, *page).iter().any(|o| o.as_ref() == Some(r)))
+    })
 }
 
 /// The existing objects a payload for `region` may change; `None` for regions that may change
@@ -255,6 +265,8 @@ pub(crate) struct Writable {
     pub objects: HashSet<u32>,
     /// Pages whose `/Annots` alone may change: a comment moves between pages with its pop-up.
     pub annots_of: HashSet<u32>,
+    /// The comment and its pop-up: the only entries those `/Annots` may gain or lose.
+    pub own: HashSet<ObjRef>,
 }
 
 pub(crate) fn writable_objects(view: &View, region: &Region) -> Option<Writable> {
@@ -273,9 +285,9 @@ pub(crate) fn writable_objects(view: &View, region: &Region) -> Option<Writable>
                 (None, AnnotId::Object { num, generation }) => Some(ObjRef::new(*num, *generation)).filter(|r| reusable_comment_object(view, *r)),
                 (None, AnnotId::Name(_)) => None,
             };
-            if let Some(r) = own {
+            for r in own.into_iter().flat_map(|r| std::iter::once(r).chain(popup_of(cos, r))) {
                 out.objects.insert(r.num);
-                out.objects.extend(popup_of(cos, r).map(|p| p.num));
+                out.own.insert(r);
             }
         }
         Region::Field(name) => {
@@ -289,6 +301,42 @@ pub(crate) fn writable_objects(view: &View, region: &Region) -> Option<Writable>
         Region::Pages | Region::Document => return None,
     }
     Some(out)
+}
+
+/// Whether a payload for `region`, applied from `prev` to `next` (same pages), changed only what
+/// the region may: its own objects, objects it added, and of the pages' `/Annots` only its own
+/// entries. The room checks only who holds the region id, never what the payload writes.
+pub(crate) fn confined(prev: &View, next: &View, region: &Region, changed: HashSet<u32>) -> bool {
+    let Some(mut w) = writable_objects(prev, region) else { return true };
+    let added = prev.cos.next_object_number();
+    let outside = |n: u32| {
+        if n >= added || w.objects.contains(&n) {
+            return false;
+        }
+        // A freed object reads as a fresh null each time: compare values, not pointers.
+        let (Ok(a), Ok(b)) = (prev.cos.try_get(n), next.cos.try_get(n)) else { return true };
+        match (a.as_dict(), b.as_dict()) {
+            (Some(x), Some(y)) if w.annots_of.contains(&n) => {
+                let (mut x, mut y) = (x.clone(), y.clone());
+                x.remove(b"Annots");
+                y.remove(b"Annots");
+                x != y
+            }
+            _ => a != b,
+        }
+    };
+    if changed.into_iter().any(outside) {
+        return false;
+    }
+    let Region::Annot(id) = region else { return true };
+    if let Some((_, r)) = next.comment(id) {
+        w.own.insert(*r);
+        w.own.extend(popup_of(next.cos, *r));
+    }
+    let rest = |v: &View, page: ObjRef| -> Vec<Object> {
+        annots(v.cos, page).into_iter().filter(|o| o.as_ref().is_none_or(|r| r.num < added && !w.own.contains(&r))).collect()
+    };
+    prev.pages.iter().all(|(page, _)| rest(prev, *page) == rest(next, *page))
 }
 
 // ── form fields ─────────────────────────────────────────────────────────────────────────────
