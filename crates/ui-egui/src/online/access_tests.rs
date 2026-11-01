@@ -726,7 +726,8 @@ fn comment_mode_points_to_the_shells_comments_panel() {
         "Nhận xét trên web sẽ có sau, hiện chỉ xem được"
     );
     assert_eq!(crate::i18n::tr(vi, "This document is open for viewing only."), "Tài liệu này chỉ được mở để xem.");
-    let cases: [(AccessMode, bool, fn() -> &'static str); 4] = [
+    type Notice = fn() -> &'static str;
+    let cases: [(AccessMode, bool, Notice); 4] = [
         (AccessMode::Comment, true, comment_panel_notice),
         (AccessMode::Comment, false, comment_only_notice),
         (AccessMode::View, true, view_only_notice),
