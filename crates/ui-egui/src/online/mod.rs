@@ -13,6 +13,7 @@ mod access;
 mod app;
 mod autosave;
 mod client_id;
+pub mod comments;
 pub mod live;
 mod preserve;
 mod user;
@@ -235,6 +236,8 @@ pub struct Online {
     shell_shares: bool,
     /// `erpHost` v3: co-editing by region.
     pub(crate) live: Option<live::Live>,
+    /// The comment calls (`showComments`, …), offered from v2 on.
+    pub(crate) comments: Option<comments::Comments>,
 }
 
 impl Online {
@@ -253,6 +256,7 @@ impl Online {
             next_slot: 0,
             shell_shares: false,
             live: None,
+            comments: None,
         }
     }
 
@@ -264,6 +268,17 @@ impl Online {
     /// For `erpHost` v3, whose shell coordinates co-editing by region.
     pub fn with_live(self, host: Box<dyn live::RegionHost>) -> Self {
         Self { live: Some(live::Live::new(host)), ..self }
+    }
+
+    /// For a shell that may call the comment calls (`erpHost` v2 and later).
+    pub fn with_comments(self, host: Box<dyn comments::CommentHost>) -> Self {
+        Self { comments: Some(comments::Comments::new(host)), ..self }
+    }
+
+    /// Where the comment calls queue their events, and what `anchorOfSelection` reads (`None`
+    /// without them).
+    pub fn comment_channels(&self) -> Option<(comments::CommentInbox, comments::SelectionAnchor)> {
+        self.comments.as_ref().map(|c| (c.inbox(), c.selection()))
     }
 
     /// Where the v3 calls queue their events (`None` without v3).

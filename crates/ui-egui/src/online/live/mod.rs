@@ -11,7 +11,7 @@ mod frame;
 mod marks;
 
 #[cfg(test)]
-mod tests;
+pub(in crate::online) mod tests;
 
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;

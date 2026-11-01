@@ -75,9 +75,8 @@ impl PdfCraftApp {
 
     /// The live room is about the host document opened last: live mode follows it.
     fn bind_live_doc(&mut self) -> Option<DocId> {
-        let online = self.online.as_ref()?;
-        let doc = online.records.iter().filter(|(id, _)| self.views.iter().any(|v| v.id == **id)).max_by_key(|(_, r)| r.slot).map(|(id, _)| *id);
-        let live = online.live.as_ref()?;
+        let doc = self.newest_host_doc();
+        let live = self.online.as_ref()?.live.as_ref()?;
         if live.doc == doc {
             return doc;
         }

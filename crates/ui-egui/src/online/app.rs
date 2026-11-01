@@ -45,6 +45,13 @@ impl PdfCraftApp {
         self.online.as_ref().is_some_and(|o| o.records.contains_key(&id))
     }
 
+    /// The host document opened last that still has a tab: the one the live room and the shell's
+    /// comment calls are about.
+    pub(crate) fn newest_host_doc(&self) -> Option<DocId> {
+        let online = self.online.as_ref()?;
+        online.records.iter().filter(|(id, _)| self.views.iter().any(|v| v.id == **id)).max_by_key(|(_, r)| r.slot).map(|(id, _)| *id)
+    }
+
     /// A save of host document `id` is in flight or waiting to be sent.
     pub(crate) fn host_save_pending(&self, id: DocId) -> bool {
         let Some(online) = self.online.as_ref() else { return false };

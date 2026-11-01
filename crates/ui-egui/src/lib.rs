@@ -3244,6 +3244,7 @@ impl PdfCraftApp {
         self.drafts_tick(ctx);
         self.online_tick(ctx);
         self.live_tick(ctx);
+        self.comments_tick();
     }
 }
 

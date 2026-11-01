@@ -8,12 +8,12 @@ use pdfcraft_engine::{ClientPrefix, DocId, Edit, EditError, FieldValue};
 
 use super::*;
 use crate::PdfCraftApp;
-use crate::online::tests::{Fake, app, open, tick};
+use crate::online::tests::{FORM, Fake, app, open, open_with, tick};
 
 const NAMES: [&str; 2] = ["Ada", "Bea"];
 
 #[derive(Default)]
-struct Room {
+pub(in crate::online) struct Room {
     inboxes: Vec<LiveInbox>,
     /// (region, seat)
     locks: Vec<(String, usize)>,
@@ -93,19 +93,19 @@ impl RegionHost for Seat {
     }
 }
 
-struct Client {
-    app: PdfCraftApp,
+pub(in crate::online) struct Client {
+    pub(in crate::online) app: PdfCraftApp,
     fake: Fake,
-    id: DocId,
+    pub(in crate::online) id: DocId,
 }
 
 impl Client {
-    fn tick(&mut self, now: f64) {
+    pub(in crate::online) fn tick(&mut self, now: f64) {
         tick(&mut self.app, &self.fake, now);
         self.app.live_step();
     }
 
-    fn edit(&mut self, edit: Edit) -> bool {
+    pub(in crate::online) fn edit(&mut self, edit: Edit) -> bool {
         self.app.active = self.app.views.iter().position(|v| v.id == self.id);
         self.app.apply_edit(edit)
     }
@@ -129,6 +129,11 @@ impl Client {
 
 /// Two apps with form.pdf open as the same host document, in one room.
 fn pair() -> (Client, Client, Rc<RefCell<Room>>) {
+    pair_with(FORM)
+}
+
+/// Two apps with `bytes` open as the same host document, in one room.
+pub(in crate::online) fn pair_with(bytes: &[u8]) -> (Client, Client, Rc<RefCell<Room>>) {
     let room = Rc::new(RefCell::new(Room::default()));
     let mut clients = Vec::new();
     for (me, prefix) in ["0000aa", "0000bb"].into_iter().enumerate() {
@@ -137,7 +142,7 @@ fn pair() -> (Client, Client, Rc<RefCell<Room>>) {
         app.online = Some(app.online.take().unwrap().with_live(Box::new(seat)));
         app.session.set_client_prefix(ClientPrefix::parse(prefix).unwrap());
         room.borrow_mut().inboxes.push(app.online.as_ref().unwrap().live_inbox().unwrap());
-        let id = open(&mut app, "d1");
+        let id = open_with(&mut app, "d1", bytes);
         clients.push(Client { app, fake, id });
     }
     for seat in 0..2 {
@@ -153,7 +158,7 @@ fn pair() -> (Client, Client, Rc<RefCell<Room>>) {
     (a, b, room)
 }
 
-fn log(room: &Rc<RefCell<Room>>) -> Vec<String> {
+pub(in crate::online) fn log(room: &Rc<RefCell<Room>>) -> Vec<String> {
     std::mem::take(&mut room.borrow_mut().log)
 }
 

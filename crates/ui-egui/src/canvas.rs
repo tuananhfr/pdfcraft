@@ -337,6 +337,10 @@ pub struct DocView {
     pub compare_marks: Vec<(usize, [f32; 4], Color32)>,
     /// Co-editing: others' locks and selections on this document's pages.
     pub live_marks: Vec<crate::online::live::Mark>,
+    /// Cloud comments: a marker for each open thread anchored on this document's pages.
+    pub comment_markers: Vec<crate::online::comments::CommentMarker>,
+    /// The thread whose marker was clicked this frame, for the shell.
+    pub(crate) comment_clicked: Option<String>,
     pages: HashMap<usize, PageTex>,
     /// Pages the renderer could not draw, with the reason (never re-requested).
     errors: HashMap<usize, String>,
@@ -624,6 +628,8 @@ impl DocView {
             flash: None,
             compare_marks: Vec::new(),
             live_marks: Vec::new(),
+            comment_markers: Vec::new(),
+            comment_clicked: None,
             pages: HashMap::new(),
             errors: HashMap::new(),
             waiting_since: HashMap::new(),
@@ -1015,6 +1021,25 @@ impl DocView {
             .unwrap_or(0.0);
         self.goto = Some((page, frac));
         self.current = page;
+    }
+
+    /// Scroll to the user-space rectangle `rect` on `page` and outline it for a moment.
+    pub(crate) fn reveal(&mut self, page: usize, rect: [f32; 4], info: &DocInfo) {
+        self.go_to_page(page);
+        let top = info.pages.get(page).map(|p| {
+            let (a, b) = (p.user_to_view(rect[0], rect[1]), p.user_to_view(rect[2], rect[3]));
+            a[1].min(b[1])
+        });
+        if let (Some(y), Some(h)) = (top, self.page_heights.get(page).copied().filter(|h| *h > 0.0)) {
+            self.goto = Some((page, ((y - 60.0) / h).clamp(0.0, 1.0)));
+        }
+        self.flash = Some((page, rect, 0.0));
+    }
+
+    /// The text layer of `page` as if the renderer had delivered it (tests).
+    #[cfg(test)]
+    pub(crate) fn put_page_text(&mut self, page: usize, text: Arc<PageText>) {
+        self.texts.insert(page, text);
     }
 
     /// Screen position of the centre of glyph `glyph` on `page`, if that page is on screen and its
@@ -3129,6 +3154,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
             }
             comments::paint_page(ui, painter, &pcx, view);
             crate::online::live::paint_page(painter, &xf, info, i, &view.live_marks);
+            crate::online::comments::paint_markers(ui, painter, &xf, info, i, view);
             if editing_content {
                 crate::content_ui::paint_page(ui, painter, &xf, i, info, &added, view);
             }

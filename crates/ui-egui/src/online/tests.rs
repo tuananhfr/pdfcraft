@@ -75,7 +75,12 @@ fn deliver(app: &PdfCraftApp, doc_id: &str, format: &str, bytes: Vec<u8>) {
 
 /// Host document `doc_id` (form.pdf), open and active.
 pub(super) fn open(app: &mut PdfCraftApp, doc_id: &str) -> DocId {
-    deliver(app, doc_id, "pdf", FORM.to_vec());
+    open_with(app, doc_id, FORM)
+}
+
+/// Host document `doc_id` with `bytes`, open and active.
+pub(super) fn open_with(app: &mut PdfCraftApp, doc_id: &str, bytes: &[u8]) -> DocId {
+    deliver(app, doc_id, "pdf", bytes.to_vec());
     app.open_host_documents();
     app.active_ids().unwrap().1
 }
