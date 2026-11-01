@@ -269,7 +269,7 @@ fn name_of(cos: &Cos, d: &pdfcraft_cos::Dict) -> Option<String> {
     d.get(b"NM").and_then(|n| cos.resolve(n).as_string().map(PdfString::to_text)).filter(|n| !n.is_empty())
 }
 
-fn is_comment(d: &pdfcraft_cos::Dict) -> bool {
+pub(crate) fn is_comment(d: &pdfcraft_cos::Dict) -> bool {
     d.name(b"Subtype").is_some_and(|s| pdfcraft_annot::is_comment_subtype(&String::from_utf8_lossy(s)))
 }
 

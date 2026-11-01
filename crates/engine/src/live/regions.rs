@@ -181,7 +181,10 @@ pub(crate) fn apply_comment(cos: &mut Cos, ids: &[PageId], id: &AnnotId, payload
         // A comment of the file comes back under its own number, so its id stays the same.
         (None, AnnotId::Object { num, generation }) => {
             let r = ObjRef::new(*num, *generation);
-            matches!(*cos.get(r), Object::Null | Object::Dict(_)).then_some(r)
+            if !reusable_comment_object(&view, r) {
+                return Err(malformed("the comment's object"));
+            }
+            Some(r)
         }
         (None, AnnotId::Name(_)) => None,
     };
@@ -221,6 +224,71 @@ pub(crate) fn apply_comment(cos: &mut Cos, ids: &[PageId], id: &AnnotId, payload
     }
     set_annots(cos, page, list)?;
     Ok(true)
+}
+
+/// Whether a comment named by object number may be written at `r` while no page lists it: a free
+/// number below the next one, or a comment's own object that no page lists any more. Anything
+/// else (the catalogue, a page, a widget, another comment) belongs to another region.
+fn reusable_comment_object(view: &View, r: ObjRef) -> bool {
+    let cos = view.cos;
+    if r.num == 0 || r.num >= cos.next_object_number() {
+        return false;
+    }
+    match &*cos.get(r) {
+        Object::Null => true,
+        Object::Dict(d) => {
+            // `is_comment` assumes an annotation; a font or an image has a `/Subtype` too.
+            cos.generation(r.num) == r.generation
+                && d.name(b"Type").is_none_or(|t| t == b"Annot")
+                && d.contains(b"Rect")
+                && stable_ids::is_comment(d)
+                && !view.pages.iter().any(|(page, _)| annots(cos, *page).iter().any(|o| o.as_ref() == Some(r)))
+        }
+        _ => false,
+    }
+}
+
+/// The existing objects a payload for `region` may change; `None` for regions that may change
+/// any (`pages`, `*`). Objects it adds are always allowed.
+#[derive(Default)]
+pub(crate) struct Writable {
+    pub objects: HashSet<u32>,
+    /// Pages whose `/Annots` alone may change: a comment moves between pages with its pop-up.
+    pub annots_of: HashSet<u32>,
+}
+
+pub(crate) fn writable_objects(view: &View, region: &Region) -> Option<Writable> {
+    let cos = view.cos;
+    let mut out = Writable::default();
+    match region {
+        Region::Annot(id) => {
+            for (page, _) in &view.pages {
+                out.annots_of.insert(page.num);
+                if let Some(r) = cos.get(*page).as_dict().and_then(|d| d.reference(b"Annots")) {
+                    out.objects.insert(r.num);
+                }
+            }
+            let own = match (view.comment(id), id) {
+                (Some((_, r)), _) => Some(*r),
+                (None, AnnotId::Object { num, generation }) => Some(ObjRef::new(*num, *generation)).filter(|r| reusable_comment_object(view, *r)),
+                (None, AnnotId::Name(_)) => None,
+            };
+            if let Some(r) = own {
+                out.objects.insert(r.num);
+                out.objects.extend(popup_of(cos, r).map(|p| p.num));
+            }
+        }
+        Region::Field(name) => {
+            out.objects.extend(field_objects(cos).get(name).into_iter().flatten().map(|r| r.num));
+            // NeedAppearances, in the catalogue's /AcroForm.
+            if let Some(root) = cos.root() {
+                out.objects.insert(root.num);
+                out.objects.extend(cos.get(root).as_dict().and_then(|d| d.reference(b"AcroForm")).map(|r| r.num));
+            }
+        }
+        Region::Pages | Region::Document => return None,
+    }
+    Some(out)
 }
 
 // ── form fields ─────────────────────────────────────────────────────────────────────────────
