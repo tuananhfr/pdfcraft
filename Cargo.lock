@@ -4388,6 +4388,7 @@ name = "pdfcraft-engine"
 version = "0.8.0"
 dependencies = [
  "ab_glyph",
+ "base64 0.22.1",
  "chrono",
  "getrandom 0.4.3",
  "icu_properties",
@@ -4420,6 +4421,7 @@ dependencies = [
  "pdfcraft-xfa",
  "pdfcraft-xfdf",
  "png 0.18.1",
+ "serde_json",
  "thiserror 2.0.21",
  "unicode-normalization",
  "url",

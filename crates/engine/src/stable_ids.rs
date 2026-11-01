@@ -144,20 +144,31 @@ pub(crate) struct PageIds {
 }
 
 impl PageIds {
-    /// The id of each page of `cos`, in order, naming pages seen for the first time.
-    fn sync(&mut self, cos: &Cos, ids: &IdSource) -> Vec<PageId> {
+    /// The id of each page of `cos`, in order, naming pages seen for the first time: by the id a
+    /// co-editing session stored in the page ([`PAGE_ID_KEY`]) unless another page has it.
+    pub(crate) fn sync(&mut self, cos: &Cos, ids: &IdSource) -> Vec<PageId> {
         let refs = pdfcraft_annot::page_refs(cos).unwrap_or_default();
+        let mut used: HashSet<PageId> = refs.iter().filter_map(|r| self.by_ref.get(r).copied()).collect();
         refs.iter()
             .map(|r| {
-                *self.by_ref.entry(*r).or_insert_with(|| {
-                    if in_file(cos, *r) {
-                        PageId::File { num: r.num, generation: r.generation }
-                    } else {
-                        PageId::New { prefix: ids.prefix(), seq: ids.next_seq() }
-                    }
-                })
+                if let Some(id) = self.by_ref.get(r) {
+                    return *id;
+                }
+                let id = match stored_page_id(cos, *r).filter(|id| !used.contains(id)) {
+                    Some(id) => id,
+                    None if in_file(cos, *r) => PageId::File { num: r.num, generation: r.generation },
+                    None => PageId::New { prefix: ids.prefix(), seq: ids.next_seq() },
+                };
+                used.insert(id);
+                self.by_ref.insert(*r, id);
+                id
             })
             .collect()
+    }
+
+    /// Forget every page, as after the working file was replaced by another client's.
+    pub(crate) fn clear(&mut self) {
+        self.by_ref.clear();
     }
 
     /// Objects numbered from `first_free` on were never in the state an edit started from: a later
@@ -183,6 +194,29 @@ impl PageIds {
     }
 }
 
+/// A page's id as a co-editing session stored it, so the room's ids survive the leader's save:
+/// a client that opens that version reads them instead of naming the pages by object.
+pub(crate) const PAGE_ID_KEY: &[u8] = b"ERPConsPageId";
+
+fn stored_page_id(cos: &Cos, page: ObjRef) -> Option<PageId> {
+    let obj = cos.get(page);
+    let value = obj.as_dict()?.get(PAGE_ID_KEY)?;
+    PageId::parse(&cos.resolve(value).as_string()?.to_text())
+}
+
+/// Store `id` in a page (co-editing only).
+pub(crate) fn store_page_id(cos: &mut Cos, page: ObjRef, id: PageId) {
+    let _ = cos.update_dict(page, |d| d.set(PAGE_ID_KEY.to_vec(), PdfString::text(&id.to_string())));
+}
+
+/// Name with a fresh id, stored in the page, each page `next` created (numbered from
+/// `first_free`): a copied page must not keep the id stored in its original.
+pub(crate) fn stamp_new_pages(next: &mut Cos, first_free: u32, ids: &IdSource) {
+    for page in pdfcraft_annot::page_refs(next).unwrap_or_default().into_iter().filter(|r| r.num >= first_free) {
+        store_page_id(next, page, PageId::New { prefix: ids.prefix(), seq: ids.next_seq() });
+    }
+}
+
 /// Whether `r` is an object of the file as opened or last saved (not created since).
 fn in_file(cos: &Cos, r: ObjRef) -> bool {
     match cos.xref_entry(r.num) {
@@ -194,10 +228,24 @@ fn in_file(cos: &Cos, r: ObjRef) -> bool {
 
 /// A comment's id: its `/NM`, or for a comment of the file without one (or sharing it with
 /// another comment) its object, which every session that opened the same version agrees on.
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum AnnotId {
     Name(String),
     Object { num: u32, generation: u16 },
+}
+
+impl AnnotId {
+    /// The [`Display`](fmt::Display) form back: `nm:<name>` or `obj:<num>.<generation>`.
+    pub fn parse(s: &str) -> Option<Self> {
+        if let Some(name) = s.strip_prefix("nm:") {
+            return (!name.is_empty()).then(|| Self::Name(name.to_owned()));
+        }
+        let (num, generation) = s.strip_prefix("obj:")?.split_once('.')?;
+        if !is_decimal(num) || !is_decimal(generation) {
+            return None;
+        }
+        Some(Self::Object { num: num.parse().ok()?, generation: generation.parse().ok()? })
+    }
 }
 
 impl fmt::Display for AnnotId {
@@ -238,6 +286,47 @@ fn comments(cos: &Cos) -> Vec<(usize, usize, ObjRef, Option<String>)> {
         }
     }
     out
+}
+
+/// Every comment of `cos` with its id and object, in page order.
+pub(crate) fn comment_ids(cos: &Cos) -> Vec<(AnnotRef, ObjRef)> {
+    let all = comments(cos);
+    let mut uses: HashMap<&str, usize> = HashMap::new();
+    for name in all.iter().filter_map(|c| c.3.as_deref()) {
+        *uses.entry(name).or_default() += 1;
+    }
+    all.iter()
+        .map(|(page, index, r, name)| {
+            let id = match name {
+                Some(n) if uses.get(n.as_str()) == Some(&1) => AnnotId::Name(n.clone()),
+                _ => AnnotId::Object { num: r.num, generation: r.generation },
+            };
+            (AnnotRef { page: *page, index: *index, id }, *r)
+        })
+        .collect()
+}
+
+/// Co-editing: give each comment without a `/NM`, or sharing one with an earlier comment, the
+/// name `obj-<num>-<gen>` of its object, which every session that opened the same version
+/// derives alike. A comment then keeps its id when a page is deleted and brought back, which
+/// copies it to another object. `true` when something was named.
+pub(crate) fn name_comments_by_object(cos: &mut Cos) -> bool {
+    let all = comments(cos);
+    let mut taken: HashSet<String> = all.iter().filter_map(|c| c.3.clone()).collect();
+    let mut seen: HashSet<String> = HashSet::new();
+    let mut named = false;
+    for (_, _, r, name) in all {
+        if let Some(name) = name
+            && seen.insert(name)
+        {
+            continue;
+        }
+        let fresh = format!("obj-{}-{}", r.num, r.generation);
+        if taken.insert(fresh.clone()) {
+            named |= cos.update_dict(r, |d| d.set(b"NM".to_vec(), PdfString::text(&fresh))).is_ok();
+        }
+    }
+    named
 }
 
 /// Edits that copy existing comments (pages duplicated or inserted, comment data imported).
@@ -304,20 +393,7 @@ impl Session {
     /// Every comment of document `id` with its id, in page order.
     pub fn annotation_ids(&self, id: DocId) -> Vec<AnnotRef> {
         let Some(cos) = self.get(id).and_then(|d| d.editor.as_ref()).map(|e| &e.cos) else { return Vec::new() };
-        let all = comments(cos);
-        let mut uses: HashMap<&str, usize> = HashMap::new();
-        for name in all.iter().filter_map(|c| c.3.as_deref()) {
-            *uses.entry(name).or_default() += 1;
-        }
-        all.iter()
-            .map(|(page, index, r, name)| {
-                let id = match name {
-                    Some(n) if uses.get(n.as_str()) == Some(&1) => AnnotId::Name(n.clone()),
-                    _ => AnnotId::Object { num: r.num, generation: r.generation },
-                };
-                AnnotRef { page: *page, index: *index, id }
-            })
-            .collect()
+        comment_ids(cos).into_iter().map(|(a, _)| a).collect()
     }
 
     /// Where the comment named `annot` is now: (page, index in its `/Annots`).

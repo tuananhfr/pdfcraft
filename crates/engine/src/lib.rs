@@ -28,6 +28,7 @@ pub mod export;
 pub mod js;
 mod limits;
 pub mod links;
+pub mod live;
 pub mod memory;
 pub mod ocr;
 pub mod optimizer;
@@ -398,6 +399,8 @@ pub struct Document {
     /// drawn with `?` in its place (see [`TextNotice`]). The interface shows it; tools return it.
     pub edit_notices: Vec<TextNotice>,
     page_ids: stable_ids::PageIds,
+    /// Co-editing by region (`erpHost` v3), when on.
+    live: Option<live::LiveState>,
 }
 
 /// Text an edit stored as typed but drew with `?` in place of `ch`, because the font it is drawn
@@ -2777,6 +2780,12 @@ pub enum EditError {
     BreaksSignatures(String),
     #[error("{0}")]
     Invalid(String),
+    /// Co-editing: someone else holds the region (its id) this edit would change.
+    #[error("someone else is editing this part of the document")]
+    RegionLocked(String),
+    /// Co-editing: the change is too large to send to the others.
+    #[error("this change is too large to share while editing together")]
+    LiveTooLarge,
 }
 
 impl From<pdfcraft_sign::SignError> for EditError {
@@ -3444,6 +3453,7 @@ impl Session {
             xfa_warnings: Vec::new(),
             edit_notices: Vec::new(),
             page_ids: Default::default(),
+            live: None,
         }
     }
 
@@ -3458,6 +3468,7 @@ impl Session {
         let today = self.today();
         let scripts = self.scripts_allowed(id);
         let ids = self.ids.clone();
+        let live_ids = self.ids.clone();
         let doc = self.doc_mut(id)?;
         if doc.limits.view_only {
             // Save As bakes Fill & Sign in first: the copy is written as the document stands.
@@ -3625,6 +3636,15 @@ impl Session {
             }
             found
         };
+        // Co-editing: which regions this changes, refused while someone else holds one of them.
+        let live_regions = match doc.live.as_ref() {
+            Some(state) => {
+                stable_ids::stamp_new_pages(&mut next, first_free, &live_ids);
+                doc.page_ids.forget_from(first_free);
+                Some(live::regions_of_edit(state, &mut doc.page_ids, &live_ids, (&editor.cos, &next), &edit, is_xfa, doc.bytes.len())?)
+            }
+            None => None,
+        };
         let next_transaction_id = doc
             .next_transaction_id
             .checked_add(1)
@@ -3668,6 +3688,9 @@ impl Session {
         }
         doc.dirty = true;
         doc.generation += 1;
+        if let (Some(state), Some(regions)) = (doc.live.as_mut(), live_regions) {
+            state.record(entry.transaction_id, live::ChangeKind::Edit, regions);
+        }
         doc.scripts_skipped |= skipped;
         doc.edit_notices = notices;
         note_warnings(&mut doc.xfa_warnings, &xfa_notes);
@@ -3686,6 +3709,9 @@ impl Session {
     }
 
     pub fn undo(&mut self, id: DocId) -> Result<Label, EditError> {
+        if self.is_live(id) {
+            return self.live_history(id, true);
+        }
         let doc = self.doc_mut(id)?;
         doc.check_not_view_only()?;
         doc.edit_notices.clear();
@@ -3703,6 +3729,9 @@ impl Session {
     }
 
     pub fn redo(&mut self, id: DocId) -> Result<Label, EditError> {
+        if self.is_live(id) {
+            return self.live_history(id, false);
+        }
         let doc = self.doc_mut(id)?;
         doc.check_not_view_only()?;
         doc.edit_notices.clear();

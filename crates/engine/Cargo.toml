@@ -36,6 +36,9 @@ pdfcraft-model = { workspace = true }
 pdfcraft-geom = { workspace = true }
 thiserror = { workspace = true }
 png = "0.18"
+# Already in the graph (ui-egui, the web app): co-editing payloads are JSON with base64 data.
+serde_json = { workspace = true }
+base64 = "0.22"
 # Already in the graph (render, sign; Web Crypto in the browser): a session's client prefix.
 getrandom = "0.4"
 # Already in the graph (url and idna through webbrowser, icu_properties through boa): they show
