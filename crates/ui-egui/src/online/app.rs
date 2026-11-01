@@ -214,6 +214,7 @@ impl PdfCraftApp {
 
     /// One tick; returns how soon the next one is needed.
     pub(crate) fn online_step(&mut self) -> Option<f64> {
+        self.apply_host_client_id();
         self.apply_host_user();
         self.apply_set_modes();
         let online = self.online.as_ref()?;

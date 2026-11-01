@@ -947,6 +947,12 @@ impl Document {
         self.next_num
     }
 
+    /// The number the next added object gets: every object numbered from it on is newer than
+    /// this state.
+    pub fn next_object_number(&self) -> u32 {
+        self.next_num
+    }
+
     /// All object numbers known (file and overlay), excluding freed ones.
     pub fn object_numbers(&self) -> Vec<u32> {
         // Both maps are ordered. Overlay slots replace source slots, including frees;

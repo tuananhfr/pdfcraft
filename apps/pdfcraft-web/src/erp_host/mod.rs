@@ -1,6 +1,6 @@
 //! `window.erpHost` v1 and v2 of the ERPCons office shell (`docs/erp-host.md` in erpcons-office):
 //! documents the office server holds, opened with `open(doc)` and saved back through `erpHost.save`;
-//! v2 adds access modes (`setMode`), `preserveView` and `setUser`. The app's side is
+//! v2 adds access modes (`setMode`), `preserveView`, `setUser` and `setClientId`. The app's side is
 //! [`pdfcraft_ui_egui::online`]; this is the JavaScript glue.
 
 mod bridge;
@@ -22,7 +22,8 @@ fn host() -> Option<(JsValue, bool)> {
     }
 }
 
-/// Register `open`, `flush` and `acknowledged` with the shell, and with v2 `setMode` and `setUser`.
+/// Register `open`, `flush` and `acknowledged` with the shell, and with v2 `setMode`, `setUser` and
+/// `setClientId`.
 /// `None` without `erpHost` v1 or v2: the app works as before.
 pub fn install(ctx: &egui::Context) -> Option<Online> {
     let (host, v2) = host()?;
@@ -87,7 +88,7 @@ pub fn install(ctx: &egui::Context) -> Option<Online> {
         js_sys::Reflect::set(&handlers, &JsValue::from_str(key), value).ok()?;
     }
     if v2 {
-        for (key, value) in [("setMode", set_mode(&online, ctx)), ("setUser", set_user(&online, ctx))] {
+        for (key, value) in [("setMode", set_mode(&online, ctx)), ("setUser", set_user(&online, ctx)), ("setClientId", set_client_id(&online, ctx))] {
             js_sys::Reflect::set(&handlers, &JsValue::from_str(key), &value).ok()?;
         }
     }
@@ -117,6 +118,22 @@ fn set_user(online: &Online, ctx: &egui::Context) -> JsValue {
     Closure::<dyn FnMut(JsValue)>::new(move |value: JsValue| {
         if let Ok(mut u) = user.lock() {
             *u = Some(convert::user_name(&value));
+        }
+        repaint.request_repaint();
+    })
+    .into_js_value()
+}
+
+/// `setClientId(prefix)`, applied on the next frame; a prefix that isn't six lowercase hex digits
+/// is ignored and the session keeps its own.
+fn set_client_id(online: &Online, ctx: &egui::Context) -> JsValue {
+    let client_id = online.client_id();
+    let repaint = ctx.clone();
+    Closure::<dyn FnMut(JsValue)>::new(move |value: JsValue| {
+        if let Some(prefix) = convert::client_prefix(&value)
+            && let Ok(mut p) = client_id.lock()
+        {
+            *p = Some(prefix);
         }
         repaint.request_repaint();
     })

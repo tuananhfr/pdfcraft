@@ -1,7 +1,7 @@
 //! The shell's JavaScript objects as the app's types: `open`'s document and `save`'s `SaveResult`.
 
 use eframe::wasm_bindgen::{JsCast, JsValue};
-use pdfcraft_ui_egui::online::{Access, HostDocument, SaveResult};
+use pdfcraft_ui_egui::online::{Access, ClientPrefix, HostDocument, SaveResult};
 
 fn field(value: &JsValue, key: &str) -> Option<JsValue> {
     js_sys::Reflect::get(value, &JsValue::from_str(key)).ok().filter(|v| !v.is_undefined() && !v.is_null())
@@ -40,6 +40,11 @@ pub fn user_name(user: &JsValue) -> Option<String> {
         return None;
     }
     field(user, "name").and_then(|n| n.as_string())
+}
+
+/// `setClientId`'s prefix: six lowercase hex digits, or `None`.
+pub fn client_prefix(value: &JsValue) -> Option<ClientPrefix> {
+    value.as_string().and_then(|p| ClientPrefix::parse(&p))
 }
 
 /// A field of a JavaScript call's argument; `undefined` and `null` are absent.

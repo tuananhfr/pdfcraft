@@ -36,6 +36,8 @@ pdfcraft-model = { workspace = true }
 pdfcraft-geom = { workspace = true }
 thiserror = { workspace = true }
 png = "0.18"
+# Already in the graph (render, sign; Web Crypto in the browser): a session's client prefix.
+getrandom = "0.4"
 # Already in the graph (url and idna through webbrowser, icu_properties through boa): they show
 # the host of a document's link the way the browser reads it (links::display_host).
 url = "2.5"

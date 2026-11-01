@@ -1,7 +1,7 @@
 //! `erpHost` v2 against a fake shell, natively: view and comment refuse every edit family, keys,
 //! paste and drop (rule 12) and send nothing (rule 13); `setMode` both ways keeps the document and
 //! its undo history; `canDownload: false` keeps the content in the app; `preserveView` keeps the
-//! page and the zoom; `setUser` authors new comments.
+//! page and the zoom; `setUser` authors new comments; `setClientId` names what the session creates.
 
 use std::cell::Cell;
 use std::rc::Rc;
@@ -584,6 +584,36 @@ fn set_user_authors_a_new_comment() {
     tick(&mut app, &fake, 0.0);
     assert_eq!(highlight(&mut app).as_deref(), Some("Local"));
     assert_eq!(app.comment_prefs.author, "Local");
+}
+
+/// `setClientId`: comments and pages created from then on carry the shell's prefix; ones created
+/// before keep the prefix the session picked itself.
+#[test]
+fn set_client_id_names_what_the_session_creates() {
+    let (mut app, fake) = fake_app();
+    let id = open_as(&mut app, "d1", pages(2), Access::default(), false);
+    let own = app.session.client_prefix();
+    let note = || {
+        let shape = Shape::Note { at: [50.0, 50.0], icon: NoteIcon::Comment };
+        Edit::AddAnnotation(NewAnnotation { page: 0, style: Style::default_for(&shape), shape, contents: "Hi".into(), author: "An".into() })
+    };
+    app.session.apply(id, note()).unwrap();
+
+    // One chance in 2^24 that the session picked this prefix itself.
+    let prefix = ClientPrefix::parse(if own.to_string() == "0badc0" { "0badc1" } else { "0badc0" }).unwrap();
+    *app.online.as_ref().unwrap().client_id().lock().unwrap() = Some(prefix);
+    tick(&mut app, &fake, 0.0);
+    assert_eq!(app.session.client_prefix(), prefix);
+    app.session.apply(id, note()).unwrap();
+    app.session.apply(id, Edit::InsertBlankPage { at: 0, width: 200.0, height: 300.0 }).unwrap();
+
+    let names: Vec<String> = app.session.annotation_ids(id).into_iter().map(|a| a.id.to_string()).collect();
+    assert_eq!(names.len(), 2, "{names:?}");
+    assert!(names[0].starts_with(&format!("nm:{own}")), "{names:?}");
+    assert!(names[1].starts_with(&format!("nm:{prefix}")), "{names:?}");
+    let page = app.session.page_ids(id)[0];
+    assert!(page.to_string().starts_with(&format!("n{prefix}.")), "{page}");
+    assert!(app.online.as_ref().unwrap().client_id().lock().unwrap().is_none(), "applied once");
 }
 
 #[test]

@@ -3,7 +3,7 @@
 //! `erpHost.save` (AutoSave, Save and the shell's `flush`) and counts one saved only once the shell
 //! answers `saved`, as of the revision it sent. Save As, export and print stay local. v2 adds access
 //! modes (view and comment open a document read-only, `canDownload` false keeps it in the app),
-//! `preserveView` and `setUser`.
+//! `preserveView`, `setUser` and `setClientId`.
 //!
 //! The JavaScript side is a [`Host`] (`apps/pdfcraft-web/src/erp_host` on wasm, a fake in tests),
 //! so all of this runs natively. Without it (`PdfCraftApp::online` is `None`, as on the desktop)
@@ -12,6 +12,7 @@
 mod access;
 mod app;
 mod autosave;
+mod client_id;
 mod preserve;
 mod user;
 mod wire;
@@ -29,6 +30,8 @@ use pdfcraft_engine::DocId;
 
 pub use access::{Access, AccessMode, ModeInbox, SetMode};
 pub use autosave::{CHECKPOINT_MS, IDLE_MS, MAX_WAKE_MS};
+pub use client_id::ClientIdInbox;
+pub use pdfcraft_engine::ClientPrefix;
 pub use user::UserInbox;
 
 /// The only format the server stores for this editor.
@@ -222,6 +225,7 @@ pub struct Online {
     acks: AckInbox,
     modes: ModeInbox,
     user: UserInbox,
+    client_id: ClientIdInbox,
     /// The local author preference while the account's name (`setUser`) stands in for it.
     local_author: Option<String>,
     records: HashMap<DocId, Record>,
@@ -240,6 +244,7 @@ impl Online {
             acks: AckInbox::default(),
             modes: ModeInbox::default(),
             user: UserInbox::default(),
+            client_id: ClientIdInbox::default(),
             local_author: None,
             records: HashMap::new(),
             next_slot: 0,
@@ -274,6 +279,11 @@ impl Online {
     /// Where `setUser(user)` leaves the account's name (`None` for `null`).
     pub fn user(&self) -> UserInbox {
         self.user.clone()
+    }
+
+    /// Where `setClientId(prefix)` leaves the shell's prefix.
+    pub fn client_id(&self) -> ClientIdInbox {
+        self.client_id.clone()
     }
 
     /// What the shell's `flush()` calls, outside the app's frame.

@@ -35,6 +35,7 @@ pub mod printcheck;
 mod scan_colours;
 pub mod signature_image;
 pub mod signature_scan;
+pub mod stable_ids;
 pub mod text_fonts;
 mod text_preview;
 mod upright_image;
@@ -44,6 +45,7 @@ pub use certification::{Breach as CertificationBreach, Conflict as Certification
 pub use limits::SessionLimits;
 pub use signature_image::{ImageSignaturePreview, SignatureImage};
 pub use signature_scan::{PhotoRect, ScanError, SignaturePhoto, Turn};
+pub use stable_ids::{AnnotId, AnnotRef, ClientPrefix, PageId};
 pub use text_preview::TextEditPreview;
 
 pub use pdfcraft_organize::{BoxSpec, FieldConflicts, PageBox, SplitBy, split_ranges};
@@ -395,6 +397,7 @@ pub struct Document {
     /// What the last successful [`Session::apply`] wrote that its fonts can't draw: kept as typed,
     /// drawn with `?` in its place (see [`TextNotice`]). The interface shows it; tools return it.
     pub edit_notices: Vec<TextNotice>,
+    page_ids: stable_ids::PageIds,
 }
 
 /// Text an edit stored as typed but drew with `?` in place of `ch`, because the font it is drawn
@@ -2144,13 +2147,14 @@ struct EditCtx {
     today: (i64, u32, u32),
     seed: u64,
     count: u64,
+    ids: stable_ids::IdSource,
     /// Fields the edit renamed to keep imported names separate (old → new), for the repair
     /// log and the undo label.
     renamed_fields: Vec<(String, String)>,
 }
 
 impl EditCtx {
-    fn new(now: Option<i64>, salt: u64) -> Self {
+    fn new(now: Option<i64>, salt: u64, ids: stable_ids::IdSource) -> Self {
         let mut seed = 0x9E37_79B9_7F4A_7C15u64 ^ salt;
         if let Some(t) = now {
             seed ^= (t as u64).rotate_left(17);
@@ -2171,6 +2175,7 @@ impl EditCtx {
             today: (1970, 1, 1),
             seed,
             count: 0,
+            ids,
             renamed_fields: Vec::new(),
         }
     }
@@ -2190,7 +2195,8 @@ impl EditCtx {
         out
     }
 
-    /// A fresh `/NM`: a random-looking UUID (version 4 layout) from a splitmix64 stream.
+    /// A fresh `/NM`: the session's prefix and counter, then a splitmix64 stream
+    /// ([`stable_ids::IdSource::annotation_name`]).
     fn meta(&mut self) -> pdfcraft_annot::Meta {
         let mut next = || {
             self.count += 1;
@@ -2200,14 +2206,7 @@ impl EditCtx {
             z ^ (z >> 31)
         };
         let (a, b) = (next(), next());
-        let id = format!(
-            "{:08x}-{:04x}-4{:03x}-{:04x}-{:012x}",
-            a >> 32,
-            (a >> 16) & 0xffff,
-            a & 0xfff,
-            0x8000 | (b >> 48) & 0x3fff,
-            b & 0xffff_ffff_ffff
-        );
+        let id = self.ids.annotation_name(a, b);
         pdfcraft_annot::Meta { date: self.date.clone(), id }
     }
 }
@@ -2804,6 +2803,7 @@ pub struct Session {
     date_format: Option<String>,
     /// Preferences ▸ Date format ▸ Language, when not following the interface language.
     date_language: Option<String>,
+    ids: stable_ids::IdSource,
 }
 
 /// Immutable session state needed while a document is prepared away from its owning thread.
@@ -3443,6 +3443,7 @@ impl Session {
             fonts_stale: false,
             xfa_warnings: Vec::new(),
             edit_notices: Vec::new(),
+            page_ids: Default::default(),
         }
     }
 
@@ -3456,6 +3457,7 @@ impl Session {
         let now = self.now();
         let today = self.today();
         let scripts = self.scripts_allowed(id);
+        let ids = self.ids.clone();
         let doc = self.doc_mut(id)?;
         if doc.limits.view_only {
             // Save As bakes Fill & Sign in first: the copy is written as the document stands.
@@ -3464,7 +3466,7 @@ impl Session {
         doc.edit_notices.clear();
         let name = doc.name.clone();
         let is_xfa = doc.info.xfa.is_some();
-        let mut cx = EditCtx::new(now, doc.generation ^ (id.0 << 48));
+        let mut cx = EditCtx::new(now, doc.generation ^ (id.0 << 48), ids);
         if scripts {
             cx.xfa = doc.xfa_template.clone();
         }
@@ -3515,6 +3517,10 @@ impl Session {
         // `next` is a copy: if the edit fails or crashes, the document is unchanged.
         guard(|| run_edit(&mut next, &edit, &mut cx))
             .unwrap_or_else(|m| Err(EditError::Invalid(format!("{} failed unexpectedly ({m}); the document was not changed", edit.label()))))?;
+        let first_free = editor.cos.next_object_number();
+        if stable_ids::copies_comments(&edit) {
+            stable_ids::name_new_comments(&mut next, first_free, || cx.meta().id);
+        }
         // Redaction removed what its own interpreter places under the marks. The marks were drawn
         // over the page as the renderer shows it, so the renderer has the last word.
         if let Edit::ApplyRedactions { pages, .. } = &edit {
@@ -3634,6 +3640,7 @@ impl Session {
             editor.undo.remove(0);
         }
         editor.redo.clear();
+        doc.page_ids.forget_from(first_free);
         Self::adopt_keys(doc);
         let refreshed = guard(|| if scope == Scope::Content { Self::refresh_content(doc, Some(&edit)) } else { Self::refresh_scoped(doc, scope) })
             .unwrap_or_else(|m| Err(EditError::Reopen(m)));
@@ -4019,6 +4026,7 @@ impl Session {
     /// Record a successful save of `bytes` (to `path`, if any): rebase editing on the saved file
     /// so the next save appends only newer edits. Undo history is kept.
     pub fn mark_saved(&mut self, id: DocId, bytes: Arc<Vec<u8>>, path: Option<String>) -> Result<(), EditError> {
+        let page_ids = self.page_ids(id);
         let doc = self.doc_mut(id)?;
         if let Some(editor) = doc.editor.as_mut() {
             // An encrypted file needs the password it is protected with now (the owner
@@ -4033,7 +4041,9 @@ impl Session {
         doc.dirty = false;
         doc.unsaved_snapshot = false;
         doc.generation += 1;
-        Self::refresh(doc).inspect_err(|_| Self::show_released(doc))
+        let refreshed = Self::refresh(doc).inspect_err(|_| Self::show_released(doc));
+        self.page_ids_after_save(id, &page_ids);
+        refreshed
     }
 
     /// Give document `id` a new name and keep its path: a browser save names the file it wrote
