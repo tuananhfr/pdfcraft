@@ -444,6 +444,9 @@ impl Session {
         state.outbox.retain(|c| !(c.step == change.step && c.kind == change.kind));
         let step = state.step(change.step);
         let epoch = state.epoch;
+        // What someone else changed since is theirs now: only the rest goes back.
+        let fresh: Vec<Region> =
+            step.regions.iter().filter(|r| !state.is_stale(&Step { regions: vec![(*r).clone()], epoch: step.epoch })).cloned().collect();
         let editor = doc.editor.as_mut().ok_or(EditError::NothingToUndo)?;
         // An edit or a redo sits on the undo stack (its snapshot is the state before it); an undo
         // on the redo stack (its snapshot is the state after the step).
@@ -458,9 +461,11 @@ impl Session {
                 editor.cos = s.1.clone();
                 editor.keys = s.2.clone();
             }
-        } else if let Some(s) = stack.get(at) {
+        } else if let Some(s) = stack.get(at)
+            && !fresh.is_empty()
+        {
             let mut next = editor.cos.clone();
-            copy_regions(&mut next, &s.1, &step.regions, &mut doc.page_ids, &ids).map_err(too_large)?;
+            copy_regions(&mut next, &s.1, &fresh, &mut doc.page_ids, &ids).map_err(too_large)?;
             editor.cos = next;
         }
         let snapshot = stack.remove(at);
