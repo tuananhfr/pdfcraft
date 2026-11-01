@@ -1,10 +1,12 @@
 //! `window.erpHost` v1 and v2 of the ERPCons office shell (`docs/erp-host.md` in erpcons-office):
 //! documents the office server holds, opened with `open(doc)` and saved back through `erpHost.save`;
-//! v2 adds access modes (`setMode`), `preserveView`, `setUser` and `setClientId`. The app's side is
+//! v2 adds access modes (`setMode`), `preserveView`, `setUser` and `setClientId`, and v3 (offered on a
+//! v2 object, detected by `regionWillEdit`) region co-editing. The app's side is
 //! [`pdfcraft_ui_egui::online`]; this is the JavaScript glue.
 
 mod bridge;
 mod convert;
+mod live;
 
 use eframe::wasm_bindgen::{JsCast, JsValue, closure::Closure};
 use pdfcraft_ui_egui::online::{Acknowledged, FLUSH_TIMEOUT_MS, Online, SetMode};
@@ -17,13 +19,14 @@ fn host() -> Option<(JsValue, bool)> {
     let version = js_sys::Reflect::get(&host, &JsValue::from_str("version")).ok()?.as_f64();
     match version {
         Some(1.0) => Some((host, false)),
-        Some(2.0) => Some((host, true)),
+        // 3 too, should the shell ever raise it: v3 is a superset of v2.
+        Some(2.0 | 3.0) => Some((host, true)),
         _ => None,
     }
 }
 
-/// Register `open`, `flush` and `acknowledged` with the shell, and with v2 `setMode`, `setUser` and
-/// `setClientId`.
+/// Register `open`, `flush` and `acknowledged` with the shell, with v2 `setMode`, `setUser` and
+/// `setClientId`, and with v3 the co-editing handlers.
 /// `None` without `erpHost` v1 or v2: the app works as before.
 pub fn install(ctx: &egui::Context) -> Option<Online> {
     let (host, v2) = host()?;
@@ -31,6 +34,10 @@ pub fn install(ctx: &egui::Context) -> Option<Online> {
     let mut online = Online::new(Box::new(bridge::Bridge::new(host.clone(), ctx.clone())));
     if v2 {
         online = online.with_shell_share();
+    }
+    let v3 = v2 && live::offered(&host);
+    if v3 {
+        online = online.with_live(Box::new(live::RegionBridge::new(host.clone(), ctx.clone())));
     }
     let inbox = online.inbox();
     let repaint = ctx.clone();
@@ -89,6 +96,11 @@ pub fn install(ctx: &egui::Context) -> Option<Online> {
     }
     if v2 {
         for (key, value) in [("setMode", set_mode(&online, ctx)), ("setUser", set_user(&online, ctx)), ("setClientId", set_client_id(&online, ctx))] {
+            js_sys::Reflect::set(&handlers, &JsValue::from_str(key), &value).ok()?;
+        }
+    }
+    if let Some(inbox) = online.live_inbox() {
+        for (key, value) in live::handlers(&inbox, ctx) {
             js_sys::Reflect::set(&handlers, &JsValue::from_str(key), &value).ok()?;
         }
     }
