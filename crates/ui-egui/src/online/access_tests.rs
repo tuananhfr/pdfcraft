@@ -14,7 +14,7 @@ use pdfcraft_render::{RenderRequest, RequestKind};
 
 use super::tests::{FORM, Fake, app as fake_app, edit, tick};
 use super::*;
-use crate::access_guard::{comment_only_notice, no_extract_notice, view_only_notice};
+use crate::access_guard::{comment_only_notice, comment_panel_notice, no_extract_notice, view_only_notice};
 use crate::canvas::Fit;
 use crate::{PdfCraftApp, QuickTool};
 
@@ -105,10 +105,13 @@ fn toast(app: &PdfCraftApp) -> Option<&str> {
     app.toast.as_ref().map(|t| t.0.as_str())
 }
 
-/// The notice the active document refuses changes with: comment mode says commenting comes later.
+/// The notice the active document refuses changes with: comment mode points to the shell's
+/// Comments panel, or says commenting comes later from a shell without the comment calls.
 fn refused_with(app: &PdfCraftApp) -> &'static str {
     let id = app.active_ids().unwrap().1;
-    match app.online.as_ref().unwrap().records[&id].access.mode {
+    let online = app.online.as_ref().unwrap();
+    match online.records[&id].access.mode {
+        AccessMode::Comment if online.comments.is_some() => comment_panel_notice(),
         AccessMode::Comment => comment_only_notice(),
         _ => view_only_notice(),
     }
@@ -703,29 +706,47 @@ fn file_share_is_hidden_inside_the_shell_with_erp_host_v2() {
     assert!(!app.execute("file.share"));
 }
 
-/// Owner decision: comment mode stays view-only on the web for now and says so in its own words;
-/// view mode keeps its notice.
+/// Comment mode keeps the content view-only. From a shell with the comment calls the notice points
+/// to its Comments panel; from one without them it says commenting comes later. View mode keeps
+/// its notice.
 #[test]
-fn comment_mode_says_commenting_comes_later() {
+fn comment_mode_points_to_the_shells_comments_panel() {
     use egui_kittest::kittest::Queryable;
+    struct NoClicks;
+    impl super::comments::CommentHost for NoClicks {
+        fn comment_clicked(&self, _thread: &str) {}
+    }
     let vi = crate::i18n::Lang::from_code("vi").unwrap();
+    assert_eq!(
+        crate::i18n::tr(vi, "Add comments in the Comments panel; the document itself can't be changed here."),
+        "Thêm nhận xét ở khung Nhận xét; không sửa được nội dung tài liệu ở đây."
+    );
     assert_eq!(
         crate::i18n::tr(vi, "Commenting on the web is coming later; for now this document can only be viewed."),
         "Nhận xét trên web sẽ có sau, hiện chỉ xem được"
     );
     assert_eq!(crate::i18n::tr(vi, "This document is open for viewing only."), "Tài liệu này chỉ được mở để xem.");
-    for (mode, notice) in [(AccessMode::Comment, comment_only_notice as fn() -> &'static str), (AccessMode::View, view_only_notice)] {
+    let cases: [(AccessMode, bool, fn() -> &'static str); 4] = [
+        (AccessMode::Comment, true, comment_panel_notice),
+        (AccessMode::Comment, false, comment_only_notice),
+        (AccessMode::View, true, view_only_notice),
+        (AccessMode::View, false, view_only_notice),
+    ];
+    for (mode, shell_comments, notice) in cases {
         let (mut app, fake) = fake_app();
+        if shell_comments {
+            app.online = app.online.take().map(|o| o.with_comments(Box::new(NoClicks)));
+        }
         let id = open_as(&mut app, "d1", FORM.to_vec(), access(mode), false);
         tick(&mut app, &fake, 0.0);
-        assert_eq!(app.read_only_notice(id), notice());
+        assert_eq!(app.read_only_notice(id), notice(), "{mode:?}, comment calls: {shell_comments}");
         command_refused(&mut app, "comment.note", notice());
         edit_refused(&mut app, note());
         // The toast says the same; only the notice bar should be found.
         app.toast = None;
         let mut h = Harness::builder().with_size(egui::vec2(1280.0, 800.0)).build_eframe(move |_| app);
         h.run_steps(3);
-        assert!(h.query_by_label(notice()).is_some(), "the notice bar says it in {mode:?}");
+        assert!(h.query_by_label(notice()).is_some(), "the notice bar says it in {mode:?}, comment calls: {shell_comments}");
     }
 }
 

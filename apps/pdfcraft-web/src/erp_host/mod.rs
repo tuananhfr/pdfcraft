@@ -2,7 +2,7 @@
 //! documents the office server holds, opened with `open(doc)` and saved back through `erpHost.save`;
 //! v2 adds access modes (`setMode`), `preserveView`, `setUser` and `setClientId`, v3 (offered on a
 //! v2 object, detected by `regionWillEdit`) region co-editing, and the comment calls (M5, offered
-//! to every v2 shell, which feature-detects them). The app's side is
+//! to a v2 shell with `commentClicked`, which has the Comments panel). The app's side is
 //! [`pdfcraft_ui_egui::online`]; this is the JavaScript glue.
 
 mod bridge;
@@ -35,7 +35,10 @@ pub fn install(ctx: &egui::Context) -> Option<Online> {
     let ready: js_sys::Function = js_sys::Reflect::get(&host, &JsValue::from_str("ready")).ok()?.dyn_into().ok()?;
     let mut online = Online::new(Box::new(bridge::Bridge::new(host.clone(), ctx.clone())));
     if v2 {
-        online = online.with_shell_share().with_comments(Box::new(comments::CommentBridge::new(host.clone())));
+        online = online.with_shell_share();
+    }
+    if v2 && comments::offered(&host) {
+        online = online.with_comments(Box::new(comments::CommentBridge::new(host.clone())));
     }
     let v3 = v2 && live::offered(&host);
     if v3 {

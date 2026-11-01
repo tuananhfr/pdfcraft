@@ -5,6 +5,11 @@
 use eframe::wasm_bindgen::{JsCast, JsValue, closure::Closure};
 use pdfcraft_ui_egui::online::comments::{CommentEvent, CommentHost, CommentInbox, ResolvedThread, SelectionAnchor, Thread};
 
+/// Whether the shell has Cloud comments (detected by feature, like v3 regions).
+pub fn offered(host: &JsValue) -> bool {
+    js_sys::Reflect::get(host, &JsValue::from_str("commentClicked")).is_ok_and(|f| f.is_function())
+}
+
 pub struct CommentBridge {
     host: JsValue,
 }

@@ -102,8 +102,14 @@ impl PdfCraftApp {
         self.online.as_ref().and_then(|o| o.records.get(&id)).is_some_and(|r| r.access.read_only())
     }
 
-    /// Host document `id` is open for commenting, which is view-only on the web for now.
+    /// Host document `id` is open for commenting: its content stays view-only, comments go
+    /// through the shell.
     pub(crate) fn host_comment_only(&self, id: DocId) -> bool {
         self.online.as_ref().and_then(|o| o.records.get(&id)).is_some_and(|r| r.access.mode == AccessMode::Comment)
+    }
+
+    /// The shell has the comment calls, so it shows its own Comments panel.
+    pub(crate) fn shell_comments(&self) -> bool {
+        self.online.as_ref().is_some_and(|o| o.comments.is_some())
     }
 }

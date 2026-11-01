@@ -15,10 +15,15 @@ pub(crate) fn view_only_notice() -> &'static str {
     tl!("This document is open for viewing only.")
 }
 
-/// [`view_only_notice`] for a document the office shell opened for commenting, which stays
-/// view-only on the web until commenting comes.
+/// [`view_only_notice`] for a document the office shell opened for commenting, from a shell
+/// without the comment calls: there is nowhere to comment yet.
 pub(crate) fn comment_only_notice() -> &'static str {
     tl!("Commenting on the web is coming later; for now this document can only be viewed.")
+}
+
+/// [`comment_only_notice`] from a shell with the comment calls: comments go in its panel.
+pub(crate) fn comment_panel_notice() -> &'static str {
+    tl!("Add comments in the Comments panel; the document itself can't be changed here.")
 }
 
 /// The sentence shown wherever a document with downloading turned off refuses to let content out.
@@ -82,7 +87,7 @@ impl PdfCraftApp {
     /// the licence lock's reason.
     pub(crate) fn read_only_notice(&self, id: DocId) -> &'static str {
         if self.host_comment_only(id) {
-            return comment_only_notice();
+            return if self.shell_comments() { comment_panel_notice() } else { comment_only_notice() };
         }
         match self.licence_locked(id) {
             Some(lock) => lock.reason(),
