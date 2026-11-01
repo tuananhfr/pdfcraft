@@ -448,6 +448,9 @@ pub(crate) fn apply_pages(cos: &mut Cos, ids: &[PageId], payload: &Map<String, V
     if order.is_empty() {
         return Err(malformed("an empty page order"));
     }
+    if order.iter().collect::<HashSet<_>>().len() != order.len() {
+        return Err(malformed("a page listed twice"));
+    }
     let organize = |e: pdfcraft_organize::OrganizeError| LiveError::Apply(e.to_string());
     let mut by_ref: HashMap<ObjRef, PageId> = pdfcraft_annot::page_refs(cos).unwrap_or_default().into_iter().zip(ids.iter().copied()).collect();
     let wanted: HashSet<PageId> = order.iter().copied().collect();

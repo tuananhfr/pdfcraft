@@ -81,6 +81,14 @@ fn a_comment_payload_writes_no_object_outside_its_region() {
     assert!(s.annotation_ids(id).iter().any(|a| a.id.to_string() == "obj:12.0" && a.page == 0));
 }
 
+/// A page listed twice in the order is a malformed payload, not thousands of page moves.
+#[test]
+fn a_page_order_listing_a_page_twice_is_refused() {
+    let (mut s, id) = open("0000aa");
+    let order: Vec<&str> = std::iter::repeat_n(["\"f5.0\"", "\"f3.0\"", "\"f4.0\""], 2000).flatten().collect();
+    refused(&mut s, id, "pages", &format!(r#"{{"v":1,"order":[{}],"rot":[]}}"#, order.join(",")));
+}
+
 /// A payload larger than any editor sends is refused before it is read.
 #[test]
 fn an_oversized_payload_is_refused_unread() {
