@@ -5,7 +5,7 @@ use pdfcraft_engine::DocId;
 use pdfcraft_engine::anchors::{self, Anchor, Resolution};
 use pdfcraft_engine::live::Region;
 
-use super::{AnchorStatus, CommentEvent, CommentMarker, ResolvedThread, Selected, Thread};
+use super::{AnchorStatus, CommentEvent, CommentMarker, MAX_THREADS, ResolvedThread, Selected, Thread};
 use crate::PdfCraftApp;
 
 /// `label` of an anchor: the page as people count it.
@@ -39,6 +39,7 @@ impl PdfCraftApp {
                     let Some(comments) = self.online.as_mut().and_then(|o| o.comments.as_mut()) else { return };
                     comments.threads = threads
                         .into_iter()
+                        .take(MAX_THREADS)
                         .map(|t| {
                             let anchor = Anchor::parse(&t.anchor).ok();
                             (t, anchor)
@@ -175,7 +176,8 @@ impl PdfCraftApp {
     /// one keeps its anchor. A thread whose anchor this editor can't read (a newer editor's) is
     /// left out: nothing here can tell whether it still points somewhere.
     fn resolve_threads(&mut self, id: DocId, threads: &[Thread]) -> Vec<ResolvedThread> {
-        let readable: Vec<(&Thread, Anchor)> = threads.iter().filter_map(|t| Some((t, Anchor::parse(&t.anchor).ok()?))).collect();
+        // Threads past the cap are left out of the answer, which the shell reads as unchanged.
+        let readable: Vec<(&Thread, Anchor)> = threads.iter().take(MAX_THREADS).filter_map(|t| Some((t, Anchor::parse(&t.anchor).ok()?))).collect();
         let anchors: Vec<Anchor> = readable.iter().map(|(_, a)| a.clone()).collect();
         let resolved = self.session.resolve_anchors(id, &anchors);
         readable

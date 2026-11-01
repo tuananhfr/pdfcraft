@@ -21,6 +21,10 @@ use pdfcraft_engine::anchors::Anchor;
 pub use markers::CommentMarker;
 pub(crate) use markers::paint_markers;
 
+/// Threads read from one `showComments` or `resolveAnchors`; the list comes from the server, and
+/// finding an anchor again may search a page's text.
+pub const MAX_THREADS: usize = 1000;
+
 /// The shell's side of the comment calls, called by the app.
 pub trait CommentHost {
     /// `erpHost.commentClicked(threadId)`.

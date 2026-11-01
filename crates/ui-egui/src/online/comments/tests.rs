@@ -189,6 +189,22 @@ fn markers_sit_beside_their_anchor_and_never_on_top_of_each_other() {
     assert!(xf.rect.contains_rect(edge[0]), "kept on the page: {:?}", edge[0]);
 }
 
+/// Anyone who may comment can pile threads on one spot: a page draws a bounded number of
+/// bubbles, so placing them each frame stays cheap (the panel still lists every thread).
+#[test]
+fn a_page_draws_a_bounded_number_of_markers() {
+    let info = pdfcraft_render::DocInfo {
+        pages: vec![pdfcraft_render::PageInfo { width: 300.0, height: 300.0, label: "1".into(), crop: [0.0, 0.0, 300.0, 300.0], rotation: 0 }],
+        ..Default::default()
+    };
+    let xf =
+        crate::canvas::PageXform { rect: egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(300.0, 300.0)), rot: 0, pw: 300.0, ph: 300.0 };
+    let piled: Vec<CommentMarker> =
+        (0..2000).map(|i| CommentMarker { thread: format!("t{i}"), page: 0, rects: vec![[20.0, 240.0, 80.0, 260.0]], count: 1 }).collect();
+    let bubbles = markers::bubble_rects(&xf, &info, 0, &piled);
+    assert_eq!(bubbles.len(), markers::MAX_MARKERS_PER_PAGE);
+}
+
 #[test]
 fn focusing_an_anchor_goes_to_its_page_and_selects_its_comment() {
     let (mut app, _fake, id, _shell, inbox, selection) = setup();
@@ -243,6 +259,18 @@ fn markers_focus_and_resolving_never_change_the_document() {
     );
     assert!(fake.saves().is_empty(), "nothing to save");
     assert!(!fake.take_calls().iter().any(|c| c.starts_with("dirty")));
+}
+
+/// The thread list comes from the server: the app reads and resolves a bounded number of them.
+#[test]
+fn a_bounded_number_of_threads_is_read_and_resolved() {
+    let (mut app, _fake, _id, _shell, inbox, _selection) = setup();
+    let anchor = r#"{"v":1,"pos":{"page":null,"quads":[[1,2,3,2,1,1,3,1]]},"soft":{"index":0,"text":"nowhere to be found"}}"#;
+    let many: Vec<Thread> = (0..MAX_THREADS + 500).map(|i| thread(&format!("t{i}"), anchor, "open")).collect();
+    inbox.lock().unwrap().push(CommentEvent::Show(many.clone()));
+    app.comments_step();
+    assert_eq!(app.online.as_ref().unwrap().comments.as_ref().unwrap().threads.len(), MAX_THREADS);
+    assert_eq!(resolve(&mut app, &inbox, many).len(), MAX_THREADS);
 }
 
 #[test]

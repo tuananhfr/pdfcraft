@@ -18,13 +18,16 @@ pub struct CommentMarker {
 }
 
 const BUBBLE: egui::Vec2 = vec2(22.0, 16.0);
+/// Placing a bubble checks every earlier one, each frame: threads piled on one page beyond this
+/// get no bubble (the shell's panel lists them all).
+pub(super) const MAX_MARKERS_PER_PAGE: usize = 64;
 const FILL: Color32 = Color32::from_rgb(0xF5, 0xB4, 0x00);
 const INK: Color32 = Color32::from_rgb(0x2B, 0x22, 0x00);
 
 /// The bubbles of page `page` on screen, side by side where they would overlap.
 fn bubbles(xf: &PageXform, info: &DocInfo, page: usize, markers: &[CommentMarker]) -> Vec<(usize, Rect, Vec<Rect>)> {
     let mut out: Vec<(usize, Rect, Vec<Rect>)> = Vec::new();
-    for (i, m) in markers.iter().enumerate().filter(|(_, m)| m.page == page) {
+    for (i, m) in markers.iter().enumerate().filter(|(_, m)| m.page == page).take(MAX_MARKERS_PER_PAGE) {
         let shaded: Vec<Rect> = m.rects.iter().map(|r| xf.user_rect(info, page, *r)).collect();
         let Some(anchor) = shaded.iter().copied().reduce(|a, b| a.union(b)) else { continue };
         let page_rect = xf.rect;
