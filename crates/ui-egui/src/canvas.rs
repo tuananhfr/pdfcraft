@@ -335,6 +335,8 @@ pub struct DocView {
     pub flash: Option<(usize, [f32; 4], f64)>,
     /// Compare files: differences shaded on this document's pages (page, user-space box, colour).
     pub compare_marks: Vec<(usize, [f32; 4], Color32)>,
+    /// Co-editing: others' locks and selections on this document's pages.
+    pub live_marks: Vec<crate::online::live::Mark>,
     pages: HashMap<usize, PageTex>,
     /// Pages the renderer could not draw, with the reason (never re-requested).
     errors: HashMap<usize, String>,
@@ -621,6 +623,7 @@ impl DocView {
             single_edges: None,
             flash: None,
             compare_marks: Vec::new(),
+            live_marks: Vec::new(),
             pages: HashMap::new(),
             errors: HashMap::new(),
             waiting_since: HashMap::new(),
@@ -3125,6 +3128,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
                 crate::redact_ui::paint(ui, painter, i, view);
             }
             comments::paint_page(ui, painter, &pcx, view);
+            crate::online::live::paint_page(painter, &xf, info, i, &view.live_marks);
             if editing_content {
                 crate::content_ui::paint_page(ui, painter, &xf, i, info, &added, view);
             }

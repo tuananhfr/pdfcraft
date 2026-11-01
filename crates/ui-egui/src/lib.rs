@@ -3243,6 +3243,7 @@ impl PdfCraftApp {
         // Last, so the drafts and the hidden-page flush include this frame's edits.
         self.drafts_tick(ctx);
         self.online_tick(ctx);
+        self.live_tick(ctx);
     }
 }
 

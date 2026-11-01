@@ -2502,3 +2502,10 @@ animation effects	Off	Вимкнено
 	This organization has no Office plan for editing.	Ця організація не має тарифу Office для редагування.
 	PI ID licensing is unavailable on this computer, so editing is off.	Ліцензування PI ID недоступне на цьому комп’ютері, тому редагування вимкнено.
 	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft працює офлайн. Для редагування потрібна ліцензія PI ID. Без телеметрії та хмарної обробки, якщо ви не додасте постачальника.
+	Someone else changed this part while you were offline.	Хтось інший змінив цю частину, поки ви були офлайн.
+	Keep mine	Залишити мою версію
+	Use theirs	Використати іншу версію
+	{name} is editing this part.	{name} редагує цю частину.
+	Someone else is editing this part.	Хтось інший редагує цю частину.
+	This change is too large to share while editing together.	Ця зміна завелика, щоб поширити її під час спільного редагування.
+	Skipped a change someone else has edited since.	Пропущено зміну, яку відтоді відредагував хтось інший.

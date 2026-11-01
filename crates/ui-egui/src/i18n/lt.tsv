@@ -2732,3 +2732,10 @@ key	Space	Tarpas
 	This organization has no Office plan for editing.	Ši organizacija neturi „Office“ plano redagavimui.
 	PI ID licensing is unavailable on this computer, so editing is off.	PI ID licencijavimas šiame kompiuteryje nepasiekiamas, todėl redaguoti negalima.
 	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	„PdfCraft“ veikia neprisijungus. Redaguoti reikia PI ID licencijos. Nerenkami telemetrijos duomenys ir nenaudojamos debesijos paslaugos, nebent pridėtumėte jų teikėją.
+	Someone else changed this part while you were offline.	Kol buvote neprisijungę, kažkas kitas pakeitė šią dalį.
+	Keep mine	Palikti mano versiją
+	Use theirs	Naudoti kitą versiją
+	{name} is editing this part.	{name} redaguoja šią dalį.
+	Someone else is editing this part.	Kažkas kitas redaguoja šią dalį.
+	This change is too large to share while editing together.	Šis pakeitimas per didelis, kad juo būtų galima dalytis redaguojant kartu.
+	Skipped a change someone else has edited since.	Praleistas pakeitimas, kurį nuo tada redagavo kažkas kitas.

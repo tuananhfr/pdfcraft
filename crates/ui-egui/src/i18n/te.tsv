@@ -2300,3 +2300,10 @@ animation effects	Off	ఆఫ్
 	This organization has no Office plan for editing.	ఈ సంస్థకు సవరణ కోసం Office ప్లాన్ లేదు.
 	PI ID licensing is unavailable on this computer, so editing is off.	ఈ కంప్యూటర్‌లో PI ID లైసెన్సింగ్ అందుబాటులో లేదు, కాబట్టి సవరణ ఆఫ్‌లో ఉంది.
 	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft ఆఫ్‌లైన్‌లో పనిచేస్తుంది. సవరించడానికి PI ID లైసెన్స్ అవసరం. టెలిమెట్రీ లేదు, మీరు ప్రొవైడర్‌ను జోడిస్తే తప్ప క్లౌడ్ ప్రాసెసింగ్ లేదు.
+	Someone else changed this part while you were offline.	మీరు ఆఫ్‌లైన్‌లో ఉన్నప్పుడు వేరొకరు ఈ భాగాన్ని మార్చారు.
+	Keep mine	నా సంస్కరణను ఉంచు
+	Use theirs	వేరే సంస్కరణను వాడు
+	{name} is editing this part.	{name} ఈ భాగాన్ని సవరిస్తున్నారు.
+	Someone else is editing this part.	వేరొకరు ఈ భాగాన్ని సవరిస్తున్నారు.
+	This change is too large to share while editing together.	ఈ మార్పు చాలా పెద్దది కాబట్టి కలిసి సవరిస్తున్నప్పుడు పంచుకోలేము.
+	Skipped a change someone else has edited since.	తర్వాత వేరొకరు సవరించిన ఒక మార్పును దాటవేశాం.

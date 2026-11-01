@@ -2367,3 +2367,10 @@ animation effects	Off	Wyłączone
 	This organization has no Office plan for editing.	Ta organizacja nie ma planu Office do edycji.
 	PI ID licensing is unavailable on this computer, so editing is off.	Licencjonowanie PI ID jest niedostępne na tym komputerze, więc edycja jest wyłączona.
 	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft działa offline. Do edycji potrzebna jest licencja PI ID. Bez telemetrii i bez przetwarzania w chmurze, chyba że dodasz dostawcę.
+	Someone else changed this part while you were offline.	Ktoś inny zmienił tę część, gdy nie było połączenia.
+	Keep mine	Zachowaj moją wersję
+	Use theirs	Użyj drugiej wersji
+	{name} is editing this part.	{name} edytuje tę część.
+	Someone else is editing this part.	Ktoś inny edytuje tę część.
+	This change is too large to share while editing together.	Ta zmiana jest zbyt duża, by udostępnić ją podczas wspólnej edycji.
+	Skipped a change someone else has edited since.	Pominięto zmianę, którą ktoś inny od tego czasu edytował.

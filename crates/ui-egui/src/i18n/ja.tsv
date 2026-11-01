@@ -2480,3 +2480,10 @@ animation effects	Off	オフ
 	This organization has no Office plan for editing.	この組織には編集用の Office プランがありません。
 	PI ID licensing is unavailable on this computer, so editing is off.	このコンピューターでは PI ID のライセンスを利用できないため、編集はオフです。
 	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft はオフラインで動作します。編集には PI ID のライセンスが必要です。使用状況の送信はなく、サービス提供元を追加しない限りクラウド処理も行いません。
+	Someone else changed this part while you were offline.	オフラインの間に他のユーザーがこの部分を変更しました。
+	Keep mine	自分の版を残す
+	Use theirs	相手の版を使う
+	{name} is editing this part.	{name} さんがこの部分を編集中です。
+	Someone else is editing this part.	他のユーザーがこの部分を編集中です。
+	This change is too large to share while editing together.	この変更は大きすぎるため、共同編集中に共有できません。
+	Skipped a change someone else has edited since.	その後に他のユーザーが編集した変更をスキップしました。

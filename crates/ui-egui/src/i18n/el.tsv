@@ -2397,3 +2397,10 @@ animation effects	Off	Ανενεργά
 	This organization has no Office plan for editing.	Αυτός ο οργανισμός δεν έχει πρόγραμμα Office για επεξεργασία.
 	PI ID licensing is unavailable on this computer, so editing is off.	Η αδειοδότηση PI ID δεν είναι διαθέσιμη σε αυτόν τον υπολογιστή, οπότε η επεξεργασία είναι απενεργοποιημένη.
 	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	Το PdfCraft λειτουργεί εκτός σύνδεσης. Η επεξεργασία απαιτεί άδεια PI ID. Χωρίς τηλεμετρία και χωρίς επεξεργασία στο cloud, εκτός αν προσθέσετε πάροχο.
+	Someone else changed this part while you were offline.	Κάποιος άλλος άλλαξε αυτό το τμήμα ενώ ήσασταν εκτός σύνδεσης.
+	Keep mine	Διατήρηση της δικής μου έκδοσης
+	Use theirs	Χρήση της άλλης έκδοσης
+	{name} is editing this part.	Αυτό το τμήμα το επεξεργάζεται ο χρήστης {name}.
+	Someone else is editing this part.	Κάποιος άλλος επεξεργάζεται αυτό το τμήμα.
+	This change is too large to share while editing together.	Αυτή η αλλαγή είναι πολύ μεγάλη για να κοινοποιηθεί κατά τη συνεργατική επεξεργασία.
+	Skipped a change someone else has edited since.	Παραλείφθηκε μια αλλαγή που επεξεργάστηκε στο μεταξύ κάποιος άλλος.

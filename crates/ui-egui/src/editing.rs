@@ -159,6 +159,14 @@ impl PdfCraftApp {
                 self.refuse_read_only(id);
                 false
             }
+            Err(pdfcraft_engine::EditError::RegionLocked(region)) => {
+                self.live_lock_notice(&region);
+                false
+            }
+            Err(pdfcraft_engine::EditError::LiveTooLarge) => {
+                self.notify_tr("This change is too large to share while editing together.");
+                false
+            }
             Err(e) => {
                 let message = if matches!(edit, Edit::MoveObjects { .. }) { crate::object_ui::move_error(&e) } else { e.to_string() };
                 self.notify_fmt("{label} failed: {e}", &[("label", &crate::i18n::edit_label(&label)), ("e", &message)]);
@@ -187,6 +195,7 @@ impl PdfCraftApp {
     fn history_step(&mut self, undo: bool) {
         let Some((i, id)) = self.active_ids() else { return };
         let result = if undo { self.session.undo(id) } else { self.session.redo(id) };
+        let skipped = self.session.take_live_skipped(id);
         match result {
             Ok(label) => {
                 if let Some(doc) = self.session.get(id) {
@@ -200,7 +209,13 @@ impl PdfCraftApp {
                     self.notify_fmt("Redid {label}", &[("label", &label)]);
                 }
             }
+            Err(pdfcraft_engine::EditError::RegionLocked(region)) => self.live_lock_notice(&region),
+            Err(pdfcraft_engine::EditError::LiveTooLarge) => self.notify_tr("This change is too large to share while editing together."),
             Err(e) => self.notify_error(e),
+        }
+        if skipped > 0 {
+            // After the step's own notice, which this one replaces: the skip is what surprises.
+            self.notify_tr("Skipped a change someone else has edited since.");
         }
     }
 

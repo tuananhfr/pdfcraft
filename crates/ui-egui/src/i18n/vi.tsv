@@ -2735,3 +2735,10 @@ certificate	SHA-256 digest	Mã băm SHA-256
 	This organization has no Office plan for editing.	Tổ chức này chưa có gói Office để sửa.
 	PI ID licensing is unavailable on this computer, so editing is off.	Không dùng được giấy phép PI ID trên máy này nên không sửa được.
 	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft hoạt động ngoại tuyến. Cần giấy phép PI ID để sửa. Không thu thập dữ liệu sử dụng và không xử lý trên đám mây, trừ khi bạn thêm một nhà cung cấp.
+	Someone else changed this part while you were offline.	Người khác đã sửa phần này khi bạn mất kết nối.
+	Keep mine	Giữ bản của tôi
+	Use theirs	Dùng bản mới
+	{name} is editing this part.	{name} đang sửa phần này.
+	Someone else is editing this part.	Người khác đang sửa phần này.
+	This change is too large to share while editing together.	Thay đổi này quá lớn để chia sẻ khi cùng sửa.
+	Skipped a change someone else has edited since.	Đã bỏ qua một thay đổi mà người khác đã sửa sau đó.

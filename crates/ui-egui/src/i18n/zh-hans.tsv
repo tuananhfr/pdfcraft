@@ -2444,3 +2444,10 @@ animation effects	Off	关
 	This organization has no Office plan for editing.	此组织没有可用于编辑的 Office 套餐。
 	PI ID licensing is unavailable on this computer, so editing is off.	此电脑无法使用 PI ID 许可，因此编辑已关闭。
 	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft 可离线工作。编辑需要 PI ID 许可证。无遥测，除非您自行添加服务商，否则无云端处理。
+	Someone else changed this part while you were offline.	在您离线期间，其他人修改了这一部分。
+	Keep mine	保留我的版本
+	Use theirs	使用对方的版本
+	{name} is editing this part.	{name} 正在编辑这一部分。
+	Someone else is editing this part.	其他人正在编辑这一部分。
+	This change is too large to share while editing together.	此更改过大，无法在协同编辑时共享。
+	Skipped a change someone else has edited since.	已跳过一项之后被其他人编辑过的更改。

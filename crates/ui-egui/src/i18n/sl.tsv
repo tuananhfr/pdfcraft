@@ -2485,3 +2485,10 @@ animation effects	Off	Izklopljeni
 	This organization has no Office plan for editing.	Ta organizacija nima paketa Office za urejanje.
 	PI ID licensing is unavailable on this computer, so editing is off.	Licenciranje PI ID na tem računalniku ni na voljo, zato je urejanje izklopljeno.
 	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	PdfCraft deluje brez povezave. Za urejanje potrebujete licenco PI ID. Brez telemetrije in brez obdelave v oblaku, razen če dodate ponudnika.
+	Someone else changed this part while you were offline.	Nekdo drug je spremenil ta del, medtem ko niste bili povezani.
+	Keep mine	Obdrži mojo različico
+	Use theirs	Uporabi drugo različico
+	{name} is editing this part.	{name} ureja ta del.
+	Someone else is editing this part.	Nekdo drug ureja ta del.
+	This change is too large to share while editing together.	Ta sprememba je prevelika za deljenje med skupnim urejanjem.
+	Skipped a change someone else has edited since.	Preskočena je bila sprememba, ki jo je medtem uredil nekdo drug.

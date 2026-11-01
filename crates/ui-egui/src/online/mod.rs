@@ -3,7 +3,7 @@
 //! `erpHost.save` (AutoSave, Save and the shell's `flush`) and counts one saved only once the shell
 //! answers `saved`, as of the revision it sent. Save As, export and print stay local. v2 adds access
 //! modes (view and comment open a document read-only, `canDownload` false keeps it in the app),
-//! `preserveView`, `setUser` and `setClientId`.
+//! `preserveView`, `setUser` and `setClientId`; v3 co-editing by region ([`live`]).
 //!
 //! The JavaScript side is a [`Host`] (`apps/pdfcraft-web/src/erp_host` on wasm, a fake in tests),
 //! so all of this runs natively. Without it (`PdfCraftApp::online` is `None`, as on the desktop)
@@ -13,6 +13,7 @@ mod access;
 mod app;
 mod autosave;
 mod client_id;
+pub mod live;
 mod preserve;
 mod user;
 mod wire;
@@ -232,6 +233,8 @@ pub struct Online {
     next_slot: u64,
     /// `erpHost` v2: the shell's own Share is the only one, so File ▸ Share… is not offered.
     shell_shares: bool,
+    /// `erpHost` v3: co-editing by region.
+    pub(crate) live: Option<live::Live>,
 }
 
 impl Online {
@@ -249,12 +252,23 @@ impl Online {
             records: HashMap::new(),
             next_slot: 0,
             shell_shares: false,
+            live: None,
         }
     }
 
     /// For `erpHost` v2, whose shell shares documents itself.
     pub fn with_shell_share(self) -> Self {
         Self { shell_shares: true, ..self }
+    }
+
+    /// For `erpHost` v3, whose shell coordinates co-editing by region.
+    pub fn with_live(self, host: Box<dyn live::RegionHost>) -> Self {
+        Self { live: Some(live::Live::new(host)), ..self }
+    }
+
+    /// Where the v3 calls queue their events (`None` without v3).
+    pub fn live_inbox(&self) -> Option<live::LiveInbox> {
+        self.live.as_ref().map(live::Live::inbox)
     }
 
     pub(crate) fn shell_shares(&self) -> bool {

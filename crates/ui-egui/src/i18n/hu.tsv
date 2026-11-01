@@ -2479,3 +2479,10 @@ animation effects	Off	Ki
 	This organization has no Office plan for editing.	Ennek a szervezetnek nincs Office-csomagja a szerkesztéshez.
 	PI ID licensing is unavailable on this computer, so editing is off.	A PI ID-licencelés nem érhető el ezen a számítógépen, ezért a szerkesztés ki van kapcsolva.
 	PdfCraft works offline. Editing needs a PI ID license. No telemetry, and no cloud processing unless you add a provider.	A PdfCraft offline működik. A szerkesztéshez PI ID-licenc kell. Nincs telemetria, és nincs felhőfeldolgozás, amíg nem adsz hozzá szolgáltatót.
+	Someone else changed this part while you were offline.	Valaki más módosította ezt a részt, amíg offline volt.
+	Keep mine	Saját változat megtartása
+	Use theirs	A másik változat használata
+	{name} is editing this part.	{name} szerkeszti ezt a részt.
+	Someone else is editing this part.	Valaki más szerkeszti ezt a részt.
+	This change is too large to share while editing together.	Ez a módosítás túl nagy ahhoz, hogy közös szerkesztés közben meg lehessen osztani.
+	Skipped a change someone else has edited since.	Kimaradt egy módosítás, amelyet azóta valaki más szerkesztett.
