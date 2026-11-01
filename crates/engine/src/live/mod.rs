@@ -360,6 +360,10 @@ impl Session {
     /// it was; the user's undo steps on the regions it changed are skipped from now on. Applies
     /// in view and comment mode too: readers follow the edits live.
     pub fn apply_remote(&mut self, id: DocId, region: &str, payload: &str) -> Result<Applied, LiveError> {
+        // No editor sends more; reading a larger one would only cost memory.
+        if payload.len() > regions::MAX_PAYLOAD_BYTES {
+            return Err(LiveError::TooLarge);
+        }
         let region = Region::parse(region).ok_or_else(|| codec::malformed("the region"))?;
         let payload = regions::parse(payload)?;
         let ids = self.ids.clone();

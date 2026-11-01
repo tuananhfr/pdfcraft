@@ -4,7 +4,7 @@
 
 use std::sync::Arc;
 
-use pdfcraft_engine::live::LiveError;
+use pdfcraft_engine::live::{LiveError, MAX_PAYLOAD_BYTES};
 use pdfcraft_engine::{ClientPrefix, DocId, Session};
 
 /// Three pages. Page 1 has the note `file-note-1` (8) and the widget of the field `name` (10);
@@ -81,3 +81,13 @@ fn a_comment_payload_writes_no_object_outside_its_region() {
     assert!(s.annotation_ids(id).iter().any(|a| a.id.to_string() == "obj:12.0" && a.page == 0));
 }
 
+/// A payload larger than any editor sends is refused before it is read.
+#[test]
+fn an_oversized_payload_is_refused_unread() {
+    let (mut s, id) = open("0000aa");
+    let pad = "A".repeat(MAX_PAYLOAD_BYTES);
+    for region in ["*", "pages", "annot:nm:file-note-1", "field:name"] {
+        let err = refused(&mut s, id, region, &format!(r#"{{"v":1,"pdf":"{pad}"}}"#));
+        assert_eq!(err, LiveError::TooLarge, "{region}");
+    }
+}
