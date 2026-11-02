@@ -2,8 +2,10 @@
 //! name; someone's selected comment or field a thinner one; the page someone is on a name tag.
 
 use egui::{Align2, Color32, CornerRadius, FontId, Rect, Stroke, StrokeKind, pos2, vec2};
+use std::collections::HashMap;
+
 use pdfcraft_engine::live::Region;
-use pdfcraft_engine::{DocId, PageId};
+use pdfcraft_engine::{AnnotId, DocId, PageId};
 use pdfcraft_render::DocInfo;
 
 use super::Live;
@@ -62,29 +64,58 @@ impl Live {
     }
 }
 
-impl PdfCraftApp {
-    /// Where region `region` is on the pages of document `id`: comments and fields by their
-    /// rectangles, `page:<id>` (a cursor) as the page's name tag.
-    fn region_places(&mut self, id: DocId, region: &str) -> Vec<Place> {
-        if let Some(page) = region.strip_prefix("page:").and_then(PageId::parse) {
-            return self.session.page_index(id, page).map(|p| vec![(p, None)]).unwrap_or_default();
+/// Where comments, fields and pages are in one document, read once for every region's mark.
+struct Lookup {
+    pages: HashMap<PageId, usize>,
+    annots: HashMap<AnnotId, (usize, usize)>,
+    rects: HashMap<(usize, usize), Vec<[f32; 4]>>,
+    fields: HashMap<String, Vec<Place>>,
+}
+
+impl Lookup {
+    fn new(app: &mut PdfCraftApp, id: DocId) -> Self {
+        let mut pages = HashMap::new();
+        for (i, p) in app.session.page_ids(id).into_iter().enumerate() {
+            pages.entry(p).or_insert(i);
         }
-        let Some(doc) = self.session.get(id) else { return Vec::new() };
+        let mut annots = HashMap::new();
+        for a in app.session.annotation_ids(id) {
+            annots.entry(a.id).or_insert((a.page, a.index));
+        }
+        let mut rects: HashMap<(usize, usize), Vec<[f32; 4]>> = HashMap::new();
+        let mut fields: HashMap<String, Vec<Place>> = HashMap::new();
+        if let Some(doc) = app.session.get(id) {
+            for a in &doc.info.annotations {
+                rects.entry((a.page, a.index)).or_default().push(a.rect);
+            }
+            for f in doc.form.iter() {
+                fields
+                    .entry(f.name.clone())
+                    .or_default()
+                    .extend(f.widgets.iter().filter_map(|w| w.page.map(|p| (p, Some(w.rect.map(|v| v as f32))))));
+            }
+        }
+        Self { pages, annots, rects, fields }
+    }
+
+    /// Where region `region` is on the pages: comments and fields by their rectangles,
+    /// `page:<id>` (a cursor) as the page's name tag.
+    fn places(&self, region: &str) -> Vec<Place> {
+        if let Some(page) = region.strip_prefix("page:").and_then(PageId::parse) {
+            return self.pages.get(&page).map(|p| vec![(*p, None)]).unwrap_or_default();
+        }
         match Region::parse(region) {
             Some(Region::Annot(annot)) => {
-                let Some((page, index)) = self.session.find_annotation(id, &annot) else { return Vec::new() };
-                doc.info.annotations.iter().filter(|a| a.page == page && a.index == index).map(|a| (page, Some(a.rect))).collect()
+                let Some(&(page, index)) = self.annots.get(&annot) else { return Vec::new() };
+                self.rects.get(&(page, index)).into_iter().flatten().map(|r| (page, Some(*r))).collect()
             }
-            Some(Region::Field(name)) => doc
-                .form
-                .iter()
-                .filter(|f| f.name == name)
-                .flat_map(|f| f.widgets.iter().filter_map(|w| w.page.map(|p| (p, Some(w.rect.map(|v| v as f32))))))
-                .collect(),
+            Some(Region::Field(name)) => self.fields.get(&name).cloned().unwrap_or_default(),
             _ => Vec::new(),
         }
     }
+}
 
+impl PdfCraftApp {
     /// Draw the marks again when the locks, the cursors or the document changed.
     pub(crate) fn refresh_live_marks(&mut self) {
         let Some(live) = self.online.as_ref().and_then(|o| o.live.as_ref()) else { return };
@@ -95,11 +126,18 @@ impl PdfCraftApp {
             return;
         }
         let regions: Vec<String> = live.others.keys().cloned().chain(live.cursors.iter().map(|c| c.region.clone())).collect();
-        let mut places = std::collections::HashMap::new();
-        for region in regions {
-            let at = self.region_places(id, &region);
-            places.insert(region, at);
-        }
+        let places: HashMap<String, Vec<Place>> = if regions.is_empty() {
+            HashMap::new()
+        } else {
+            let lookup = Lookup::new(self, id);
+            regions
+                .into_iter()
+                .map(|r| {
+                    let at = lookup.places(&r);
+                    (r, at)
+                })
+                .collect()
+        };
         let Some(live) = self.online.as_mut().and_then(|o| o.live.as_mut()) else { return };
         let marks = live.build_marks(&|r| places.get(r).cloned().unwrap_or_default());
         live.marks_key = Some(key);

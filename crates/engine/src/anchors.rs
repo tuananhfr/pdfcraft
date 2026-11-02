@@ -16,11 +16,14 @@
 //! of the file: the page's position and the text under the quads. `label` is the shell's hint for
 //! people; it is made by the app and ignored when an anchor is read.
 
+use std::collections::HashMap;
+use std::sync::Arc;
+
 use pdfcraft_render::{PageInfo, PageRenderer, PageText, RenderRequest, RequestKind};
 use serde_json::{Map, Value, json};
 
 use crate::live::Region;
-use crate::stable_ids::PageId;
+use crate::stable_ids::{AnnotId, PageId};
 use crate::{DocId, Session};
 
 pub const ANCHOR_VERSION: u64 = 1;
@@ -59,6 +62,8 @@ pub enum Resolution {
     /// Found, as it is now.
     Open(Anchor),
     Orphaned,
+    /// Not looked for: the call's budget for reading text went to earlier anchors.
+    Skipped,
 }
 
 /// Where an anchor is drawn: a page and quads on it in user space.
@@ -175,11 +180,16 @@ fn view_box(page: &PageInfo, q: &[f64; 8]) -> [f32; 4] {
 /// and checks. The app calls it on its own text layer, the engine on a fresh one.
 pub fn text_under(text: &PageText, page: &PageInfo, quads: &[[f64; 8]]) -> String {
     let boxes: Vec<[f32; 4]> = quads.iter().map(|q| view_box(page, q)).collect();
+    // Most glyphs are outside every box: one test against their union first.
+    let Some(all) = boxes.iter().copied().reduce(|a, b| [a[0].min(b[0]), a[1].min(b[1]), a[2].max(b[2]), a[3].max(b[3])]) else {
+        return String::new();
+    };
+    let inside = |b: &[f32; 4], x: f32, y: f32| x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3];
     let mut out = String::new();
     let mut last_line = None;
     for (i, g) in text.glyphs.iter().enumerate() {
         let (cx, cy) = ((g.rect[0] + g.rect[2]) / 2.0, (g.rect[1] + g.rect[3]) / 2.0);
-        if !boxes.iter().any(|b| cx >= b[0] && cx <= b[2] && cy >= b[1] && cy <= b[3]) {
+        if !inside(&all, cx, cy) || !boxes.iter().any(|b| inside(b, cx, cy)) {
             continue;
         }
         let line = text.line_of.get(i).copied();
@@ -195,32 +205,80 @@ pub fn text_under(text: &PageText, page: &PageInfo, quads: &[[f64; 8]]) -> Strin
     clean_text(&out)
 }
 
-/// Where `needle` is on the page, ignoring whitespace: one quad per line of the match nearest to
-/// `near` (a user-space point).
-fn find_text(text: &PageText, page: &PageInfo, needle: &str, near: Option<[f64; 2]>) -> Option<Vec<[f64; 8]>> {
-    let needle: Vec<char> = needle.chars().filter(|c| !c.is_whitespace()).collect();
+/// Matches of an anchor's text weighed on one page: past it the nearest of these wins. Text
+/// repeated that often is no way to tell places apart anyway.
+const MAX_MATCHES: usize = 256;
+
+/// The end (in `hay`) of each place `needle` is, at most [`MAX_MATCHES`], in linear time: a
+/// naive search is quadratic on repetitive text.
+fn find_all(hay: &[(char, usize)], needle: &[char]) -> Vec<usize> {
     if needle.is_empty() {
-        return None;
+        return Vec::new();
     }
-    let hay: Vec<(char, usize)> =
-        text.glyphs.iter().enumerate().flat_map(|(i, g)| g.text.chars().filter(|c| !c.is_whitespace()).map(move |c| (c, i))).collect();
-    let mut best: Option<(f64, Vec<[f64; 8]>)> = None;
-    for start in 0..hay.len().saturating_sub(needle.len().saturating_sub(1)) {
-        let Some(window) = hay.get(start..start.saturating_add(needle.len())) else { break };
-        if !window.iter().map(|(c, _)| *c).eq(needle.iter().copied()) {
-            continue;
+    // Knuth-Morris-Pratt: `fail[i]` is the longest proper border of `needle[..=i]`.
+    let mut fail = vec![0usize; needle.len()];
+    let mut k = 0;
+    for (i, c) in needle.iter().enumerate().skip(1) {
+        while k > 0 && needle.get(k) != Some(c) {
+            k = fail.get(k - 1).copied().unwrap_or(0);
         }
-        let (Some(first), Some(last)) = (window.first().map(|w| w.1), window.last().map(|w| w.1)) else { continue };
-        let quads = line_quads(text, page, first, last);
-        let distance = match (near, quads_bounds(&quads)) {
-            (Some([x, y]), Some(b)) => (x - (b[0] + b[2]) / 2.0).hypot(y - (b[1] + b[3]) / 2.0),
+        if needle.get(k) == Some(c) {
+            k += 1;
+        }
+        if let Some(f) = fail.get_mut(i) {
+            *f = k;
+        }
+    }
+    let mut out = Vec::new();
+    let mut k = 0;
+    for (i, (c, _)) in hay.iter().enumerate() {
+        while k > 0 && needle.get(k) != Some(c) {
+            k = fail.get(k - 1).copied().unwrap_or(0);
+        }
+        if needle.get(k) == Some(c) {
+            k += 1;
+        }
+        if k == needle.len() {
+            out.push(i);
+            if out.len() >= MAX_MATCHES {
+                break;
+            }
+            k = fail.get(k - 1).copied().unwrap_or(0);
+        }
+    }
+    out
+}
+
+/// Where `needle` is on the page, ignoring whitespace: one quad per line of the match nearest to
+/// `near` (a user-space point). `work` counts the glyphs looked at.
+fn find_text(page_text: &IndexedText, page: &PageInfo, needle: &str, near: Option<[f64; 2]>, work: &mut usize) -> Option<Vec<[f64; 8]>> {
+    let needle: Vec<char> = needle.chars().filter(|c| !c.is_whitespace()).collect();
+    let hay = &page_text.hay;
+    *work = work.saturating_add(hay.len());
+    let mut best: Option<(f64, usize, usize)> = None;
+    for end in find_all(hay, &needle) {
+        let start = (end + 1).saturating_sub(needle.len());
+        let (Some(first), Some(last)) = (hay.get(start).map(|h| h.1), hay.get(end).map(|h| h.1)) else { continue };
+        *work = work.saturating_add(last.saturating_sub(first) + 1);
+        // The view-to-user map keeps boxes boxes: the centre of the match's glyphs is the centre
+        // of the quads `line_quads` would make of them.
+        let distance = match (near, glyph_bounds(&page_text.text, first, last)) {
+            (Some([x, y]), Some(b)) => {
+                let [cx, cy] = page.view_to_user((b[0] + b[2]) / 2.0, (b[1] + b[3]) / 2.0);
+                (x - f64::from(cx)).hypot(y - f64::from(cy))
+            }
             _ => 0.0,
         };
-        if best.as_ref().is_none_or(|(d, _)| distance < *d) {
-            best = Some((distance, quads));
+        if best.is_none_or(|(d, _, _)| distance < d) {
+            best = Some((distance, first, last));
         }
     }
-    best.map(|(_, q)| q)
+    best.map(|(_, first, last)| line_quads(&page_text.text, page, first, last))
+}
+
+/// The view-space box of glyphs `first..=last`.
+fn glyph_bounds(text: &PageText, first: usize, last: usize) -> Option<[f32; 4]> {
+    text.glyphs.get(first..=last)?.iter().map(|g| g.rect).reduce(|r, g| [r[0].min(g[0]), r[1].min(g[1]), r[2].max(g[2]), r[3].max(g[3])])
 }
 
 /// Glyphs `first..=last` as one quad per line.
@@ -237,21 +295,102 @@ fn line_quads(text: &PageText, page: &PageInfo, first: usize, last: usize) -> Ve
     lines.into_iter().map(|(_, r)| page.view_rect_to_quad(r)).collect()
 }
 
-/// The text layer of each page asked for, read once per call.
+/// A page's text layer with its letters (no whitespace), each with the glyph it comes from.
+struct IndexedText {
+    text: Arc<PageText>,
+    hay: Vec<(char, usize)>,
+}
+
+/// Pages one `resolveAnchors` reads the text of: the shell's thread list decides which, and each
+/// is laid out again.
+pub const MAX_TEXT_PAGES: usize = 200;
+/// Glyphs one `resolveAnchors` looks at, over every anchor.
+pub const MAX_GLYPH_WORK: usize = 20_000_000;
+
+/// The text layer of each page asked for, read once per call, within the call's budget.
 struct Texts {
     renderer: Option<PageRenderer>,
-    pages: Vec<(usize, Option<std::sync::Arc<PageText>>)>,
+    pages: HashMap<usize, Option<Arc<IndexedText>>>,
+    work: usize,
 }
 
 impl Texts {
-    fn get(&mut self, page: usize) -> Option<std::sync::Arc<PageText>> {
-        if let Some((_, t)) = self.pages.iter().find(|(p, _)| *p == page) {
+    fn get(&mut self, page: usize) -> Option<Arc<IndexedText>> {
+        if let Some(t) = self.pages.get(&page) {
             return t.clone();
         }
         let text =
             self.renderer.as_mut().and_then(|r| r.render(RenderRequest { page, kind: RequestKind::Text, scale: 1.0, ..Default::default() }).text);
-        self.pages.push((page, text.clone()));
-        text
+        let indexed = text.map(|text| {
+            let hay = text.glyphs.iter().enumerate().flat_map(|(i, g)| g.text.chars().filter(|c| !c.is_whitespace()).map(move |c| (c, i))).collect();
+            self.work = self.work.saturating_add(text.glyphs.len());
+            Arc::new(IndexedText { text, hay })
+        });
+        self.pages.insert(page, indexed.clone());
+        indexed
+    }
+
+    fn spent(&self) -> bool {
+        self.pages.len() >= MAX_TEXT_PAGES || self.work >= MAX_GLYPH_WORK
+    }
+}
+
+/// Where each comment and field is now, read once for many anchors.
+struct Places {
+    annots: HashMap<AnnotId, Option<Place>>,
+    fields: HashMap<String, Option<Place>>,
+}
+
+impl Places {
+    fn new(session: &Session, id: DocId) -> Self {
+        let mut annots = HashMap::new();
+        let mut fields = HashMap::new();
+        if let Some(doc) = session.get(id) {
+            let mut shapes: HashMap<(usize, usize), Vec<[f64; 8]>> = HashMap::new();
+            for a in &doc.info.annotations {
+                shapes.entry((a.page, a.index)).or_insert_with(|| {
+                    if a.quads.is_empty() { vec![rect_quad(a.rect.map(f64::from))] } else { a.quads.iter().map(|q| q.map(f64::from)).collect() }
+                });
+            }
+            for a in session.annotation_ids(id) {
+                let place = shapes.get(&(a.page, a.index)).map(|quads| Place { page: a.page, quads: quads.clone() });
+                annots.entry(a.id).or_insert(place);
+            }
+            for f in doc.form.iter() {
+                // The first field of a name decides, as a lookup by name would.
+                fields.entry(f.name.clone()).or_insert_with(|| {
+                    let w = f.widgets.iter().find(|w| w.page.is_some())?;
+                    Some(Place { page: w.page?, quads: vec![rect_quad(w.rect)] })
+                });
+            }
+        }
+        Self { annots, fields }
+    }
+
+    /// Where a comment or a field is now; `None` when it is gone.
+    fn of(&self, region: &Region) -> Option<Place> {
+        match region {
+            Region::Annot(annot) => self.annots.get(annot)?.clone(),
+            Region::Field(name) => self.fields.get(name)?.clone(),
+            Region::Pages | Region::Document => None,
+        }
+    }
+}
+
+/// The ids of a document's pages, and where each is.
+struct Pages {
+    ids: Vec<PageId>,
+    index: HashMap<PageId, usize>,
+}
+
+impl Pages {
+    fn new(session: &mut Session, id: DocId) -> Self {
+        let ids = session.page_ids(id);
+        let mut index = HashMap::new();
+        for (i, p) in ids.iter().enumerate() {
+            index.entry(*p).or_insert(i);
+        }
+        Self { ids, index }
     }
 }
 
@@ -262,11 +401,15 @@ impl Session {
     pub fn anchor_of_annotation(&mut self, id: DocId, page: usize, index: usize, layer: Option<&PageText>) -> Option<Anchor> {
         let annot = self.annotation_ids(id).into_iter().find(|a| a.page == page && a.index == index)?.id;
         let region = Region::Annot(annot);
-        let place = self.region_place(id, &region)?;
+        let place = Places::new(self, id).of(&region)?;
         let markup = self.get(id)?.info.annotations.iter().any(|a| a.page == page && a.index == index && !a.quads.is_empty());
         let text = if markup {
             let fresh = if layer.is_none() { self.texts(id).get(place.page) } else { None };
-            layer.or(fresh.as_deref()).zip(self.get(id)?.info.pages.get(place.page)).map(|(t, p)| text_under(t, p, &place.quads)).unwrap_or_default()
+            layer
+                .or(fresh.as_deref().map(|t| t.text.as_ref()))
+                .zip(self.get(id)?.info.pages.get(place.page))
+                .map(|(t, p)| text_under(t, p, &place.quads))
+                .unwrap_or_default()
         } else {
             String::new()
         };
@@ -298,92 +441,93 @@ impl Session {
         Some(Anchor { region, page, quads: rounded(place.quads), index: place.page, text })
     }
 
-    /// Where a comment or a field is now; `None` when it is gone.
-    fn region_place(&self, id: DocId, region: &Region) -> Option<Place> {
-        let doc = self.get(id)?;
-        match region {
-            Region::Annot(annot) => {
-                let (page, index) = self.find_annotation(id, annot)?;
-                let a = doc.info.annotations.iter().find(|a| a.page == page && a.index == index)?;
-                let quads =
-                    if a.quads.is_empty() { vec![rect_quad(a.rect.map(f64::from))] } else { a.quads.iter().map(|q| q.map(f64::from)).collect() };
-                Some(Place { page, quads })
-            }
-            Region::Field(name) => {
-                let w = doc.form.iter().find(|f| &f.name == name)?.widgets.iter().find(|w| w.page.is_some())?;
-                Some(Place { page: w.page?, quads: vec![rect_quad(w.rect)] })
-            }
-            Region::Pages | Region::Document => None,
-        }
-    }
-
     /// Where to draw `anchor` now, without reading any text: its region's place, else its quads
     /// on the page with its id, else on the page at its index.
     pub fn anchor_place(&mut self, id: DocId, anchor: &Anchor) -> Option<Place> {
-        if let Some(region) = &anchor.region {
-            return self.region_place(id, region);
-        }
-        let count = self.get(id)?.info.pages.len();
-        let page = anchor.page.and_then(|p| self.page_index(id, p)).or((anchor.index < count).then_some(anchor.index))?;
-        (!anchor.quads.is_empty()).then(|| Place { page, quads: anchor.quads.clone() })
+        self.anchor_places(id, std::slice::from_ref(anchor)).pop().flatten()
+    }
+
+    /// [`Self::anchor_place`] of each anchor, the document read once for all of them.
+    pub fn anchor_places(&mut self, id: DocId, anchors: &[Anchor]) -> Vec<Option<Place>> {
+        let places = Places::new(self, id);
+        let pages = Pages::new(self, id);
+        let count = self.get(id).map_or(0, |d| d.info.pages.len());
+        anchors
+            .iter()
+            .map(|anchor| {
+                if let Some(region) = &anchor.region {
+                    return places.of(region);
+                }
+                let page = anchor.page.and_then(|p| pages.index.get(&p).copied()).or((anchor.index < count).then_some(anchor.index))?;
+                (!anchor.quads.is_empty()).then(|| Place { page, quads: anchor.quads.clone() })
+            })
+            .collect()
     }
 
     /// Find each anchor again in the document as it is now (a new version opened, someone else's
     /// change applied). A region that still exists keeps the anchor, at the region's place. Else
     /// the text under the quads must still be on the page named by the anchor's id or at its
     /// index (moved within that page if need be), and the anchor loses its region. Else it is
-    /// orphaned. Changes nothing in the document.
+    /// orphaned. Changes nothing in the document. An anchor whose text is still to be read once
+    /// the call has read [`MAX_TEXT_PAGES`] pages or looked at [`MAX_GLYPH_WORK`] glyphs is
+    /// [`Resolution::Skipped`].
     pub fn resolve_anchors(&mut self, id: DocId, anchors: &[Anchor]) -> Vec<Resolution> {
         let mut texts = self.texts(id);
-        anchors.iter().map(|a| self.resolve_anchor(id, a, &mut texts)).collect()
+        let places = Places::new(self, id);
+        let pages = Pages::new(self, id);
+        anchors.iter().map(|a| self.resolve_anchor(id, a, &places, &pages, &mut texts)).collect()
     }
 
-    fn resolve_anchor(&mut self, id: DocId, anchor: &Anchor, texts: &mut Texts) -> Resolution {
+    fn resolve_anchor(&self, id: DocId, anchor: &Anchor, places: &Places, pages: &Pages, texts: &mut Texts) -> Resolution {
         let Some(count) = self.get(id).map(|d| d.info.pages.len()) else { return Resolution::Orphaned };
         if let Some(region) = &anchor.region
-            && let Some(place) = self.region_place(id, region)
+            && let Some(place) = places.of(region)
         {
-            let page = self.page_ids(id).get(place.page).copied();
             return Resolution::Open(Anchor {
                 region: Some(region.clone()),
-                page,
+                page: pages.ids.get(place.page).copied(),
                 quads: rounded(place.quads),
                 index: place.page,
                 text: anchor.text.clone(),
             });
         }
-        let by_id = anchor.page.and_then(|p| self.page_index(id, p));
+        let by_id = anchor.page.and_then(|p| pages.index.get(&p).copied());
         let by_index = (anchor.index < count).then_some(anchor.index);
         if anchor.text.is_empty() {
             // Nothing to check a page against: only a selection's own page keeps it.
             return match (&anchor.region, by_id.or(by_index.filter(|_| anchor.page.is_none()))) {
-                (None, Some(page)) if !anchor.quads.is_empty() => self.reanchored(id, page, anchor.quads.clone(), anchor),
+                (None, Some(page)) if !anchor.quads.is_empty() => reanchored(pages, page, anchor.quads.clone(), anchor),
                 _ => Resolution::Orphaned,
             };
+        }
+        if texts.spent() {
+            return Resolution::Skipped;
         }
         let near = quads_bounds(&anchor.quads).map(|b| [(b[0] + b[2]) / 2.0, (b[1] + b[3]) / 2.0]);
         let mut candidates = Vec::new();
         candidates.extend(by_id);
         candidates.extend(by_index.filter(|p| Some(*p) != by_id));
         for page in candidates {
-            let (Some(text), Some(info)) = (texts.get(page), self.get(id).and_then(|d| d.info.pages.get(page)).cloned()) else { continue };
-            if !anchor.quads.is_empty() && same_text(&text_under(&text, &info, &anchor.quads), &anchor.text) {
-                return self.reanchored(id, page, anchor.quads.clone(), anchor);
+            let (Some(text), Some(info)) = (texts.get(page), self.get(id).and_then(|d| d.info.pages.get(page))) else { continue };
+            if !anchor.quads.is_empty() {
+                texts.work = texts.work.saturating_add(text.text.glyphs.len());
+                if same_text(&text_under(&text.text, info, &anchor.quads), &anchor.text) {
+                    return reanchored(pages, page, anchor.quads.clone(), anchor);
+                }
             }
-            if let Some(quads) = find_text(&text, &info, &anchor.text, near) {
-                return self.reanchored(id, page, quads, anchor);
+            if let Some(quads) = find_text(&text, info, &anchor.text, near, &mut texts.work) {
+                return reanchored(pages, page, quads, anchor);
             }
         }
         Resolution::Orphaned
     }
 
-    fn reanchored(&mut self, id: DocId, page: usize, quads: Vec<[f64; 8]>, anchor: &Anchor) -> Resolution {
-        let page_id = self.page_ids(id).get(page).copied();
-        Resolution::Open(Anchor { region: None, page: page_id, quads: rounded(quads), index: page, text: anchor.text.clone() })
-    }
-
     fn texts(&self, id: DocId) -> Texts {
         let renderer = self.get(id).map(|d| PageRenderer::new(d.display.clone(), d.config.clone()));
-        Texts { renderer, pages: Vec::new() }
+        Texts { renderer, pages: HashMap::new(), work: 0 }
     }
+}
+
+fn reanchored(pages: &Pages, page: usize, quads: Vec<[f64; 8]>, anchor: &Anchor) -> Resolution {
+    Resolution::Open(Anchor { region: None, page: pages.ids.get(page).copied(), quads: rounded(quads), index: page, text: anchor.text.clone() })
 }

@@ -119,11 +119,12 @@ impl PdfCraftApp {
         if comments.markers_key == key {
             return;
         }
-        let threads: Vec<(String, u32, Anchor)> =
-            comments.threads.iter().filter(|(t, _)| t.status == "open").filter_map(|(t, a)| Some((t.id.clone(), t.count, a.clone()?))).collect();
+        let (threads, anchors): (Vec<(String, u32)>, Vec<Anchor>) =
+            comments.threads.iter().filter(|(t, _)| t.status == "open").filter_map(|(t, a)| Some(((t.id.clone(), t.count), a.clone()?))).unzip();
+        let places = self.session.anchor_places(id, &anchors);
         let mut markers = Vec::new();
-        for (thread, count, anchor) in threads {
-            let Some(place) = self.session.anchor_place(id, &anchor) else { continue };
+        for ((thread, count), place) in threads.into_iter().zip(places) {
+            let Some(place) = place else { continue };
             let rects = place.quads.iter().filter_map(|q| anchors::quads_bounds(std::slice::from_ref(q))).map(|b| b.map(|v| v as f32)).collect();
             markers.push(CommentMarker { thread, page: place.page, rects, count });
         }
@@ -180,12 +181,14 @@ impl PdfCraftApp {
         let readable: Vec<(&Thread, Anchor)> = threads.iter().take(MAX_THREADS).filter_map(|t| Some((t, Anchor::parse(&t.anchor).ok()?))).collect();
         let anchors: Vec<Anchor> = readable.iter().map(|(_, a)| a.clone()).collect();
         let resolved = self.session.resolve_anchors(id, &anchors);
+        // A skipped one is left out too: the shell keeps it as it was.
         readable
             .into_iter()
             .zip(resolved)
-            .map(|((t, _), r)| match r {
-                Resolution::Open(anchor) => ResolvedThread { id: t.id.clone(), anchor: anchor_json(&anchor), status: AnchorStatus::Open },
-                Resolution::Orphaned => ResolvedThread { id: t.id.clone(), anchor: t.anchor.clone(), status: AnchorStatus::Orphaned },
+            .filter_map(|((t, _), r)| match r {
+                Resolution::Open(anchor) => Some(ResolvedThread { id: t.id.clone(), anchor: anchor_json(&anchor), status: AnchorStatus::Open }),
+                Resolution::Orphaned => Some(ResolvedThread { id: t.id.clone(), anchor: t.anchor.clone(), status: AnchorStatus::Orphaned }),
+                Resolution::Skipped => None,
             })
             .collect()
     }

@@ -4,7 +4,7 @@
 
 use std::sync::Arc;
 
-use pdfcraft_engine::anchors::{Anchor, AnchorError, MAX_ANCHOR_BYTES, Resolution, quads_bounds, text_under};
+use pdfcraft_engine::anchors::{Anchor, AnchorError, MAX_ANCHOR_BYTES, MAX_TEXT_PAGES, Resolution, quads_bounds, text_under};
 use pdfcraft_engine::live::Region;
 use pdfcraft_engine::{AnnotId, DocId, Edit, Session};
 use pdfcraft_render::{PageRenderer, RenderConfig, RenderRequest, RequestKind};
@@ -73,6 +73,7 @@ fn open_anchor(r: &Resolution) -> &Anchor {
     match r {
         Resolution::Open(a) => a,
         Resolution::Orphaned => panic!("orphaned"),
+        Resolution::Skipped => panic!("skipped"),
     }
 }
 
@@ -217,4 +218,64 @@ fn resolving_and_placing_change_nothing_in_the_document() {
     s.anchor_place(id, &t);
     let doc = s.get(id).unwrap();
     assert_eq!((doc.bytes.as_slice(), doc.edit_generation(), doc.dirty), (bytes.as_slice(), generation, false));
+}
+
+/// A file of `pages` pages that all show `content` (one stream, Helvetica as `/F1`).
+fn pages_showing(pages: usize, content: &str) -> Vec<u8> {
+    let kids: Vec<String> = (0..pages).map(|i| format!("{} 0 R", i + 5)).collect();
+    let mut objs = vec![
+        "<< /Type /Catalog /Pages 2 0 R >>".to_owned(),
+        format!("<< /Type /Pages /Kids [{}] /Count {pages} >>", kids.join(" ")),
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>".to_owned(),
+        format!("<< /Length {} >>\nstream\n{content}\nendstream", content.len()),
+    ];
+    objs.extend(
+        (0..pages)
+            .map(|_| "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 300] /Contents 4 0 R /Resources << /Font << /F1 3 0 R >> >> >>".to_owned()),
+    );
+    let mut out = b"%PDF-1.7\n".to_vec();
+    let mut offsets = Vec::new();
+    for (i, o) in objs.iter().enumerate() {
+        offsets.push(out.len());
+        out.extend_from_slice(format!("{} 0 obj\n{o}\nendobj\n", i + 1).as_bytes());
+    }
+    let xref = out.len();
+    out.extend_from_slice(format!("xref\n0 {}\n0000000000 65535 f \n", objs.len() + 1).as_bytes());
+    for o in offsets {
+        out.extend_from_slice(format!("{o:010} 00000 n \n").as_bytes());
+    }
+    out.extend_from_slice(format!("trailer\n<< /Size {} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n", objs.len() + 1).as_bytes());
+    out
+}
+
+fn text_anchor(index: usize, text: &str) -> Anchor {
+    Anchor { region: None, page: None, quads: Vec::new(), index, text: text.into() }
+}
+
+/// The thread list comes from the server, so one call reads the text of a bounded number of
+/// pages and looks at a bounded number of glyphs; the anchors past that are skipped, which the
+/// shell reads as unchanged.
+#[test]
+fn resolving_reads_a_bounded_amount_of_text() {
+    let pages = MAX_TEXT_PAGES + 50;
+    let (mut s, id) = open(&pages_showing(pages, "BT /F1 14 Tf 20 250 Td (Some words) Tj ET"));
+    let out = s.resolve_anchors(id, &(0..pages).map(|i| text_anchor(i, "missing")).collect::<Vec<_>>());
+    assert_eq!(out.iter().filter(|r| **r == Resolution::Orphaned).count(), MAX_TEXT_PAGES);
+    assert_eq!(out.iter().filter(|r| **r == Resolution::Skipped).count(), 50);
+
+    // One page of the same letter, searched for that letter 199 times and one absent: quadratic
+    // for a naive search, and over the glyph budget long before the anchors run out.
+    let line = "a".repeat(100);
+    let content: String =
+        (0..40).map(|i| format!("BT /F1 3 Tf 5 {} Td ({line}) Tj ET ", 10 + i * 7)).collect::<String>() + "BT /F1 3 Tf 5 5 Td (b) Tj ET";
+    let (mut s, id) = open(&pages_showing(1, &content));
+    let needle = format!("{}c", "a".repeat(199));
+    let anchors: Vec<Anchor> = (0..8000).map(|_| text_anchor(0, &needle)).collect();
+    let out = s.resolve_anchors(id, &anchors);
+    let skipped = out.iter().filter(|r| **r == Resolution::Skipped).count();
+    assert!(skipped > 0 && skipped < anchors.len(), "{skipped} skipped");
+    assert!(out.iter().all(|r| matches!(r, Resolution::Orphaned | Resolution::Skipped)), "there is no c");
+    // Repetitive text still finds what is there.
+    let out = s.resolve_anchors(id, &[text_anchor(0, "aab")]);
+    assert!(matches!(&out[0], Resolution::Open(a) if a.index == 0 && !a.quads.is_empty()), "{out:?}");
 }
