@@ -181,6 +181,24 @@ fn a_comment_payload_installs_only_a_comment() {
     assert!(s.annotation_ids(id).iter().any(|a| a.id.to_string() == "nm:new-1"));
 }
 
+/// A comment payload comes out under its region's id and leaves every other comment's: a root
+/// renamed to another comment's `/NM` would turn both into object ids (the other one's lock no
+/// longer names it), and one renamed to a fresh name would leave a comment no lock names.
+#[test]
+fn a_comment_payload_keeps_its_id_and_every_other_comments() {
+    let (mut s, id) = open("0000aa");
+    let named = |nm: &str| {
+        format!(
+            r#"{{"v":1,"page":"f3.0","at":0,"g":[{{"d":{{"Type":{{"n":"Annot"}},"Subtype":{{"n":"Text"}},"NM":{{"s":"{nm}"}},"Rect":[40,40,60,60],"Contents":{{"s":"edited"}}}}}}]}}"#
+        )
+    };
+    for nm in ["obj-11-0", "fresh-name"] {
+        refused(&mut s, id, "annot:nm:file-note-1", &named(nm));
+        refused(&mut s, id, "annot:nm:new-2", &named(nm));
+    }
+    s.apply_remote(id, "annot:nm:file-note-1", &named("file-note-1")).unwrap();
+}
+
 // ── fuzzing ───────────────────────────────────────────────────────────────────────────────────
 
 /// A small deterministic generator (xorshift64*): the same cases on every run.

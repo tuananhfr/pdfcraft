@@ -241,6 +241,10 @@ pub(crate) fn apply_comment(cos: &mut Cos, ids: &[PageId], id: &AnnotId, payload
         list.insert(after, Object::Ref(p));
     }
     set_annots(cos, page, list)?;
+    // Under another id it would be someone else's comment, or none the room's lock names.
+    if stable_ids::comment_ids(cos).into_iter().find(|(a, _)| &a.id == id).map(|(_, r)| r) != Some(root) {
+        return Err(malformed("a comment under another id"));
+    }
     Ok(true)
 }
 
@@ -338,6 +342,12 @@ pub(crate) fn confined(prev: &View, next: &View, region: &Region, changed: HashS
         return false;
     }
     let Region::Annot(id) = region else { return true };
+    // Every other comment keeps its id and object: a duplicated `/NM` would re-id another's.
+    let others =
+        |v: &View| -> HashSet<(AnnotId, ObjRef)> { v.comments.iter().filter(|(a, _)| &a.id != id).map(|(a, r)| (a.id.clone(), *r)).collect() };
+    if others(prev) != others(next) {
+        return false;
+    }
     if let Some((_, r)) = next.comment(id) {
         w.own.insert(*r);
         w.own.extend(popup_of(next.cos, *r));
