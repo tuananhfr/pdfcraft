@@ -112,7 +112,12 @@ pub enum PageId {
 
 impl PageId {
     /// The [`Display`](fmt::Display) form back: `f<num>.<generation>` or `n<prefix>.<seq hex>`.
+    /// Only that form: ids are lock keys, so `f012.0` must not name the page `f12.0` names.
     pub fn parse(s: &str) -> Option<Self> {
+        Self::parse_any(s).filter(|id| id.to_string() == s)
+    }
+
+    fn parse_any(s: &str) -> Option<Self> {
         let (head, tail) = s.get(1..)?.split_once('.')?;
         match s.as_bytes().first()? {
             b'f' if is_decimal(head) && is_decimal(tail) => Some(Self::File { num: head.parse().ok()?, generation: tail.parse().ok()? }),
@@ -235,8 +240,13 @@ pub enum AnnotId {
 }
 
 impl AnnotId {
-    /// The [`Display`](fmt::Display) form back: `nm:<name>` or `obj:<num>.<generation>`.
+    /// The [`Display`](fmt::Display) form back: `nm:<name>` or `obj:<num>.<generation>`. Only
+    /// that form: ids are lock keys, so `obj:012.0` must not name the comment `obj:12.0` names.
     pub fn parse(s: &str) -> Option<Self> {
+        Self::parse_any(s).filter(|id| id.to_string() == s)
+    }
+
+    fn parse_any(s: &str) -> Option<Self> {
         if let Some(name) = s.strip_prefix("nm:") {
             return (!name.is_empty()).then(|| Self::Name(name.to_owned()));
         }

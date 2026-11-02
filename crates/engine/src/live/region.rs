@@ -70,7 +70,18 @@ mod tests {
         for s in ["*", "pages", "annot:nm:0a1b2c00-0001-4abc-8def-0123456789ab", "annot:obj:12.0", "field:person.name"] {
             assert_eq!(Region::parse(s).map(|r| r.to_string()).as_deref(), Some(s));
         }
-        for s in ["", "field:", "annot:", "annot:x", "page", "annot:obj:1", "field:a\u{1}b", &format!("field:{}", "x".repeat(300))] {
+        for s in [
+            "",
+            "field:",
+            "annot:",
+            "annot:x",
+            "page",
+            "annot:obj:1",
+            "annot:obj:012.0",
+            "annot:obj:12.00",
+            "field:a\u{1}b",
+            &format!("field:{}", "x".repeat(300)),
+        ] {
             assert_eq!(Region::parse(s), None, "{s:?}");
         }
     }

@@ -199,6 +199,16 @@ fn a_comment_payload_keeps_its_id_and_every_other_comments() {
     s.apply_remote(id, "annot:nm:file-note-1", &named("file-note-1")).unwrap();
 }
 
+/// Ids are lock keys: another spelling of a comment's or a page's id names nothing.
+#[test]
+fn another_spelling_of_an_id_is_refused() {
+    let (mut s, id) = open("0000aa");
+    for region in ["annot:obj:012.0", "annot:obj:12.00"] {
+        assert!(matches!(refused(&mut s, id, region, &note_payload("f3.0")), LiveError::Malformed(_)), "{region}");
+    }
+    refused(&mut s, id, "annot:obj:12.0", &note_payload("f03.0"));
+}
+
 // ── fuzzing ───────────────────────────────────────────────────────────────────────────────────
 
 /// A small deterministic generator (xorshift64*): the same cases on every run.

@@ -228,6 +228,9 @@ fn page_ids_survive_insert_delete_reorder_undo_redo_and_saves() {
     assert!(blank.to_string().starts_with("n0f0f0f."));
     assert_eq!(PageId::parse(&blank.to_string()), Some(blank));
     assert_eq!(PageId::parse("f3.0"), Some(p1));
+    // Ids are lock keys: another spelling of the same page is not an id.
+    assert_eq!(PageId::parse("f03.0"), None);
+    assert_eq!(PageId::parse(&blank.to_string().replace('.', ".0")), None);
     assert_eq!(ids, [p1, blank, p2, p3]);
 
     s.apply(id, Edit::MovePages { pages: vec![3], to: 0 }).unwrap();
