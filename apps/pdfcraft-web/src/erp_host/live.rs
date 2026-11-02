@@ -3,7 +3,7 @@
 //! the next frame.
 
 use eframe::wasm_bindgen::{JsCast, JsValue, closure::Closure};
-use pdfcraft_ui_egui::online::live::{Choice, LiveEvent, LiveInbox, RegionHost, enqueue};
+use pdfcraft_ui_egui::online::live::{Choice, LiveEvent, LiveInbox, MAX_PAYLOAD_BYTES, MAX_REGION_BYTES, RegionHost, enqueue};
 
 use super::convert;
 
@@ -73,10 +73,12 @@ pub fn handlers(inbox: &LiveInbox, ctx: &egui::Context) -> Vec<(&'static str, Js
     };
     let push = queue(inbox, ctx);
     let apply_remote = Closure::<dyn FnMut(JsValue, JsValue, JsValue)>::new(move |region: JsValue, payload: JsValue, author: JsValue| {
-        push(region.as_string().zip(payload.as_string()).map(|(region, payload)| LiveEvent::ApplyRemote {
+        // Longer than the engine reads: not copied out of JavaScript at all.
+        let region = convert::bounded(&region, MAX_REGION_BYTES);
+        push(region.zip(convert::bounded(&payload, MAX_PAYLOAD_BYTES)).map(|(region, payload)| LiveEvent::ApplyRemote {
             region,
             payload,
-            author: author.as_string(),
+            author: convert::bounded(&author, MAX_REGION_BYTES),
         }));
     })
     .into_js_value();

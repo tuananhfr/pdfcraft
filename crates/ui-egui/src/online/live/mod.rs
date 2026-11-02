@@ -23,6 +23,7 @@ use pdfcraft_engine::live::LocalChange;
 pub(crate) use conflict::ConflictPrompt;
 pub use marks::Mark;
 pub(crate) use marks::paint_page;
+pub use pdfcraft_engine::live::{MAX_PAYLOAD_BYTES, MAX_REGION_BYTES};
 
 /// A region the user holds stays held this long after its last change, unless still focused.
 pub const IDLE_END_MS: f64 = 2_000.0;

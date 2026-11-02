@@ -5,6 +5,13 @@ use eframe::wasm_bindgen::{JsCast, JsValue};
 use pdfcraft_ui_egui::online::live::{Cursor, LockView, Member};
 use pdfcraft_ui_egui::online::{Access, ClientPrefix, HostDocument, SaveResult};
 
+/// `value` as a string when it is one of at most `max` UTF-8 bytes; a longer one is refused
+/// without copying it (its UTF-16 length is a lower bound of its UTF-8 length).
+pub fn bounded(value: &JsValue, max: usize) -> Option<String> {
+    let s = value.dyn_ref::<js_sys::JsString>()?;
+    if usize::try_from(s.length()).is_ok_and(|n| n <= max) { Some(String::from(s)).filter(|s| s.len() <= max) } else { None }
+}
+
 fn field(value: &JsValue, key: &str) -> Option<JsValue> {
     js_sys::Reflect::get(value, &JsValue::from_str(key)).ok().filter(|v| !v.is_undefined() && !v.is_null())
 }

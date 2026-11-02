@@ -3,7 +3,14 @@
 //! JavaScript objects and are JSON strings on the app's side.
 
 use eframe::wasm_bindgen::{JsCast, JsValue, closure::Closure};
-use pdfcraft_ui_egui::online::comments::{CommentEvent, CommentHost, CommentInbox, ResolvedThread, SelectionAnchor, Thread};
+use pdfcraft_ui_egui::online::comments::{
+    CommentEvent, CommentHost, CommentInbox, MAX_ANCHOR_BYTES, MAX_THREADS, ResolvedThread, SelectionAnchor, Thread,
+};
+
+use super::convert::bounded;
+
+/// A thread id or status longer than this is no id or status the shell makes.
+const MAX_ID_BYTES: usize = 256;
 
 /// Whether the shell has Cloud comments (detected by feature, like v3 regions).
 pub fn offered(host: &JsValue) -> bool {
@@ -34,29 +41,32 @@ fn field(value: &JsValue, key: &str) -> Option<JsValue> {
     js_sys::Reflect::get(value, &JsValue::from_str(key)).ok().filter(|v| !v.is_undefined() && !v.is_null())
 }
 
-/// An anchor as JSON: a string stays as it is, an object is stringified.
+/// An anchor as JSON: a string stays as it is, an object is stringified. One longer than the
+/// app reads is not copied (the app would refuse it anyway).
 fn anchor_json(value: &JsValue) -> Option<String> {
-    if let Some(s) = value.as_string() {
-        return Some(s);
+    if value.is_string() {
+        return bounded(value, MAX_ANCHOR_BYTES);
     }
-    value.is_object().then(|| js_sys::JSON::stringify(value).ok().and_then(|s| s.as_string())).flatten()
+    value.is_object().then(|| js_sys::JSON::stringify(value).ok().and_then(|s| bounded(&s, MAX_ANCHOR_BYTES))).flatten()
 }
 
 /// An id the shell may give as a string or a number.
 fn id(value: &JsValue) -> Option<String> {
-    value.as_string().or_else(|| value.as_f64().filter(|n| n.is_finite()).map(|n| n.to_string())).filter(|s| !s.is_empty())
+    bounded(value, MAX_ID_BYTES).or_else(|| value.as_f64().filter(|n| n.is_finite()).map(|n| n.to_string())).filter(|s| !s.is_empty())
 }
 
-/// `[{ id, anchor, status, count }]`; entries without an id or an anchor are skipped.
+/// `[{ id, anchor, status, count }]`, the first [`MAX_THREADS`] (the app reads no more); entries
+/// without an id or an anchor are skipped.
 fn threads(value: &JsValue) -> Vec<Thread> {
     let Some(array) = value.dyn_ref::<js_sys::Array>() else { return Vec::new() };
     array
         .iter()
+        .take(MAX_THREADS)
         .filter_map(|t| {
             Some(Thread {
                 id: id(&field(&t, "id")?)?,
                 anchor: anchor_json(&field(&t, "anchor")?)?,
-                status: field(&t, "status").and_then(|s| s.as_string()).unwrap_or_default(),
+                status: field(&t, "status").and_then(|s| bounded(&s, MAX_ID_BYTES)).unwrap_or_default(),
                 count: field(&t, "count")
                     .and_then(|c| c.as_f64())
                     .filter(|c| c.is_finite() && *c >= 0.0)
