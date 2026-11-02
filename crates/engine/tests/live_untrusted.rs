@@ -157,6 +157,30 @@ fn an_oversized_payload_is_refused_unread() {
     }
 }
 
+/// A comment region installs only a comment: never a widget, a link, a pop-up or anything of a
+/// form field's, and its pop-up is a new object or the one it had.
+#[test]
+fn a_comment_payload_installs_only_a_comment() {
+    let (mut s, id) = open("0000aa");
+    let root = |extra: &str| {
+        format!(r#"{{"v":1,"page":"f3.0","at":0,"g":[{{"d":{{"Type":{{"n":"Annot"}},"NM":{{"s":"new-1"}},"Rect":[1,1,2,2],{extra}}}}}]}}"#)
+    };
+    for extra in [
+        r#""Subtype":{"n":"Widget"},"FT":{"n":"Tx"},"T":{"s":"evil"}"#,
+        r#""Subtype":{"n":"Link"},"A":{"d":{"S":{"n":"URI"},"URI":{"s":"https://example.com"}}}"#,
+        r#""Subtype":{"n":"Popup"}"#,
+        r#""Subtype":{"n":"Text"},"FT":{"n":"Btn"}"#,
+        r#""Subtype":{"n":"Text"},"Kids":[]"#,
+        r#""Subtype":{"n":"Text"},"Parent":{"a":"nm:file-note-1"}"#,
+        r#""Subtype":{"n":"Text"},"Popup":{"a":"nm:file-note-1"}"#,
+        r#""Subtype":{"n":"Text"},"Popup":{"p":"f4.0"}"#,
+    ] {
+        refused(&mut s, id, "annot:nm:new-1", &root(extra));
+    }
+    s.apply_remote(id, "annot:nm:new-1", &root(r#""Subtype":{"n":"Text"}"#)).unwrap();
+    assert!(s.annotation_ids(id).iter().any(|a| a.id.to_string() == "nm:new-1"));
+}
+
 // ── fuzzing ───────────────────────────────────────────────────────────────────────────────────
 
 /// A small deterministic generator (xorshift64*): the same cases on every run.

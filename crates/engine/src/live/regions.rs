@@ -197,6 +197,7 @@ pub(crate) fn apply_comment(cos: &mut Cos, ids: &[PageId], id: &AnnotId, payload
         (None, AnnotId::Name(_)) => None,
     };
     let old_popup = root.and_then(|r| popup_of(cos, r));
+    let added = cos.next_object_number();
     let mut preset = HashMap::new();
     if let Some(r) = root {
         preset.insert(0, r);
@@ -210,12 +211,16 @@ pub(crate) fn apply_comment(cos: &mut Cos, ids: &[PageId], id: &AnnotId, payload
     }
     let refs = decode_objects(cos, g, &preset, &Targets { pages: &pages, comments: &comments })?;
     let root = *refs.first().ok_or_else(|| malformed("the comment"))?;
-    if let Some(p) = cos.get(root).as_dict().and_then(|d| d.reference(b"Popup"))
-        && (pages.values().any(|r| *r == p) || comments.values().any(|r| *r == p))
-    {
-        return Err(malformed("a pop-up that is a page or a comment"));
-    }
+    let root_obj = cos.get(root);
+    let Some(root_dict) = root_obj.as_dict().filter(|d| is_comment_object(d)) else { return Err(malformed("a comment")) };
     let popup = popup_of(cos, root);
+    // Of the objects already here, only its own pop-up may become (or stay) its pop-up.
+    if let Some(p) = root_dict.reference(b"Popup")
+        && p.num < added
+        && (Some(p) != old_popup || popup != Some(p))
+    {
+        return Err(malformed("a pop-up that is not the comment's own"));
+    }
     if let Some((Some(old_page), _)) = existing
         && old_page != page
     {
@@ -239,6 +244,15 @@ pub(crate) fn apply_comment(cos: &mut Cos, ids: &[PageId], id: &AnnotId, payload
     Ok(true)
 }
 
+/// Whether `d` may be a comment's own object: a comment annotation, not a widget, a link, a
+/// pop-up or anything of a form field's.
+fn is_comment_object(d: &pdfcraft_cos::Dict) -> bool {
+    d.name(b"Type").is_none_or(|t| t == b"Annot")
+        && d.contains(b"Rect")
+        && stable_ids::is_comment(d)
+        && ![&b"FT"[..], b"Kids", b"Parent"].iter().any(|k| d.contains(k))
+}
+
 /// Whether a comment named by object number may be written at `r` while no page lists it: only
 /// a comment's own object that no page lists any more. Anything else (the catalogue, a page, a
 /// widget, another comment) belongs to another region, and a free number may still be referred
@@ -249,13 +263,8 @@ fn reusable_comment_object(view: &View, r: ObjRef) -> bool {
         return false;
     }
     let Ok(obj) = cos.try_get(r.num) else { return false };
-    // `is_comment` assumes an annotation; a font or an image has a `/Subtype` too.
-    obj.as_dict().is_some_and(|d| {
-        d.name(b"Type").is_none_or(|t| t == b"Annot")
-            && d.contains(b"Rect")
-            && stable_ids::is_comment(d)
-            && !view.pages.iter().any(|(page, _)| annots(cos, *page).iter().any(|o| o.as_ref() == Some(r)))
-    })
+    obj.as_dict()
+        .is_some_and(|d| is_comment_object(d) && !view.pages.iter().any(|(page, _)| annots(cos, *page).iter().any(|o| o.as_ref() == Some(r))))
 }
 
 /// The existing objects a payload for `region` may change; `None` for regions that may change
