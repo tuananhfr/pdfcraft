@@ -116,6 +116,33 @@ pub enum LiveEvent {
 }
 
 pub type LiveInbox = Arc<Mutex<Vec<LiveEvent>>>;
+
+/// Queue `event` in place of the queued ones it makes moot: the queue grows while a hidden tab
+/// draws no frame. The presence, locks, cursors and leader flag come whole each time, and a
+/// region's payload is its whole content, so one straight after another of the same region
+/// (with nothing else touching the document between) replaces it.
+pub fn enqueue(queue: &mut Vec<LiveEvent>, event: LiveEvent) {
+    let same = |e: &LiveEvent| match (e, &event) {
+        (LiveEvent::Presence(_), LiveEvent::Presence(_))
+        | (LiveEvent::Locks(_), LiveEvent::Locks(_))
+        | (LiveEvent::Cursors(_), LiveEvent::Cursors(_))
+        | (LiveEvent::Leader(_), LiveEvent::Leader(_)) => true,
+        (LiveEvent::ApplyRemote { region: a, .. }, LiveEvent::ApplyRemote { region: b, .. }) => a == b,
+        _ => false,
+    };
+    match event {
+        LiveEvent::ApplyRemote { .. } => {
+            let last = queue.iter().rposition(|e| matches!(e, LiveEvent::ApplyRemote { .. } | LiveEvent::LockDenied(_) | LiveEvent::Conflict { .. }));
+            if let Some(i) = last.filter(|i| queue.get(*i).is_some_and(same)) {
+                queue.remove(i);
+            }
+        }
+        LiveEvent::Presence(_) | LiveEvent::Locks(_) | LiveEvent::Cursors(_) | LiveEvent::Leader(_) => queue.retain(|e| !same(e)),
+        LiveEvent::LockDenied(_) | LiveEvent::Conflict { .. } => {}
+    }
+    queue.push(event);
+}
+
 type Answers = Arc<Mutex<Vec<(String, bool)>>>;
 
 /// A region the user holds.

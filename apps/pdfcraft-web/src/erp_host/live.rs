@@ -3,7 +3,7 @@
 //! the next frame.
 
 use eframe::wasm_bindgen::{JsCast, JsValue, closure::Closure};
-use pdfcraft_ui_egui::online::live::{Choice, LiveEvent, LiveInbox, RegionHost};
+use pdfcraft_ui_egui::online::live::{Choice, LiveEvent, LiveInbox, RegionHost, enqueue};
 
 use super::convert;
 
@@ -66,7 +66,7 @@ pub fn handlers(inbox: &LiveInbox, ctx: &egui::Context) -> Vec<(&'static str, Js
             if let Some(event) = event
                 && let Ok(mut q) = inbox.lock()
             {
-                q.push(event);
+                enqueue(&mut q, event);
             }
             ctx.request_repaint();
         }

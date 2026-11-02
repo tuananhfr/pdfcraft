@@ -384,3 +384,33 @@ fn a_lost_lock_keeps_the_typed_text_and_says_so() {
     assert_eq!(a.app.views[0].forms.focus.as_ref().map(|f| f.text.as_str()), Some("Ad"));
     assert_eq!(a.toast(), Some("Someone else is editing this part."));
 }
+
+/// A hidden tab draws no frame while the shell keeps calling: whole tables, and a region's
+/// payload straight after another of the same region, replace the queued ones; nothing that
+/// touches the document between is dropped or reordered.
+#[test]
+fn the_queue_keeps_only_what_still_matters() {
+    let apply = |region: &str, payload: &str| LiveEvent::ApplyRemote { region: region.into(), payload: payload.into(), author: None };
+    let mut q = Vec::new();
+    for i in 0..1000 {
+        enqueue(&mut q, apply("annot:nm:a", &i.to_string()));
+        enqueue(&mut q, LiveEvent::Cursors(Vec::new()));
+        enqueue(&mut q, LiveEvent::Locks(Vec::new()));
+        enqueue(&mut q, LiveEvent::Presence(Vec::new()));
+        enqueue(&mut q, LiveEvent::Leader(i % 2 == 0));
+    }
+    assert_eq!(q.len(), 5);
+    enqueue(&mut q, apply("annot:nm:b", "1"));
+    enqueue(&mut q, apply("annot:nm:a", "x"));
+    enqueue(&mut q, LiveEvent::LockDenied("annot:nm:a".into()));
+    enqueue(&mut q, apply("annot:nm:a", "y"));
+    let applied: Vec<&str> = q
+        .iter()
+        .filter_map(|e| match e {
+            LiveEvent::ApplyRemote { payload, .. } => Some(payload.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(applied, ["999", "1", "x", "y"]);
+    assert!(matches!(q.last(), Some(LiveEvent::ApplyRemote { payload, .. }) if payload == "y"));
+}
