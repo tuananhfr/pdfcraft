@@ -29,13 +29,13 @@ pub(crate) struct Panels {
 
 /// Edge-triggered compaction. Nothing happens while the width stays on one side of the
 /// breakpoint, so a panel the user opens on a phone stays open.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub(crate) struct NarrowLayout {
     narrow: bool,
     /// Between [`NARROW_WIDTH`] and [`TABLET_WIDTH`] with `tablet_fold` on.
     tablet: bool,
-    /// Whether a tablet's width folds the Tools pane: the web app's layout, not the desktop's.
-    tablet_fold: bool,
+    /// Whether a tablet's width folds the Tools pane; unset, only the web app's layout does.
+    tablet_fold: Option<bool>,
     /// The wide-state choices folded away on entering narrow. Each is dropped once the user
     /// opens that panel while narrow: from then on their choice is the current one.
     saved_left: Option<bool>,
@@ -52,16 +52,10 @@ struct WideZoom {
     zoom: f32,
 }
 
-impl Default for NarrowLayout {
-    fn default() -> Self {
-        Self { narrow: false, tablet: false, tablet_fold: cfg!(target_arch = "wasm32"), saved_left: None, saved_right: None, wide_zooms: Vec::new() }
-    }
-}
-
 impl NarrowLayout {
     #[cfg(test)]
     pub fn with_tablet_fold(self, tablet_fold: bool) -> Self {
-        Self { tablet_fold, ..self }
+        Self { tablet_fold: Some(tablet_fold), ..self }
     }
 
     pub fn is_narrow(&self) -> bool {
@@ -77,7 +71,7 @@ impl NarrowLayout {
             return;
         }
         let narrow = width < NARROW_WIDTH;
-        let tablet = self.tablet_fold && !narrow && width < TABLET_WIDTH;
+        let tablet = self.tablet_fold.unwrap_or(cfg!(target_arch = "wasm32")) && !narrow && width < TABLET_WIDTH;
         match (!self.narrow && !self.tablet, !narrow && !tablet) {
             (true, false) => {
                 self.saved_left = Some(panels.left_open);
