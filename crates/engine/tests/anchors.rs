@@ -4,7 +4,9 @@
 
 use std::sync::Arc;
 
-use pdfcraft_engine::anchors::{Anchor, AnchorError, MAX_ANCHOR_BYTES, MAX_TEXT_PAGES, Resolution, quads_bounds, text_under};
+use pdfcraft_engine::anchors::{
+    Anchor, AnchorError, MAX_ANCHOR_BYTES, MAX_STORED_BYTES, MAX_TEXT_CHARS, MAX_TEXT_PAGES, QUOTE_CHARS, Resolution, quads_bounds, text_under,
+};
 use pdfcraft_engine::live::Region;
 use pdfcraft_engine::{AnnotId, DocId, Edit, Session};
 use pdfcraft_render::{PageRenderer, RenderConfig, RenderRequest, RequestKind};
@@ -87,7 +89,7 @@ fn anchors_round_trip_through_their_json_and_bad_ones_are_refused() {
     let (mut s, id) = open(&fixture());
     let (page, index) = annot(&s, id, "hl-1");
     let a = s.anchor_of_annotation(id, page, index, None).unwrap();
-    let json = a.to_json("Trang 1");
+    let json = a.to_json("Trang 1", None);
     let value: serde_json::Value = serde_json::from_str(&json).unwrap();
     assert_eq!(value["v"], 1);
     assert_eq!(value["region"], "annot:nm:hl-1");
@@ -97,8 +99,8 @@ fn anchors_round_trip_through_their_json_and_bad_ones_are_refused() {
     assert_eq!(Anchor::parse(&json).unwrap(), a);
     let (quads, text) = select(&s, id, 0, "Second");
     let t = s.anchor_of_text(id, 0, quads, &text).unwrap();
-    assert_eq!(serde_json::from_str::<serde_json::Value>(&t.to_json("")).unwrap()["region"], serde_json::Value::Null);
-    assert_eq!(Anchor::parse(&t.to_json("x")).unwrap(), t);
+    assert_eq!(serde_json::from_str::<serde_json::Value>(&t.to_json("", None)).unwrap()["region"], serde_json::Value::Null);
+    assert_eq!(Anchor::parse(&t.to_json("x", None)).unwrap(), t);
 
     assert_eq!(Anchor::parse(r#"{"v":2,"soft":{"index":0}}"#), Err(AnchorError::Version));
     for bad in ["", "[]", "{}", r#"{"v":1}"#, r#"{"v":1,"soft":{"index":-1}}"#, r#"{"v":"1","soft":{"index":0}}"#] {
@@ -278,4 +280,66 @@ fn resolving_reads_a_bounded_amount_of_text() {
     // Repetitive text still finds what is there.
     let out = s.resolve_anchors(id, &[text_anchor(0, "aab")]);
     assert!(matches!(&out[0], Resolution::Open(a) if a.index == 0 && !a.quads.is_empty()), "{out:?}");
+}
+
+/// The shell sorts threads by `order` and shows `quote` (plan-m5, erp-host "Anchors"): the page
+/// index, then the top and left of the anchor in points from the page's top-left as shown.
+#[test]
+fn anchors_tell_the_panel_their_order_and_quote() {
+    let (mut s, id) = open(&fixture());
+    let (page, index) = annot(&s, id, "hl-1");
+    let hl = s.anchor_of_annotation(id, page, index, None).unwrap();
+    let info = s.get(id).unwrap().info.pages[0].clone();
+    let value: serde_json::Value = serde_json::from_str(&hl.to_json("Trang 1", Some(&info))).unwrap();
+    assert_eq!(value["order"], serde_json::json!([0, 34.0, 18.0]));
+    assert_eq!(value["quote"], "Hello world");
+    let (page, index) = annot(&s, id, "note-1");
+    let note = s.anchor_of_annotation(id, page, index, None).unwrap();
+    let value: serde_json::Value = serde_json::from_str(&note.to_json("Trang 1", Some(&info))).unwrap();
+    assert_eq!(value["order"], serde_json::json!([0, 240.0, 200.0]));
+    assert!(value.get("quote").is_none(), "a note marks no text: {value}");
+    // A rotated page sorts by what the reader sees as its top.
+    let turned = pdfcraft_render::PageInfo { rotation: 90, ..info.clone() };
+    let value: serde_json::Value = serde_json::from_str(&note.to_json("", Some(&turned))).unwrap();
+    assert_eq!(value["order"], serde_json::json!([0, 200.0, 40.0]));
+    // Without the page nothing is guessed; an anchor written before `order` and `quote` reads as it did.
+    let value: serde_json::Value = serde_json::from_str(&hl.to_json("", None)).unwrap();
+    assert!(value.get("order").is_none());
+    let mut old = value.clone();
+    old.as_object_mut().unwrap().remove("quote");
+    assert_eq!(Anchor::parse(&old.to_string()).unwrap(), hl);
+
+    let long = Anchor { text: "lorem ipsum ".repeat(40).trim().into(), ..hl.clone() };
+    let long = Anchor::parse(&long.to_json("", None)).unwrap();
+    let value: serde_json::Value = serde_json::from_str(&long.to_json("", Some(&info))).unwrap();
+    let quote = value["quote"].as_str().unwrap();
+    assert_eq!(quote.chars().count(), QUOTE_CHARS);
+    assert!(quote.ends_with('…') && long.text.starts_with(quote.trim_end_matches('…')));
+}
+
+/// The server stores at most 8 KiB of anchor (UTF-8): the most quads and text an anchor can
+/// carry, far from the origin, still fit, and a region id the room would refuse is not written.
+#[test]
+fn anchors_fit_what_the_server_stores() {
+    let (s, id) = open(&fixture());
+    let info = s.get(id).unwrap().info.pages[0].clone();
+    let far = [-9_999_999.99, 9_999_999.99, -9_999_998.99, 9_999_999.99, -9_999_999.99, 9_999_998.99, -9_999_998.99, 9_999_998.99];
+    // Escaped in JSON: a quote mark takes two bytes, a control character six.
+    let big = Anchor {
+        region: Some(Region::Annot(AnnotId::Name("\"".repeat(240)))),
+        page: None,
+        quads: vec![far; 200],
+        index: 0,
+        text: "\u{7}".repeat(400),
+    };
+    let json = big.to_json(&format!("Trang 1 · “{}”", "ữ".repeat(60)), Some(&info));
+    assert!(json.len() <= MAX_STORED_BYTES, "{} bytes", json.len());
+    let back = Anchor::parse(&json).unwrap();
+    assert_eq!((back.region.clone(), back.text.chars().count()), (big.region.clone(), MAX_TEXT_CHARS));
+    assert!(!back.quads.is_empty());
+    assert_eq!(quads_bounds(&back.quads), quads_bounds(&big.quads), "the place survives as its bounds");
+
+    let named = Anchor { region: Some(Region::Field("f".repeat(300))), ..back.clone() };
+    let value: serde_json::Value = serde_json::from_str(&named.to_json("", None)).unwrap();
+    assert_eq!(value["region"], serde_json::Value::Null, "longer than a region id may be");
 }

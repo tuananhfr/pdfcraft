@@ -110,7 +110,7 @@ fn the_selection_anchor_follows_a_selected_comment_a_field_and_text() {
     let (mut app, _fake, id, _shell, _inbox, selection) = setup();
     assert_eq!(*selection.lock().unwrap(), None, "nothing selected");
     let hl = json(&anchor_of(&mut app, id, &selection, "hl-2"));
-    assert_eq!((hl["v"].clone(), hl["region"].clone(), hl["label"].clone()), (1.into(), "annot:nm:hl-2".into(), "Page 2".into()));
+    assert_eq!((hl["v"].clone(), hl["region"].clone(), hl["label"].clone()), (1.into(), "annot:nm:hl-2".into(), "Page 2 · “Page two”".into()));
     assert_eq!(hl["soft"], serde_json::json!({ "index": 1, "text": "Page two" }));
     assert_eq!(*selection.lock().unwrap(), None, "deselected");
 
@@ -126,7 +126,7 @@ fn the_selection_anchor_follows_a_selected_comment_a_field_and_text() {
     });
     app.comments_step();
     let field = json(selection.lock().unwrap().as_deref().unwrap());
-    assert_eq!((field["region"].clone(), field["label"].clone()), ("field:name".into(), "Page 3".into()));
+    assert_eq!((field["region"].clone(), field["label"].clone()), ("field:name".into(), "Page 3 · middle".into()));
     app.views[0].forms.focus = None;
 
     let display = app.session.get(id).unwrap().display.clone();
@@ -139,7 +139,10 @@ fn the_selection_anchor_follows_a_selected_comment_a_field_and_text() {
     app.views[0].select_text(0, world.start, world.end - 1);
     app.comments_step();
     let words = json(selection.lock().unwrap().as_deref().unwrap());
-    assert_eq!((words["region"].clone(), words["soft"]["text"].clone(), words["label"].clone()), (Value::Null, "world".into(), "Page 1".into()));
+    assert_eq!(
+        (words["region"].clone(), words["soft"]["text"].clone(), words["label"].clone()),
+        (Value::Null, "world".into(), "Page 1 · “world”".into())
+    );
     assert_eq!(words["pos"]["page"], "f3.0");
     app.views[0].clear_selection();
     app.comments_step();
@@ -310,7 +313,7 @@ fn another_persons_changes_move_the_anchor_through_the_room() {
     let anchor = json(&moved[0].anchor);
     assert_eq!(
         (moved[0].status, anchor["region"].clone(), anchor["soft"]["index"].clone(), anchor["label"].clone()),
-        (AnchorStatus::Open, "annot:nm:hl-2".into(), 0.into(), "Page 1".into())
+        (AnchorStatus::Open, "annot:nm:hl-2".into(), 0.into(), "Page 1 · “Page two”".into())
     );
     assert_eq!(anchor["pos"]["page"], json(&hl)["pos"]["page"], "the same page, by its id");
 
@@ -353,4 +356,51 @@ fn with_the_shells_comment_panel_the_comments_pane_opens_only_when_asked() {
     assert_eq!(app.right, None, "picking a comment tool");
     assert!(app.execute("comment.list"));
     assert_eq!(app.right, Some(crate::RightPanel::Comments), "the user's own choice");
+}
+
+/// The panel sorts threads by `order` and heads each with `label`: the page and the quoted
+/// text, or the part of the page when the anchor marks no text. An anchor stored before these
+/// fields still resolves, and comes back with them.
+#[test]
+fn anchors_carry_order_quote_and_a_label_for_the_panel() {
+    let (mut app, _fake, id, _shell, inbox, selection) = setup();
+    let hl = json(&anchor_of(&mut app, id, &selection, "hl-2"));
+    assert_eq!(
+        (hl["order"].clone(), hl["quote"].clone(), hl["label"].clone()),
+        (serde_json::json!([1, 34.0, 18.0]), "Page two".into(), "Page 2 · “Page two”".into())
+    );
+    let note = json(&anchor_of(&mut app, id, &selection, "note-1"));
+    assert_eq!(
+        (note["order"].clone(), note.get("quote"), note["label"].clone()),
+        (serde_json::json!([0, 240.0, 200.0]), None, "Page 1 · bottom".into())
+    );
+    app.views[0].forms.focus = Some(crate::forms_ui::Focus {
+        name: "name".into(),
+        widget: 0,
+        text: String::new(),
+        picked: Vec::new(),
+        request_focus: false,
+        select_all: false,
+        calendar: None,
+        calendar_rect: None,
+    });
+    app.comments_step();
+    let field = json(selection.lock().unwrap().as_deref().unwrap());
+    assert_eq!((field["order"].clone(), field["label"].clone()), (serde_json::json!([2, 180.0, 20.0]), "Page 3 · middle".into()));
+    app.views[0].forms.focus = None;
+    crate::i18n::set_current(crate::i18n::Lang::from_pref("vi"));
+    let note_vi = json(&anchor_of(&mut app, id, &selection, "note-1"));
+    assert_eq!(note_vi["label"], "Trang 1 · phía dưới");
+
+    let mut old = hl.clone();
+    for key in ["order", "quote", "label"] {
+        old.as_object_mut().unwrap().remove(key);
+    }
+    let out = resolve(&mut app, &inbox, vec![thread("t1", &old.to_string(), "open")]);
+    let back = json(&out[0].anchor);
+    assert_eq!(
+        (out[0].status, back["order"].clone(), back["label"].clone()),
+        (AnchorStatus::Open, hl["order"].clone(), "Trang 2 · “Page two”".into())
+    );
+    crate::i18n::set_current(crate::i18n::Lang::EN);
 }

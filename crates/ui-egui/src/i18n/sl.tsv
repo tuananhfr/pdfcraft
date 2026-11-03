@@ -2493,3 +2493,6 @@ animation effects	Off	Izklopljeni
 	This change is too large to share while editing together.	Ta sprememba je prevelika za deljenje med skupnim urejanjem.
 	Skipped a change someone else has edited since.	Preskočena je bila sprememba, ki jo je medtem uredil nekdo drug.
 	Add comments in the Comments panel; the document itself can't be changed here.	Komentarje dodajte v podoknu Komentarji; samega dokumenta tukaj ni mogoče spreminjati.
+	Page {label} · top	Stran {label} · zgoraj
+	Page {label} · middle	Stran {label} · na sredini
+	Page {label} · bottom	Stran {label} · spodaj

@@ -2489,3 +2489,6 @@ animation effects	Off	Aus
 	This change is too large to share while editing together.	Diese Änderung ist zu groß, um sie beim gemeinsamen Bearbeiten zu teilen.
 	Skipped a change someone else has edited since.	Eine Änderung, die seitdem jemand anderes bearbeitet hat, wurde übersprungen.
 	Add comments in the Comments panel; the document itself can't be changed here.	Kommentare fügen Sie im Bereich „Kommentare“ hinzu; das Dokument selbst kann hier nicht geändert werden.
+	Page {label} · top	Seite {label} · oben
+	Page {label} · middle	Seite {label} · Mitte
+	Page {label} · bottom	Seite {label} · unten

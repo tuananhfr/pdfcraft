@@ -2486,3 +2486,6 @@ animation effects	Off	Өшірулі
 	This change is too large to share while editing together.	Бұл өзгеріс тым үлкен, бірге өңдеу кезінде оны бөлісу мүмкін емес.
 	Skipped a change someone else has edited since.	Кейін басқа біреу өңдеген өзгеріс өткізіп жіберілді.
 	Add comments in the Comments panel; the document itself can't be changed here.	Пікірлерді «Пікірлер» тақтасында қосыңыз; құжаттың өзін мұнда өзгерту мүмкін емес.
+	Page {label} · top	Бет {label} · жоғары
+	Page {label} · middle	Бет {label} · ортасы
+	Page {label} · bottom	Бет {label} · төмен

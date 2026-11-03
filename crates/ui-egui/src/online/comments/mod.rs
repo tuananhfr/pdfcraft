@@ -8,6 +8,7 @@
 //! (the desktop, an older shell) none of this exists.
 
 mod frame;
+mod label;
 mod markers;
 
 #[cfg(test)]

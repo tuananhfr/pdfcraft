@@ -2509,3 +2509,6 @@ animation effects	Off	معطّلة
 	This change is too large to share while editing together.	هذا التغيير أكبر من أن تتم مشاركته أثناء التحرير المشترك.
 	Skipped a change someone else has edited since.	تم تخطي تغيير حرّره شخص آخر منذ ذلك الحين.
 	Add comments in the Comments panel; the document itself can't be changed here.	أضف التعليقات في لوحة التعليقات؛ لا يمكن تغيير المستند نفسه هنا.
+	Page {label} · top	صفحة {label} · أعلى
+	Page {label} · middle	صفحة {label} · الوسط
+	Page {label} · bottom	صفحة {label} · أسفل

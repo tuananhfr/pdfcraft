@@ -2740,3 +2740,6 @@ key	Space	Tarpas
 	This change is too large to share while editing together.	Šis pakeitimas per didelis, kad juo būtų galima dalytis redaguojant kartu.
 	Skipped a change someone else has edited since.	Praleistas pakeitimas, kurį nuo tada redagavo kažkas kitas.
 	Add comments in the Comments panel; the document itself can't be changed here.	Komentarus pridėkite skydelyje „Komentarai“; paties dokumento čia keisti negalima.
+	Page {label} · top	Puslapis {label} · viršuje
+	Page {label} · middle	Puslapis {label} · viduryje
+	Page {label} · bottom	Puslapis {label} · apačioje

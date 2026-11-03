@@ -7,14 +7,15 @@
 //!  "region":"annot:nm:…" | "field:<full name>" | null,
 //!  "pos":{"page":"<page id>" | null,"quads":[[x1,y1,x2,y2,x3,y3,x4,y4], …]},
 //!  "soft":{"index":<0-based page>,"text":"<text under the quads>"},
-//!  "label":"Trang 3"}
+//!  "label":"Trang 3 · “…”","quote":"<text, ≤ 120 characters>","order":[<page>,<top>,<left>]}
 //! ```
 //!
 //! `region` is the co-editing region id of a selected comment or form field; a text selection has
 //! none. `pos` is where the anchor is now (user-space quads on the page named by its stable id),
 //! `soft` what finds it again when the region is gone or the page ids changed with a new version
-//! of the file: the page's position and the text under the quads. `label` is the shell's hint for
-//! people; it is made by the app and ignored when an anchor is read.
+//! of the file: the page's position and the text under the quads. `label`, `quote` and `order`
+//! are for the shell's panel (where the thread sits, the text it marks, the sort key); they are
+//! made by the app and ignored when an anchor is read, so anchors without them read the same.
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -32,6 +33,10 @@ pub const MAX_ANCHOR_BYTES: usize = 16 * 1024;
 const MAX_QUADS: usize = 64;
 /// The text kept to find an anchor again: enough to tell passages apart, small on the server.
 pub const MAX_TEXT_CHARS: usize = 200;
+/// What the office server stores of an anchor: compact JSON of at most this many UTF-8 bytes.
+pub const MAX_STORED_BYTES: usize = 8 * 1024;
+/// Characters of the anchor's text the shell's panel quotes (wordcraft's limit).
+pub const QUOTE_CHARS: usize = 120;
 /// Pages a document can have, as far as an anchor's page index is concerned.
 const MAX_INDEX: u64 = 1 << 24;
 
@@ -74,7 +79,7 @@ pub struct Place {
 }
 
 impl Anchor {
-    /// The anchor from the shell's JSON (any `label` is ignored).
+    /// The anchor from the shell's JSON (`label`, `quote` and `order` are ignored).
     pub fn parse(json: &str) -> Result<Self, AnchorError> {
         if json.len() > MAX_ANCHOR_BYTES {
             return Err(AnchorError::Malformed("too large"));
@@ -102,26 +107,81 @@ impl Anchor {
         Ok(Self { region, page, quads, index: usize::try_from(index).map_err(|_| AnchorError::Malformed("page index"))?, text })
     }
 
-    /// The shell's JSON, with `label` for people.
-    pub fn to_json(&self, label: &str) -> String {
-        self.to_value(label).to_string()
+    /// The shell's JSON, with `label` for people, a `quote` of its text and, given `page` (the
+    /// anchor's page as it is now), the panel's sort key `order`. It never exceeds
+    /// [`MAX_STORED_BYTES`]: past that the quote goes, then the quads become their bounds.
+    pub fn to_json(&self, label: &str, page: Option<&PageInfo>) -> String {
+        let full = self.to_value(label, page);
+        let json = full.to_string();
+        if json.len() <= MAX_STORED_BYTES {
+            return json;
+        }
+        let unquoted = |mut v: Value| {
+            if let Some(obj) = v.as_object_mut() {
+                obj.remove("quote");
+            }
+            v.to_string()
+        };
+        let json = unquoted(full);
+        if json.len() <= MAX_STORED_BYTES {
+            return json;
+        }
+        // One quad, a region id of at most 256 bytes and 200 characters of text (six bytes each
+        // when escaped) stay far below the cap.
+        let bounded = Self { quads: quads_bounds(&self.quads).map(|b| vec![rect_quad(b)]).unwrap_or_default(), ..self.clone() };
+        unquoted(bounded.to_value(label, page))
     }
 
-    pub fn to_value(&self, label: &str) -> Value {
+    pub fn to_value(&self, label: &str, page: Option<&PageInfo>) -> Value {
         let mut pos = Map::new();
         pos.insert("page".into(), self.page.map_or(Value::Null, |p| Value::String(p.to_string())));
         pos.insert(
             "quads".into(),
             Value::Array(rounded(self.quads.clone()).iter().map(|q| Value::Array(q.iter().map(|v| json!(v)).collect())).collect()),
         );
-        json!({
+        // The room and the server refuse a region id it couldn't parse back (a field name or `/NM` too long).
+        let region = self.region.as_ref().map(ToString::to_string).filter(|r| Region::parse(r).is_some());
+        let mut value = json!({
             "v": ANCHOR_VERSION,
-            "region": self.region.as_ref().map_or(Value::Null, |r| Value::String(r.to_string())),
+            "region": region.map_or(Value::Null, Value::String),
             "pos": pos,
             "soft": { "index": self.index, "text": self.text },
             "label": label,
-        })
+        });
+        if let Some(obj) = value.as_object_mut() {
+            if !self.text.is_empty() {
+                obj.insert("quote".into(), Value::String(shorten(&self.text, QUOTE_CHARS)));
+            }
+            if let Some(b) = page.and_then(|p| self.shown_box(p)) {
+                obj.insert("order".into(), json!([self.index, order_key(b[1]), order_key(b[0])]));
+            }
+        }
+        value
     }
+
+    /// The quads' box on `page` as it is shown (after `/Rotate`), in points from its top-left
+    /// corner: `[left, top, right, bottom]`; `None` without quads.
+    pub fn shown_box(&self, page: &PageInfo) -> Option<[f64; 4]> {
+        let mut points = self.quads.iter().flat_map(|q| q.as_chunks::<2>().0.iter().map(|&[x, y]| page.user_to_view(x as f32, y as f32)));
+        let [x, y] = points.next()?;
+        let b = points.fold([x, y, x, y], |b, [x, y]| [b[0].min(x), b[1].min(y), b[2].max(x), b[3].max(y)]);
+        Some(b.map(f64::from))
+    }
+}
+
+/// A coordinate of `order`: the server takes numbers of 1e-6 to 1e15 in size, or 0.
+fn order_key(v: f64) -> f64 {
+    if v > 0.0 { round(v.min(1e7)) } else { 0.0 }
+}
+
+/// `text` cut to `max` characters, the last one "…" when it was longer.
+pub fn shorten(text: &str, max: usize) -> String {
+    if text.chars().count() <= max {
+        return text.to_owned();
+    }
+    let mut out: String = text.chars().take(max.saturating_sub(1)).collect();
+    out.push('…');
+    out
 }
 
 /// Two decimals: a hundredth of a point is below anything drawn, and keeps the JSON short.

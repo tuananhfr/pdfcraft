@@ -5,17 +5,9 @@ use pdfcraft_engine::DocId;
 use pdfcraft_engine::anchors::{self, Anchor, Resolution};
 use pdfcraft_engine::live::Region;
 
+use super::label::anchor_json;
 use super::{AnchorStatus, CommentEvent, CommentMarker, MAX_THREADS, ResolvedThread, Selected, Thread};
 use crate::PdfCraftApp;
-
-/// `label` of an anchor: the page as people count it.
-fn label(index: usize) -> String {
-    crate::i18n::fmt(tl!("Page {label}"), &[("label", &index.saturating_add(1).to_string())])
-}
-
-fn anchor_json(anchor: &Anchor) -> String {
-    anchor.to_json(&label(anchor.index))
-}
 
 impl PdfCraftApp {
     /// The comment calls for this frame (web only, when the shell offers them).
@@ -107,7 +99,7 @@ impl PdfCraftApp {
         let Some(comments) = self.online.as_mut().and_then(|o| o.comments.as_mut()) else { return };
         comments.selection_key = key;
         if let Ok(mut s) = comments.selection.lock() {
-            *s = anchor.as_ref().map(anchor_json);
+            *s = anchor.as_ref().map(|a| anchor_json(&self.session, id, a));
         }
     }
 
@@ -186,7 +178,9 @@ impl PdfCraftApp {
             .into_iter()
             .zip(resolved)
             .filter_map(|((t, _), r)| match r {
-                Resolution::Open(anchor) => Some(ResolvedThread { id: t.id.clone(), anchor: anchor_json(&anchor), status: AnchorStatus::Open }),
+                Resolution::Open(anchor) => {
+                    Some(ResolvedThread { id: t.id.clone(), anchor: anchor_json(&self.session, id, &anchor), status: AnchorStatus::Open })
+                }
                 Resolution::Orphaned => Some(ResolvedThread { id: t.id.clone(), anchor: t.anchor.clone(), status: AnchorStatus::Orphaned }),
                 Resolution::Skipped => None,
             })

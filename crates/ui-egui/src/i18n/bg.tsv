@@ -2451,3 +2451,6 @@ animation effects	Off	Изключени
 	This change is too large to share while editing together.	Тази промяна е твърде голяма, за да бъде споделена при съвместно редактиране.
 	Skipped a change someone else has edited since.	Пропусната е промяна, която някой друг е редактирал оттогава.
 	Add comments in the Comments panel; the document itself can't be changed here.	Добавяйте коментари в панела „Коментари“; самият документ не може да се променя тук.
+	Page {label} · top	Страница {label} · горе
+	Page {label} · middle	Страница {label} · среда
+	Page {label} · bottom	Страница {label} · долу

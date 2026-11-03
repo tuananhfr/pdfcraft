@@ -2488,3 +2488,6 @@ animation effects	Off	オフ
 	This change is too large to share while editing together.	この変更は大きすぎるため、共同編集中に共有できません。
 	Skipped a change someone else has edited since.	その後に他のユーザーが編集した変更をスキップしました。
 	Add comments in the Comments panel; the document itself can't be changed here.	コメントは「コメント」パネルで追加してください。ここでは文書自体を変更できません。
+	Page {label} · top	ページ {label} · 上部
+	Page {label} · middle	ページ {label} · 中央
+	Page {label} · bottom	ページ {label} · 下部

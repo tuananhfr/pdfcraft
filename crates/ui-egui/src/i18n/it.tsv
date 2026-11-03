@@ -2497,3 +2497,6 @@ animation effects	Off	Disattivati
 	This change is too large to share while editing together.	Questa modifica è troppo grande per essere condivisa durante la modifica in comune.
 	Skipped a change someone else has edited since.	È stata saltata una modifica che qualcun altro ha cambiato nel frattempo.
 	Add comments in the Comments panel; the document itself can't be changed here.	Aggiungi commenti nel pannello Commenti; il documento in sé non può essere modificato qui.
+	Page {label} · top	Pagina {label} · in alto
+	Page {label} · middle	Pagina {label} · al centro
+	Page {label} · bottom	Pagina {label} · in basso

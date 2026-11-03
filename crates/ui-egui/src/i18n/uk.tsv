@@ -2510,3 +2510,6 @@ animation effects	Off	Вимкнено
 	This change is too large to share while editing together.	Ця зміна завелика, щоб поширити її під час спільного редагування.
 	Skipped a change someone else has edited since.	Пропущено зміну, яку відтоді відредагував хтось інший.
 	Add comments in the Comments panel; the document itself can't be changed here.	Додавайте коментарі на панелі «Коментарі»; сам документ тут змінити не можна.
+	Page {label} · top	Сторінка {label} · угорі
+	Page {label} · middle	Сторінка {label} · посередині
+	Page {label} · bottom	Сторінка {label} · унизу
