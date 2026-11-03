@@ -1396,9 +1396,10 @@ impl PdfCraftApp {
         // Read mode opens with the panes closed; the rail still opens them (#932). A right panel
         // the user closed stays closed (#1590).
         let opening_mode = self.mode_override.unwrap_or(self.default_mode);
+        let shell_lists_comments = self.shell_lists_comments();
         // At phone width the page keeps the window; the rail still opens the panel.
         if activate && self.right.is_none() && !self.right_panel_closed && opening_mode != Mode::Read && !self.narrow.is_narrow() {
-            self.right = if !doc.info.annotations.is_empty() {
+            self.right = if !doc.info.annotations.is_empty() && !shell_lists_comments {
                 Some(RightPanel::Comments)
             } else if !doc.info.outline.is_empty() {
                 Some(RightPanel::Bookmarks)

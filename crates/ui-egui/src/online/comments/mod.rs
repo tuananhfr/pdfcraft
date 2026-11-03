@@ -130,3 +130,11 @@ impl Comments {
         self.selection.clone()
     }
 }
+
+impl crate::PdfCraftApp {
+    /// Whether the office shell shows the comments in its own panel (web): the app's Comments
+    /// pane then opens only when asked, as it narrows the page and refits its zoom.
+    pub(crate) fn shell_lists_comments(&self) -> bool {
+        self.online.as_ref().is_some_and(|o| o.comments.is_some())
+    }
+}

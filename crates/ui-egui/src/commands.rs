@@ -302,7 +302,7 @@ impl PdfCraftApp {
                 self.comment_prefs.group_tool[tool.group()] = tool;
                 self.quick_tool = crate::QuickTool::Comment(tool);
                 // Acrobat opens the Comments panel with the commenting tools, unless the user closed it.
-                if self.right.is_none() && !self.comments_panel_closed {
+                if self.right.is_none() && !self.comments_panel_closed && !self.shell_lists_comments() {
                     self.choose_right_panel(Some(RightPanel::Comments));
                 }
                 // A text selection made before picking a markup tool is marked right away.

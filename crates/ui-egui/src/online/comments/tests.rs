@@ -332,3 +332,25 @@ fn another_persons_changes_move_the_anchor_through_the_room() {
     let gone = resolve(&mut a.app, &inbox, vec![thread("t1", &kept[0].anchor, "open")]);
     assert_eq!(gone[0].status, AnchorStatus::Orphaned);
 }
+
+/// The shell's "Nhận xét" panel lists the comments: opening a file that has some, or picking a
+/// comment tool, leaves the app's own Comments pane closed (opening it narrowed the page and
+/// refitted its zoom); asking for it still opens it. Without the shell's panel both open it.
+#[test]
+fn with_the_shells_comment_panel_the_comments_pane_opens_only_when_asked() {
+    let (mut plain, fake) = app();
+    open_with(&mut plain, "d1", &fixture());
+    tick(&mut plain, &fake, 0.0);
+    assert_eq!(plain.right, Some(crate::RightPanel::Comments), "Acrobat's behaviour without the shell's panel");
+    plain.right = None;
+    assert!(plain.execute("comment.note"));
+    assert_eq!(plain.right, Some(crate::RightPanel::Comments));
+
+    let (mut app, _fake, _id, _shell, _inbox, _selection) = setup();
+    assert_eq!(app.right, None, "opening a file with comments");
+    assert!(app.execute("comment.note"));
+    assert_eq!(app.quick_tool, crate::QuickTool::Comment(crate::comments::CommentTool::Note));
+    assert_eq!(app.right, None, "picking a comment tool");
+    assert!(app.execute("comment.list"));
+    assert_eq!(app.right, Some(crate::RightPanel::Comments), "the user's own choice");
+}
