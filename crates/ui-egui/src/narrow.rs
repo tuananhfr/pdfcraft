@@ -1,6 +1,7 @@
 //! Phone-width layout: below [`NARROW_WIDTH`] the side panels fold away and each document fits
 //! the page width, once per crossing, and the user's wide-state choices come back when the
-//! window widens again.
+//! window widens again. On the web a tablet's width (below [`TABLET_WIDTH`]) folds the Tools
+//! pane the same way.
 
 use pdfcraft_engine::DocId;
 
@@ -10,6 +11,9 @@ use crate::canvas::{DocView, Fit};
 /// Window content width (points) below which the layout compacts. A tablet in portrait
 /// (768+) stays wide.
 pub const NARROW_WIDTH: f32 = 600.0;
+/// Below this (and above [`NARROW_WIDTH`]), on the web, the Tools pane folds away: a tablet in
+/// portrait has no room for it beside the page.
+pub const TABLET_WIDTH: f32 = 900.0;
 
 /// Space for the quick bar's 14-point inset, 44-point frame and a 6-point gap.
 pub(crate) fn tool_rail_margin(window_width: f32) -> f32 {
@@ -25,9 +29,13 @@ pub(crate) struct Panels {
 
 /// Edge-triggered compaction. Nothing happens while the width stays on one side of the
 /// breakpoint, so a panel the user opens on a phone stays open.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub(crate) struct NarrowLayout {
     narrow: bool,
+    /// Between [`NARROW_WIDTH`] and [`TABLET_WIDTH`] with `tablet_fold` on.
+    tablet: bool,
+    /// Whether a tablet's width folds the Tools pane: the web app's layout, not the desktop's.
+    tablet_fold: bool,
     /// The wide-state choices folded away on entering narrow. Each is dropped once the user
     /// opens that panel while narrow: from then on their choice is the current one.
     saved_left: Option<bool>,
@@ -44,40 +52,52 @@ struct WideZoom {
     zoom: f32,
 }
 
+impl Default for NarrowLayout {
+    fn default() -> Self {
+        Self { narrow: false, tablet: false, tablet_fold: cfg!(target_arch = "wasm32"), saved_left: None, saved_right: None, wide_zooms: Vec::new() }
+    }
+}
+
 impl NarrowLayout {
+    #[cfg(test)]
+    pub fn with_tablet_fold(self, tablet_fold: bool) -> Self {
+        Self { tablet_fold, ..self }
+    }
+
     pub fn is_narrow(&self) -> bool {
         self.narrow
     }
 
-    /// Follow the window's content width; compacts or restores `panels` only on a crossing.
+    /// Follow the window's content width; compacts or restores `panels` only on a crossing: the
+    /// Tools pane folds on leaving the wide layout (for a phone, or a tablet with the fold on)
+    /// and the right panel on entering the phone layout; each comes back on the way back.
     pub fn update(&mut self, width: f32, panels: &mut Panels) {
         // A window not laid out yet (zero size) says nothing about the device.
         if !(width.is_finite() && width > 0.0) {
             return;
         }
         let narrow = width < NARROW_WIDTH;
+        let tablet = self.tablet_fold && !narrow && width < TABLET_WIDTH;
+        match (!self.narrow && !self.tablet, !narrow && !tablet) {
+            (true, false) => {
+                self.saved_left = Some(panels.left_open);
+                panels.left_open = false;
+            }
+            (false, true) => panels.left_open = self.saved_left.take().unwrap_or(panels.left_open),
+            (false, false) if panels.left_open => self.saved_left = None,
+            _ => {}
+        }
         match (self.narrow, narrow) {
             (false, true) => {
-                self.saved_left = Some(panels.left_open);
                 self.saved_right = Some(panels.right);
-                *panels = Panels { left_open: false, right: None };
+                panels.right = None;
             }
-            (true, true) => {
-                if panels.left_open {
-                    self.saved_left = None;
-                }
-                if panels.right.is_some() {
-                    self.saved_right = None;
-                }
-            }
-            (true, false) => {
-                *panels = self.wide_choice(*panels);
-                self.saved_left = None;
-                self.saved_right = None;
-            }
-            (false, false) => {}
+            (true, false) => panels.right = self.saved_right.take().unwrap_or(panels.right),
+            (true, true) if panels.right.is_some() => self.saved_right = None,
+            _ => {}
         }
         self.narrow = narrow;
+        self.tablet = tablet;
     }
 
     /// Fit each document to the page width once per narrow spell (those opened while narrow
@@ -124,6 +144,8 @@ impl NarrowLayout {
 
 #[cfg(test)]
 mod tests {
+    use egui_kittest::kittest::Queryable;
+
     use super::*;
 
     const WIDE: f32 = 1366.0;
@@ -281,6 +303,82 @@ mod tests {
         resize(&mut layout, WIDE, &mut views);
         assert_eq!(zoom_of(&views[0]), (Fit::None, 1.5));
         assert!(layout.wide_zooms.is_empty());
+    }
+
+    const TABLET: f32 = 768.0;
+
+    #[test]
+    fn a_tablet_width_folds_the_tools_pane_once_on_the_web() {
+        let mut layout = NarrowLayout::default().with_tablet_fold(true);
+        let mut panels = open();
+        layout.update(WIDE, &mut panels);
+        layout.update(TABLET, &mut panels);
+        assert!(!layout.is_narrow());
+        assert_eq!(panels, Panels { left_open: false, right: Some(RightPanel::Bookmarks) }, "the page gets the Tools pane's room");
+        assert_eq!(layout.wide_choice(panels), open(), "settings keep the wide layout");
+        // Opened again at that width, it is the user's choice and stays.
+        panels.left_open = true;
+        for width in [TABLET, 820.0, TABLET_WIDTH - 1.0] {
+            layout.update(width, &mut panels);
+            assert!(panels.left_open, "never fought at {width}");
+        }
+        layout.update(WIDE, &mut panels);
+        assert_eq!(panels, open());
+        // Through a phone's width and back: Tools stays folded, the right panel comes back.
+        layout.update(TABLET, &mut panels);
+        layout.update(PHONE, &mut panels);
+        assert_eq!(panels, Panels { left_open: false, right: None });
+        layout.update(TABLET, &mut panels);
+        assert_eq!(panels, Panels { left_open: false, right: Some(RightPanel::Bookmarks) });
+        assert_eq!(layout.wide_choice(panels), open());
+        layout.update(WIDE, &mut panels);
+        assert_eq!(panels, open());
+        // Launching at a tablet's width folds it too; without the fold (the desktop) nothing does.
+        let mut launched = open();
+        NarrowLayout::default().with_tablet_fold(true).update(TABLET, &mut launched);
+        assert!(!launched.left_open);
+        let mut desktop = open();
+        NarrowLayout::default().with_tablet_fold(false).update(TABLET, &mut desktop);
+        assert_eq!(desktop, open());
+        layout.update(TABLET_WIDTH, &mut panels);
+        assert_eq!(panels, open(), "the breakpoint itself is wide");
+    }
+
+    fn harness(width: f32, height: f32) -> egui_kittest::Harness<'static, crate::PdfCraftApp> {
+        let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(width, height)).build_eframe(|_cc| {
+            let mut app = crate::PdfCraftApp::new();
+            app.set_option("language", "en").unwrap();
+            app.narrow = NarrowLayout::default().with_tablet_fold(true);
+            app.open_bytes("form.pdf", None, include_bytes!("../tests/data/form.pdf").to_vec()).unwrap();
+            app
+        });
+        h.state_mut().set_option("panel", "none").unwrap();
+        h.run_steps(6);
+        h
+    }
+
+    /// The probe of GĐ 2 (768 px): the Tools pane took 270 px and left the page 38 %.
+    #[test]
+    fn at_a_tablets_width_the_page_gets_the_window() {
+        let h = harness(TABLET, 1024.0);
+        let view = h.state().active.unwrap();
+        let viewport = h.state().views[view].viewport_rect();
+        assert!(!h.state().left_open);
+        assert!(viewport.width() >= TABLET - 48.0 - 8.0, "the page's canvas spans all but the rail: {viewport:?}");
+    }
+
+    /// The probe of GĐ 2 (360 × 740 px): the rail's last panel button was cut by the page
+    /// navigation. Every one fits above it.
+    #[test]
+    fn a_phones_rail_shows_every_panel_button_above_the_page_navigation() {
+        let (width, height) = (360.0, 740.0);
+        let h = harness(width, height);
+        let in_rail = |r: egui::Rect| r.center().x > width - 48.0;
+        let page_input = h.query_all_by_role(egui::accesskit::Role::TextInput).map(|n| n.rect()).find(|r| in_rail(*r)).expect("the page box");
+        for label in ["Comments", "Bookmarks", "Page thumbnails", "Form fields", "Layers", "Attachments", "Signatures", "Tags"] {
+            let button = h.query_all_by_label(label).map(|n| n.rect()).find(|r| in_rail(*r)).unwrap_or_else(|| panic!("{label} in the rail"));
+            assert!(button.bottom() <= page_input.top(), "{label} {button:?} runs under the page navigation from {}", page_input.top());
+        }
     }
 
     #[test]
