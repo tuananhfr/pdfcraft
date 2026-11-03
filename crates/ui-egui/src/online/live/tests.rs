@@ -414,3 +414,28 @@ fn the_queue_keeps_only_what_still_matters() {
     assert_eq!(applied, ["999", "1", "x", "y"]);
     assert!(matches!(q.last(), Some(LiveEvent::ApplyRemote { payload, .. }) if payload == "y"));
 }
+
+/// erp-host "Saving in a room": Ctrl+S asks the shell to store the room's document even when
+/// this page has nothing unsaved (the leader stores the room's edits, applied here clean of
+/// any local change); outside a room a clean Save still sends nothing.
+#[test]
+fn ctrl_s_in_a_room_sends_a_manual_save_even_when_clean() {
+    let (mut a, _b, _room) = pair();
+    assert!(!a.app.session.get(a.id).unwrap().dirty);
+    a.app.save_active(crate::editing::SaveTarget::InPlace);
+    let saves = a.fake.saves();
+    assert_eq!(saves.len(), 1, "{saves:?}");
+    assert_eq!((saves[0].0.as_str(), saves[0].2), ("d1", crate::online::SaveReason::Manual));
+    a.fake.answer(crate::online::SaveResult::Saved { version: Some(2) });
+    a.tick(100.0);
+    assert!(!a.app.session.get(a.id).unwrap().dirty);
+    a.app.save_active(crate::editing::SaveTarget::InPlace);
+    assert_eq!(a.fake.saves().len(), 2, "every Ctrl+S asks again");
+
+    let (mut app, fake) = app();
+    let id = open(&mut app, "d2");
+    tick(&mut app, &fake, 0.0);
+    assert!(!app.session.get(id).unwrap().dirty);
+    assert!(app.save_active(crate::editing::SaveTarget::InPlace), "nothing to send outside a room");
+    assert!(fake.saves().is_empty());
+}

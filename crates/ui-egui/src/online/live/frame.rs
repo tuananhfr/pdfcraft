@@ -73,6 +73,11 @@ impl PdfCraftApp {
         selection_pending || self.online.as_ref().and_then(|o| o.live.as_ref()).is_some_and(|l| !l.held.is_empty() || !l.waiting.is_empty())
     }
 
+    /// Whether host document `id` is in the live room (web, `erpHost` v3).
+    pub(crate) fn in_live_room(&self, id: DocId) -> bool {
+        self.online.as_ref().and_then(|o| o.live.as_ref()).is_some_and(|l| l.is_room_doc(id))
+    }
+
     /// The live room is about the host document opened last: live mode follows it.
     fn bind_live_doc(&mut self) -> Option<DocId> {
         let doc = self.newest_host_doc();

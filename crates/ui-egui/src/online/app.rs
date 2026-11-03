@@ -176,7 +176,9 @@ impl PdfCraftApp {
             return false;
         }
         let Some(doc) = self.session.get(id) else { return false };
-        if !doc.dirty {
+        // In a room the leader stores everyone's edits, which are clean here (erp-host "Saving
+        // in a room"): Ctrl+S always asks.
+        if !doc.dirty && !self.in_live_room(id) {
             after(self);
             return true;
         }

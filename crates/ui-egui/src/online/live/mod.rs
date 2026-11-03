@@ -207,6 +207,11 @@ impl Live {
         self.inbox.clone()
     }
 
+    /// Whether document `id` is the live room's.
+    pub fn is_room_doc(&self, id: DocId) -> bool {
+        self.doc == Some(id)
+    }
+
     /// Whether the shell says this page leads the room (it saves; informative only here).
     pub fn is_leader(&self) -> bool {
         self.leader
